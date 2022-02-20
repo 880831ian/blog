@@ -1,0 +1,208 @@
+# Translations for Simplified Chinese
+# 簡體中文的翻譯
+# https://gohugo.io/content-management/multilingual/#translation-of-strings
+
+# === baseof ==
+[backToTop]
+other = "回到頂部"
+
+[viewComments]
+other = "查看評論"
+# === baseof ==
+
+# === Post ===
+[posts]
+other = "文章"
+# === Post ===
+
+# === Taxonomy ===
+[allSome]
+other = "所有{{ .Some }}"
+
+[tag]
+other = "標籤"
+
+[tags]
+other = "標籤"
+
+[category]
+other = "分類"
+
+[categories]
+other = "分類"
+# === Taxonomy ===
+
+# === Pagination ===
+[more]
+other = "更多"
+# === Pagination ===
+
+# === partials/header.html ===
+[selectLanguage]
+other = "選擇語言"
+
+[switchTheme]
+other = "切換主題"
+# === partials/header.html ===
+
+# === partials/footer.html ===
+[poweredBySome]
+other = "由 {{ .Hugo }} 強力驅動 | 主題 - {{ .Theme }}"
+# === partials/footer.html ===
+
+# === partials/comment.html ===
+[valineLang]
+other = "zh-cn"
+
+[valinePlaceholder]
+other = "你的評論 ..."
+
+[facebookLanguageCode]
+other = "zh_TW"
+# === partials/comment.html ===
+
+# === partials/assets.html ===
+[search]
+other = "搜尋"
+
+[searchPlaceholder]
+other = "搜尋文章標題或內容..."
+
+[clear]
+other = "清空"
+
+[cancel]
+other = "取消"
+
+[noResultsFound]
+other = "找不到你輸入的資料🥲"
+
+[lunrLanguageCode]
+other = "zh"
+
+[lunrLanguageLib]
+other = "lib/lunr/lunr.zh.js"
+
+[lunrSegmentitLib]
+other = "lib/lunr/lunr.segmentit.js"
+
+[copyToClipboard]
+other = "複製到剪貼板"
+
+[cookieconsentMessage]
+other = "本網站使用 Cookies 來改善您的瀏覽體驗."
+
+[cookieconsentDismiss]
+other = "同意"
+
+[cookieconsentLink]
+other = "瞭解更多"
+# === partials/assets.html ===
+
+# === partials/plugin/share.html ===
+[shareOn]
+other = "分享到"
+# === partials/plugin/share.html ===
+
+# === posts/single.html ===
+[contents]
+other = "目錄"
+
+[publishedOnDate]
+other = "發布於 {{ .Date }}"
+
+[publishedInCategories]
+other = "出版於  {{ .Categories }}"
+
+[includedInCategories]
+other = "歸納在 {{ .Categories }} 分類中"
+
+[wordCount]
+other = "約 {{ .Count }} 字"
+
+[readingTime]
+other = "預計閱讀 {{ .Count }} 分鐘"
+
+[views]
+other = "次閱讀"
+
+[author]
+other = "作者"
+
+[updatedOnDate]
+other = "更新於 {{ .Date }}"
+
+[readMarkdown]
+other = "閱讀原始文檔"
+
+[improveArticle]
+other = "Improve Article"
+
+[back]
+other = "返回"
+
+[home]
+other = "主頁"
+# === posts/single.html ===
+
+# === 404.html ===
+[pageNotFound]
+other = "頁面沒找到"
+
+[pageNotFoundText]
+other = "抱歉，您要查找的頁面不存在。"
+# === 404.html ===
+
+# === Offline Page ===
+[pageOffline]
+other = "你離線了。 檢查您的網際網路連接。"
+# === Offline Page ===
+
+# === shortcodes/admonition.html ===
+[note]
+other = "注意"
+
+[abstract]
+other = "摘要"
+
+[info]
+other = "信息"
+
+[tip]
+other = "技巧"
+
+[success]
+other = "成功"
+
+[question]
+other = "問題"
+
+[warning]
+other = "警告"
+
+[failure]
+other = "失敗"
+
+[danger]
+other = "危險"
+
+[bug]
+other = "Bug"
+
+[example]
+other = "示例"
+
+[quote]
+other = "引用"
+# === shortcodes/admonition.html ===
+
+# === shortcodes/version.html ===
+[new]
+other = "新增"
+
+[changed]
+other = "更改"
+
+[deleted]
+other = "刪除"
+# === shortcodes/version.html ===

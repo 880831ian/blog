@@ -1,0 +1,994 @@
+baseURL = "https://pin-yi.me"
+# [en, zh-tw, fr, pl, ...] determines default content language
+# [en, zh-tw, fr, pl, ...] 設置默認的語言
+defaultContentLanguage = "zh-tw"
+# theme
+# 主題
+theme = "FeelIt"
+# themes directory
+# 主題目錄
+themesDir = "themes"
+
+# website title
+# 網站標題
+title = "PinYi"
+
+# whether to use robots.txt
+# 是否使用 robots.txt
+enableRobotsTXT = true
+# whether to use git commit log
+# 是否使用 git 信息
+enableGitInfo = true
+# whether to use emoji code
+# 是否使用 emoji 代碼
+enableEmoji = true
+# UA-PROPERTY_ID or G-MEASUREMENT_ID google analytics code
+googleAnalytics = "G-EK8X0P9SDS"
+
+ignoreErrors = ["err-missing-comment-accesstoken", "err-missing-oembed-accesstoken"]
+
+[languages]
+  [languages.en]
+    weight = 1
+    # language code
+    languageCode = "en"
+    # language name
+    languageName = "English"
+    # whether to include Chinese/Japanese/Korean
+    hasCJKLanguage = false
+    # default amount of posts in each pages
+    paginate = 12
+    # copyright description used only for seo schema
+    copyright = "This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License."
+    # Menu config
+    [languages.en.menu]
+      [[languages.en.menu.main]]
+        identifier = "posts"
+        # you can add extra information before the name (HTML format is supported), such as icons
+        pre = ""
+        # you can add extra information after the name (HTML format is supported), such as icons
+        post = ""
+        name = "All Posts"
+        url = "/posts/"
+        # title will be shown when you hover on this menu link.
+        title = ""
+        weight = 1
+      [[languages.en.menu.main]]
+        identifier = "categories"
+        pre = ""
+        post = ""
+        name = "Categories"
+        url = "/categories/"
+        title = ""
+        weight = 2
+      [[languages.en.menu.main]]
+        identifier = "tags"
+        pre = ""
+        post = ""
+        name = "Tags"
+        url = "/tags/"
+        title = ""
+        weight = 3
+      [[languages.en.menu.main]]
+        identifier = "sideproject"
+        pre = ""
+        post = ""
+        name = "Side Project"
+        url = "/sideproject/"
+        title = ""
+        weight = 4
+      [[languages.en.menu.main]]
+        identifier = "youtube"
+        pre = ""
+        post = ""
+        name = "YouTube Video"
+        url = "/categories/youtube/"
+        title = ""
+        weight = 5
+      [[languages.en.menu.main]]
+        identifier = "about"
+        pre = ""
+        post = ""
+        name = "About Me"
+        url = "/about/"
+        title = ""
+        weight = 6
+    [languages.en.params]
+      # site description
+      description = "Here's a little world about a rookie engineer and Youtuber"
+      # site keywords
+      keywords = ["CodeNotes", "Engineer", "YouTube"]
+      # App icon config
+      [languages.en.params.app]
+        # optional site title override for the app when added to an iOS home screen or Android launcher
+        title = "PinYi"
+        # whether to omit favicon resource links
+        noFavicon = false
+        # modern SVG favicon to use in place of older style .png and .ico files
+        svgFavicon = "/images/avatar.webp"
+        # Android browser theme color
+        themeColor = "#ffffff"
+        # Safari mask icon color
+        iconColor = "#5bbad5"
+        # Windows v8-10 tile color
+        tileColor = "#da532c"
+      # Search config
+      [languages.en.params.search]
+        enable = true
+        # type of search engine ("lunr", "algolia")
+        type = "lunr"
+        # max index length of the chunked content
+        contentLength = 4000
+        # placeholder of the search bar
+        placeholder = "Please enter the title or content to search"
+        # max number of results length
+        maxResultLength = 10
+        # snippet length of the result
+        snippetLength = 30
+        # HTML tag name of the highlight part in results
+        highlightTag = "em"
+        # whether to use the absolute URL based on the baseURL in search index
+        absoluteURL = false
+        [languages.en.params.search.algolia]
+          index = "index.en"
+          appID = "UAL0NNJWXE"
+          searchKey = "7b7fbdfb7ee82ee61901f2c6b09b05be"
+
+      # About page config
+      [languages.en.params.about]
+        # whether to enable profile on about page
+        # depends on .Site.Params.home.profile.enable
+        enable = true
+        # whether to enable param layout
+        param = true
+        # title for param layout
+        paramTitle = "Personal Information"
+        # general description of your site
+        # can be write with markdown style
+        description = "A rookie engineer who likes to travel. He is good at using drone and GoPros to save memories. He also acts as a travel Youtuber. At present, most of the videos he goes out to play, but he may also post some waste videos in the future. If you like it, you can subscribe and follow Just a moment 😜.<br>Currently in charge of back-end web development, good at building with PHP+Mysql, there are a few simple Side Projects, you can go to the sideproject to see, and now I will start looking for projects on GitHub to play with, and there will be works in the future. Share it with you all 😘"
+        # description of your status
+        [[languages.en.params.about.status]]
+          faIcon = "fas fa-building"
+          title = "Company"
+          desc = "Secret 🤪"
+        [[languages.en.params.about.status]]
+          faIcon = "fas fa-briefcase fa-fw"
+          title = "Occupation"
+          desc = "Software Engineer"
+        [[languages.en.params.about.status]]
+          title = "Location"
+          faIcon = "fas fa-map-marker-alt"
+          desc = "Taiwan/Taichung"
+        # description of your parameter
+        [[languages.en.params.about.parameter]]
+          language = "PHP"
+          level = "80"
+        [[languages.en.params.about.parameter]]
+          language = "HTML"
+          level = "70"
+        [[languages.en.params.about.parameter]]
+          language = "MYSQL"
+          level = "75"
+
+      # Home page config
+      [languages.en.params.home]
+        # amount of RSS pages
+        rss = 10
+        # Home page profile
+        [languages.en.params.home.profile]
+          enable = true
+          # Gravatar Email for preferred avatar in home page
+          gravatarEmail = ""
+          # URL of avatar shown in home page
+          avatarURL = "/images/avatar.webp"
+          # title shown in home page (HTML format is supported)
+          title = "PinYi"
+          # subtitle shown in home page (HTML format is supported)
+          subtitle = "Hello Hello everyone <br>Here's a rookie engineer and Youtuber"
+          # whether to use typeit animation for subtitle
+          typeit = true
+          # whether to show social links
+          social = true
+          # disclaimer (HTML format is supported)
+          disclaimer = ""
+        # Home page posts
+        [languages.en.params.home.posts]
+          enable = true
+          # special amount of posts in each home posts page
+          paginate = 10
+          # display image-preview
+          imagePreview = true
+
+  [languages.zh-tw]
+    weight = 2
+    # 網站語言, 僅在這里 tw 大寫
+    languageCode = "zh-tw"
+    # 語言名稱
+    languageName = "繁體中文"
+    # 是否包括中日韓文字
+    hasCJKLanguage = true
+    # 默認每頁列表顯示的文章數目
+    paginate = 12
+    # 版權描述，僅僅用於 SEO
+    copyright = "This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License."
+    # 菜單配置
+    [languages.zh-tw.menu]
+      [[languages.zh-tw.menu.main]]
+        identifier = "posts"
+        # 你可以在名稱 (允許 HTML 格式) 之前添加其他信息, 例如圖標
+        pre = ""
+        # 你可以在名稱 (允許 HTML 格式) 之後添加其他信息, 例如圖標
+        post = ""
+        name = "所有文章"
+        url = "/posts/"
+        title = ""
+        weight = 1
+      [[languages.zh-tw.menu.main]]
+        identifier = "categories"
+        pre = ""
+        post = ""
+        name = "分類"
+        url = "/categories/"
+        title = ""
+        weight = 2
+      [[languages.zh-tw.menu.main]]
+        identifier = "tags"
+        pre = ""
+        post = ""
+        name = "標籤"
+        url = "/tags/"
+        title = ""
+        weight = 3
+      [[languages.zh-tw.menu.main]]
+        identifier = "sideproject"
+        pre = ""
+        post = ""
+        name = "作品集"
+        url = "/sideproject/"
+        title = ""
+        weight = 4
+      [[languages.zh-tw.menu.main]]
+        identifier = "youtube"
+        pre = ""
+        post = ""
+        name = "YouTube 影片"
+        url = "/categories/youtube/"
+        title = ""
+        weight = 5
+      [[languages.zh-tw.menu.main]]
+        identifier = "about"
+        pre = ""
+        post = ""
+        name = "關於我"
+        url = "/about/"
+        title = ""
+        weight = 6
+    [languages.zh-tw.params]
+      # 網站描述
+      description = "這裡是關於一個菜鳥工程師斜槓Youtube的小天地"
+      # 網站關鍵詞
+      keywords = ["CodeNotes", "Engineer", "YouTube"]
+      # 應用圖標配置
+      [languages.zh-tw.params.app]
+        # 當添加到 iOS 主屏幕或者 Android 啟動器時的標題, 覆蓋默認標題
+        title = "PinYi"
+        # 是否隱藏網站圖標資源鏈接
+        noFavicon = false
+        # 更現代的 SVG 網站圖標, 可替代舊的 .png 和 .ico 文件
+        svgFavicon = "/images/avatar.webp"
+        # Android 瀏覽器主題色
+        themeColor = "#ffffff"
+        # Safari 圖標顏色
+        iconColor = "#5bbad5"
+        # Windows v8-10 磁貼顏色
+        tileColor = "#da532c"
+      # 搜索配置
+      [languages.zh-tw.params.search]
+        enable = true
+        # 搜索引擎的類型 ("lunr", "algolia")
+        type = "lunr"
+        # 文章內容最長索引長度
+        contentLength = 4000
+        # 搜索框的占位提示語
+        placeholder = "請輸入要搜尋的標題或是內容"
+        # 最大結果數目
+        maxResultLength = 10
+        # 結果內容片段長度
+        snippetLength = 50
+        # 搜索結果中高亮部分的 HTML 標籤
+        highlightTag = "em"
+        # 是否在搜索索引中使用基於 baseURL 的絕對路徑
+        absoluteURL = false
+        [languages.zh-tw.params.search.algolia]
+          index = "index.zh-tw"
+          appID = "UAL0NNJWXE"
+          searchKey = "7b7fbdfb7ee82ee61901f2c6b09b05be"
+
+      # 關於頁面配置
+      [languages.zh-tw.params.about]
+        # 是否啟用關於頁面的配置文件
+        # 依賴於取決於 .Site.Params.home.profile.enable
+        enable = true
+        # 是否啟用參數佈局
+        param = true
+        # 參數佈局的標題
+        paramTitle = "個人資訊"
+        # 您網站的一般描述
+        # 可以用markdown樣式寫
+        description = "喜歡旅遊的菜鳥工程師，擅長用空拍機以及GoPro來保存回憶，也斜槓當起旅遊型Youtuber，目前以出去玩的影片居多，但往後可能也會發一些廢片，如果喜歡可以訂閱追蹤一下😜。<br>目前負責後端網頁開發，擅長使用PHP+Mysql建置，有幾個簡單的Side Project，可以到上面作品集去看看，目前也會開始在GitHub上面找專案來玩玩看，之後有作品會再跟大家分享😘"
+        # 你的狀態描述
+        [[languages.zh-tw.params.about.status]]
+          faIcon = "fas fa-building"
+          title = "公司"
+          desc = "秘密 🤪"
+        [[languages.zh-tw.params.about.status]]
+          faIcon = "fas fa-briefcase fa-fw"
+          title = "職業"
+          desc = "軟體工程師"
+        [[languages.zh-tw.params.about.status]]
+          title = "地點"
+          faIcon = "fas fa-map-marker-alt"
+          desc = "台灣/台中"
+        # 參數說明
+        [[languages.zh-tw.params.about.parameter]]
+          language = "PHP"
+          level = "80"
+        [[languages.zh-tw.params.about.parameter]]
+          language = "HTML"
+          level = "70"
+        [[languages.zh-tw.params.about.parameter]]
+          language = "MYSQL"
+          level = "75"
+
+      # 主頁信息設置
+      [languages.zh-tw.params.home]
+        # RSS 文章數目
+        rss = 10
+        # 主頁個人信息
+        [languages.zh-tw.params.home.profile]
+          enable = true
+          # Gravatar 郵箱，用於優先在主頁顯示的頭像
+          gravatarEmail = ""
+          # 主頁顯示頭像的 URL
+          avatarURL = "/images/avatar.webp"
+          # 主頁顯示的網站標題 (支持 HTML 格式)
+          title = "PinYi"
+          # 主頁顯示的網站副標題 (支持 HTML 格式)
+          subtitle = "你好 大家好<br>這裡是關於一個菜鳥工程師斜槓Youtuber的小天地"
+          # 是否為副標題顯示打字機動畫
+          typeit = true
+          # 是否顯示社交賬號
+          social = true
+          # 免責聲明 (支持 HTML 格式)
+          disclaimer = ""
+        # 主頁文章列表
+        [languages.zh-tw.params.home.posts]
+          enable = true
+          # 主頁每頁顯示文章數量
+          paginate = 10
+          # display image-preview
+          imagePreview = true
+
+[params]
+  # FeelIt theme version
+  # FeelIt 主題版本
+  version = "1.0.X"
+  # site default theme ("light", "dark", "auto")
+  # 網站默認主題 ("light", "dark", "auto")
+  defaultTheme = "auto"
+  # public git repo url only then enableGitInfo is true
+  # 公共 git 倉庫路徑，僅在 enableGitInfo 設為 true 時有效
+  gitRepo = "https://github.com/khusika/FeelIt"
+  # which hash function used for SRI, when empty, no SRI is used ("sha256", "sha384", "sha512", "md5")
+  # 哪種哈希函數用來 SRI, 為空時表示不使用 SRI ("sha256", "sha384", "sha512", "md5")
+  fingerprint = ""
+  # date format
+  # 日期格式
+  dateFormat = "2006-01-02"
+  # website images for Open Graph and Twitter Cards
+  # 網站圖片, 用於 Open Graph 和 Twitter Cards
+  images = ["/logo.png"]
+  # whether to enable CSS and JS source mapping
+  SourceMap = false
+
+  # PWA config
+  [params.pwa]
+    # whether to enable PWA support
+    enable = true
+    # service-worker version
+    version = "1.0.1"
+
+  # Header config
+  # 頁面頭部導航欄配置
+  [params.header]
+    # desktop header mode ("fixed", "normal", "auto")
+    # 桌面端導航欄模式 ("fixed", "normal", "auto")
+    desktopMode = "fixed"
+    # mobile header mode ("fixed", "normal", "auto")
+    # 移動端導航欄模式 ("fixed", "normal", "auto")
+    mobileMode = "fixed"
+    # Header title config
+    # 頁面頭部導航欄標題配置
+    [params.header.title]
+      # URL of the LOGO
+      # LOGO 的 URL
+      logo = ""
+      # title name
+      # 標題名稱
+      name = "PinYi 小天地"
+      # you can add extra information before the name (HTML format is supported), such as icons
+      # 你可以在名稱 (允許 HTML 格式) 之前添加其他信息, 例如圖標
+      pre = ""
+      # you can add extra information after the name (HTML format is supported), such as icons
+      # 你可以在名稱 (允許 HTML 格式) 之後添加其他信息, 例如圖標
+      post = ""
+      # whether to use typeit animation for title name
+      # 是否為標題顯示打字機動畫
+      typeit = false
+      # whether to show RSS icon
+      # 是否顯示RSS圖標
+      rss = true
+
+  # Footer config
+  # 頁面底部信息配置
+  [params.footer]
+    enable = true
+    # Custom content (HTML format is supported)
+    # 自定義內容 (支持 HTML 格式)
+    custom = ''
+    # whether to show Hugo and theme info
+    # 是否顯示 Hugo 和主題信息
+    hugo = false
+    # whether to show copyright info
+    # 是否顯示版權信息
+    copyright = true
+    # whether to show the author
+    # 是否顯示作者
+    author = true
+    # site creation time
+    # 網站創立年份
+    since = 2022
+    # ICP info only in China (HTML format is supported)
+    # ICP 備案信息，僅在中國使用 (支持 HTML 格式)
+    icp = ""
+    # license info (HTML format is supported)
+    # 許可協議信息 (支持 HTML 格式)
+    license= '<a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a>'
+
+  # Section (all posts) page config
+  # Section (所有文章) 頁面配置
+  [params.section]
+    # special amount of posts in each section page
+    # section 頁面每頁顯示文章數量
+    paginate = 20
+    # date format (month and day)
+    # 日期格式 (月和日)
+    dateFormat = "01-02"
+    # amount of RSS pages
+    # RSS 文章數目
+    rss = 10
+
+  # List (category or tag) page config
+  # List (目錄或標籤) 頁面配置
+  [params.list]
+    # special amount of posts in each list page
+    # list 頁面每頁顯示文章數量
+    paginate = 20
+    # date format (month and day)
+    # 日期格式 (月和日)
+    dateFormat = "01-02"
+    # amount of RSS pages
+    # RSS 文章數目
+    rss = 10
+
+  # oEmbed config for Facebook and Instagram
+  [params.oembed]
+    # Privacy config (https://gohugo.io/about/hugo-and-gdpr/)
+    privacy = false
+    [params.oembed.facebook]
+      # Facebook Aplication Identity and Client Token (<APPID>|<CLIENTTOKEN>)
+      accessToken = ""
+    [params.oembed.twitter]
+      enableDNT = false
+
+  # Page config
+  # 文章頁面配置
+  [params.page]
+    # whether to hide a page from home page
+    # 是否在主頁隱藏一篇文章
+    hiddenFromHomePage = false
+    # whether to hide a page from search results
+    # 是否在搜索結果中隱藏一篇文章
+    hiddenFromSearch = false
+    # whether to enable twemoji
+    # 是否使用 twemoji
+    twemoji = false
+    # whether to enable lightgallery
+    # 是否使用 lightgallery
+    lightgallery = false
+    # whether to enable the ruby extended syntax
+    # 是否使用 ruby 擴展語法
+    ruby = true
+    # whether to enable the fraction extended syntax
+    # 是否使用 fraction 擴展語法
+    fraction = true
+    # whether to enable the fontawesome extended syntax
+    # 是否使用 fontawesome 擴展語法
+    fontawesome = true
+    # whether to use the fontawesome as cdn source
+    cdnfontawesome = true
+    # whether to show link to Raw Markdown content of the content
+    # 是否顯示原始 Markdown 文檔內容的鏈接
+    linkToMarkdown = true
+    # whether to show link to improve the article
+    improveArticle = "https://github.com/khusika/FeelIt/edit/main/exampleSite/content/"
+    # whether to show the full text content in RSS
+    # 是否在 RSS 中顯示全文內容
+    rssFullText = false
+    # Table of the contents config
+    # 目錄配置
+    [params.page.toc]
+      # whether to enable the table of the contents
+      # 是否使用目錄
+      enable = true
+      # whether to keep the static table of the contents in front of the post
+      # 是否保持使用文章前面的靜態目錄
+      keepStatic = false
+      # whether to make the table of the contents in the sidebar automatically collapsed
+      # 是否使側邊目錄自動折疊展開
+      auto = true
+    # Code config
+    # 代碼配置
+    [params.page.code]
+      # whether to show the copy button of the code block
+      # 是否顯示代碼塊的復制按鈕
+      copy = true
+      # the maximum number of lines of displayed code by default
+      # 默認展開顯示的代碼行數
+      maxShownLines = 10
+    # KaTeX mathematical formulas config (KaTeX https://katex.org/)
+    # KaTeX 數學公式配置 (KaTeX https://katex.org/)
+    [params.page.math]
+      enable = false
+      # default block delimiter is $$ ... $$ and \\[ ... \\]
+      # 默認塊定界符是 $$ ... $$ 和 \\[ ... \\]
+      blockLeftDelimiter = ""
+      blockRightDelimiter = ""
+      # default inline delimiter is $ ... $ and \\( ... \\)
+      # 默認行內定界符是 $ ... $ 和 \\( ... \\)
+      inlineLeftDelimiter = ""
+      inlineRightDelimiter = ""
+      # KaTeX extension copy_tex
+      # KaTeX 插件 copy_tex
+      copyTex = true
+      # KaTeX extension mhchem
+      # KaTeX 插件 mhchem
+      mhchem = true
+    # Mapbox GL JS config (Mapbox GL JS https://docs.mapbox.com/mapbox-gl-js)
+    # Mapbox GL JS 配置 (Mapbox GL JS https://docs.mapbox.com/mapbox-gl-js)
+    [params.page.mapbox]
+      # access token of Mapbox GL JS
+      # Mapbox GL JS 的 access token
+      accessToken = "pk.eyJ1IjoiZGlsbG9uenEiLCJhIjoiY2s2czd2M2x3MDA0NjNmcGxmcjVrZmc2cyJ9.aSjv2BNuZUfARvxRYjSVZQ"
+      # style for the light theme
+      # 淺色主題的地圖樣式
+      lightStyle = "mapbox://styles/mapbox/light-v10?optimize=true"
+      # style for the dark theme
+      # 深色主題的地圖樣式
+      darkStyle = "mapbox://styles/mapbox/dark-v10?optimize=true"
+      # whether to add NavigationControl (https://docs.mapbox.com/mapbox-gl-js/api/#navigationcontrol)
+      # 是否添加 NavigationControl (https://docs.mapbox.com/mapbox-gl-js/api/#navigationcontrol)
+      navigation = true
+      # whether to add GeolocateControl (https://docs.mapbox.com/mapbox-gl-js/api/#geolocatecontrol)
+      # 是否添加 GeolocateControl (https://docs.mapbox.com/mapbox-gl-js/api/#geolocatecontrol)
+      geolocate = true
+      # whether to add ScaleControl (https://docs.mapbox.com/mapbox-gl-js/api/#scalecontrol)
+      # 是否添加 ScaleControl (https://docs.mapbox.com/mapbox-gl-js/api/#scalecontrol)
+      scale = true
+      # whether to add FullscreenControl (https://docs.mapbox.com/mapbox-gl-js/api/#fullscreencontrol)
+      # 是否添加 FullscreenControl (https://docs.mapbox.com/mapbox-gl-js/api/#fullscreencontrol)
+      fullscreen = true
+    # Social share links in post page
+    # 文章頁面的分享信息設置
+    [params.page.share]
+      enable = true
+      Twitter = true
+      Facebook = true
+      Linkedin = false
+      Whatsapp = false
+      Pinterest = false
+      Tumblr = false
+      HackerNews = false
+      Reddit = true
+      VK = false
+      Buffer = false
+      Xing = false
+      Line = true
+      Instapaper = false
+      Pocket = false
+      Digg = false
+      Stumbleupon = false
+      Flipboard = false
+      Weibo = true
+      Renren = false
+      Myspace = false
+      Blogger = false
+      Baidu = false
+      Odnoklassniki = false
+      Evernote = false
+      Skype = true
+      Trello = false
+      Mix = false
+    # Comment config
+    # 評論系統設置
+    [params.page.comment]
+      enable = true
+      # Disqus comment config (https://disqus.com/)
+      # Disqus 評論系統設置 (https://disqus.com/)
+      [params.page.comment.disqus]
+        enable = true
+        # Disqus shortname to use Disqus in posts
+        # Disqus 的 shortname，用來在文章中啟用 Disqus 評論系統
+        shortname = ""
+      # Vssue comment config (https://github.com/meteorlxy/vssue)
+      # Vssue 評論系統設置 (https://github.com/meteorlxy/vssue)
+      [params.page.comment.vssue]
+        enable = true
+        # Vssue platform API ("bitbucket", "gitea", "gitee", "github", "github-v4", "gitlab")
+        # Vssue 平臺 API ("bitbucket", "gitea", "gitee", "github", "github-v4", "gitlab")
+        platform = "github"
+        owner = "khusika"
+        repo = "comments"
+        clientId = "85f66799bb256a5064be"
+        clientSecret = ""
+      # Gitalk comment config (https://github.com/gitalk/gitalk)
+      # Gitalk 評論系統設置 (https://github.com/gitalk/gitalk)
+      [params.page.comment.gitalk]
+        enable = false
+        owner = ""
+        repo = ""
+        clientId = ""
+        clientSecret = ""
+      # Valine comment config (https://github.com/xCss/Valine)
+      # Valine 評論系統設置 (https://github.com/xCss/Valine)
+      [params.page.comment.valine]
+        enable = false
+        appId = "QGzwQXOqs5JOhN4RGPOkR2mR-MdYXbMMI"
+        appKey = "WBmoGyJtbqUswvfLh6L8iEBr"
+        placeholder = ""
+        avatar = "mp"
+        meta= ""
+        pageSize = 10
+        lang = ""
+        visitor = true
+        recordIP = true
+        highlight = true
+        enableQQ = false
+        serverURLs = "https://leancloud.hugoloveit.com"
+        # emoji data file name, default is "google.yml"
+        # ("apple.yml", "google.yml", "facebook.yml", "twitter.yml")
+        # located in "themes/LoveIt/assets/data/emoji/" directory
+        # you can store your own data files in the same path under your project:
+        # "assets/data/emoji/"
+        # emoji 數據文件名稱, 默認是 "google.yml"
+        # ("apple.yml", "google.yml", "facebook.yml", "twitter.yml")
+        # 位於 "themes/LoveIt/assets/data/emoji/" 目錄
+        # 可以在你的項目下相同路徑存放你自己的數據文件:
+        # "assets/data/emoji/"
+        emoji = ""
+      # Facebook comment config (https://developers.facebook.com/docs/plugins/comments)
+      # Facebook 評論系統設置 (https://developers.facebook.com/docs/plugins/comments)
+      [params.page.comment.facebook]
+        enable = false
+        width = "100%"
+        numPosts = 10
+        appId = ""
+        languageCode = ""
+      # Telegram comments config (https://comments.app/)
+      # Telegram comments 評論系統設置 (https://comments.app/)
+      [params.page.comment.telegram]
+        enable = false
+        siteID = ""
+        limit = 5
+        height = ""
+        color = ""
+        colorful = true
+        dislikes = false
+        outlined = false
+      # Commento comment config (https://commento.io/)
+      # Commento comment 評論系統設置 (https://commento.io/)
+      [params.page.comment.commento]
+        enable = true
+      # Utterances comment config (https://utteranc.es/)
+      # Utterances comment 評論系統設置 (https://utteranc.es/)
+      [params.page.comment.utterances]
+        enable = false
+        # owner/repo
+        repo = ""
+        issueTerm = "pathname"
+        label = ""
+        lightTheme = "github-light"
+        darkTheme = "github-dark"
+    # Third-party library config
+    # 第三方庫配置
+    [params.page.library]
+      [params.page.library.css]
+        # someCSS = "some.css"
+        # located in "assets/" 位於 "assets/"
+        # Or 或者
+        # someCSS = "https://cdn.example.com/some.css"
+      [params.page.library.js]
+        # someJavascript = "some.js"
+        # located in "assets/" 位於 "assets/"
+        # Or 或者
+        # someJavascript = "https://cdn.example.com/some.js"
+    # Page SEO config
+    # 頁面 SEO 配置
+    [params.page.seo]
+      # image URL
+      # 圖片 URL
+      images = []
+      # Publisher info
+      # 出版者信息
+      [params.page.seo.publisher]
+        name = "Zhuang,Pin-Yi"
+        logoUrl = "/images/avatar.webp"
+
+  # Social config in home page
+  # 主頁的社交信息設置
+  [params.social]
+    GitHub = "880831ian"
+    Linkedin = ""
+    Twitter = ""
+    Instagram = "pin_yi_chuchu"
+    Facebook = "880831ian"
+    Telegram = "pinyichuchu"
+    Medium = ""
+    Gitlab = ""
+    Youtubelegacy = ""
+    Youtubecustom = ""
+    Youtubechannel = "UCMreKUhfnE06iD1bF-P_0_A"
+    Tumblr = ""
+    Quora = ""
+    Keybase = ""
+    Pinterest = ""
+    Reddit = ""
+    Codepen = ""
+    FreeCodeCamp = ""
+    Bitbucket = ""
+    Stackoverflow = ""
+    Weibo = ""
+    Odnoklassniki = ""
+    VK = ""
+    Flickr = ""
+    Xing = ""
+    Snapchat = ""
+    Soundcloud = ""
+    Spotify = ""
+    Bandcamp = ""
+    Paypal = ""
+    Fivehundredpx = ""
+    Mix = ""
+    Goodreads = ""
+    Lastfm = ""
+    Foursquare = ""
+    Hackernews = ""
+    Kickstarter = ""
+    Patreon = ""
+    Steam = ""
+    Twitch = ""
+    Strava = ""
+    Skype = ""
+    Whatsapp = ""
+    Zhihu = ""
+    Douban = ""
+    Angellist = ""
+    Slidershare = ""
+    Jsfiddle = ""
+    Deviantart = ""
+    Behance = ""
+    Dribbble = ""
+    Wordpress = ""
+    Vine = ""
+    Googlescholar = ""
+    Researchgate = ""
+    Thingiverse = ""
+    Devto = ""
+    Gitea = ""
+    XMPP = ""
+    Matrix = ""
+    Bilibili = ""
+    Email = "880831ian@gmail.com"
+    Resume = "" #goo.gl id
+    xda = ""
+    RSS = true
+  # [params.social.Mastodon]
+  #    id = "@xxxx"
+  #    prefix = "https://mastodon.technology/"
+
+  # TypeIt config
+  # TypeIt 配置
+  [params.typeit]
+    # typing speed between each step (measured in milliseconds)
+    # 每一步的打字速度 (單位是毫秒)
+    speed = 100
+    # blinking speed of the cursor (measured in milliseconds)
+    # 光標的閃爍速度 (單位是毫秒)
+    cursorSpeed = 1000
+    # character used for the cursor (HTML format is supported)
+    # 光標的字元 (支持 HTML 格式)
+    cursorChar = "|"
+    # cursor duration after typing finishing (measured in milliseconds, "-1" means unlimited)
+    # 打字結束之後光標的持續時間 (單位是毫秒, "-1" 代表無限大)
+    duration = -1
+
+  # Site verification code for Google/Bing/Yandex/Pinterest/Baidu
+  # 網站驗證代碼，用於 Google/Bing/Yandex/Pinterest/Baidu
+  [params.verification]
+    google = ""
+    bing = ""
+    yandex = ""
+    pinterest = ""
+    baidu = ""
+
+  # Site SEO config
+  # 網站 SEO 配置
+  [params.seo]
+    # image URL
+    # 圖片 URL
+    image = "/images/Apple-Devices-Preview.webp"
+    # thumbnail URL
+    # 縮略圖 URL
+    thumbnailUrl = "/images/screenshot.png"
+
+  # Analytics config
+  # 網站分析配置
+  [params.analytics]
+    enable = false
+    # Fathom Analytics
+    [params.analytics.fathom]
+      id = ""
+      # server url for your tracker if you're self hosting
+      # 自行托管追蹤器時的主機路徑
+      server = ""
+    # GoatCounter Analytics
+    [params.analytics.goatcounter]
+      # GoatCounter code
+      code = ""
+
+  # Cookie consent config
+  # Cookie 許可配置
+  [params.cookieconsent]
+    enable = false
+    # text strings used for Cookie consent banner
+    # 用於 Cookie 許可橫幅的文本字元串
+    [params.cookieconsent.content]
+      message = "Cookie 幫助我們提供服務。使用我們的服務，即表示您同意我們使用 cookie。"
+      dismiss = ""
+      link = ""
+
+  # CDN config for third-party library files
+  # 第三方庫文件的 CDN 設置
+  [params.cdn]
+    # CDN data file name, disabled by default
+    # ("jsdelivr.yml")
+    # located in "themes/FeelIt/assets/data/cdn/" directory
+    # you can store your own data files in the same path under your project:
+    # "assets/data/cdn/"
+    # CDN 數據文件名稱, 默認不啟用
+    # ("jsdelivr.yml")
+    # 位於 "themes/FeelIt/assets/data/cdn/" 目錄
+    # 可以在你的項目下相同路徑存放你自己的數據文件:
+    # "assets/data/cdn/"
+    data = "jsdelivr.yml"
+
+  # Compatibility config
+  # 相容性設置
+  [params.compatibility]
+    # whether to use Polyfill.io to be compatible with older browsers
+    # 是否使用 Polyfill.io 來相容舊式瀏覽器
+    polyfill = false
+    # whether to use object-fit-images to be compatible with older browsers
+    # 是否使用 object-fit-images 來相容舊式瀏覽器
+    objectFit = false
+
+# Markup related configuration in Hugo
+# Hugo 解析文檔的配置
+[markup]
+  # Syntax Highlighting (https://gohugo.io/content-management/syntax-highlighting)
+  # 語法高亮設置 (https://gohugo.io/content-management/syntax-highlighting)
+  [markup.highlight]
+    codeFences = true
+    guessSyntax = true
+    lineNos = true
+    lineNumbersInTable = true
+    # false is a necessary configuration (https://github.com/dillonzq/LoveIt/issues/158)
+    # false 是必要的設置 (https://github.com/dillonzq/LoveIt/issues/158)
+    noClasses = false
+  # Goldmark is from Hugo 0.60 the default library used for Markdown
+  # Goldmark 是 Hugo 0.60 以來的默認 Markdown 解析庫
+  [markup.goldmark]
+    [markup.goldmark.extensions]
+      definitionList = true
+      footnote = true
+      linkify = true
+      strikethrough = true
+      table = true
+      taskList = true
+      typographer = true
+    [markup.goldmark.renderer]
+      # whether to use HTML tags directly in the document
+      # 是否在文檔中直接使用 HTML 標籤
+      unsafe = true
+  # Table Of Contents settings
+  # 目錄設置
+  [markup.tableOfContents]
+    startLevel = 2
+    endLevel = 6
+
+# Author config
+# 作者配置
+[author]
+  name = "PinYi"
+  email = "880831ian@gmail.com"
+  link = ""
+
+# Sitemap config
+# 網站地圖配置
+[sitemap]
+  changefreq = "weekly"
+  filename = "sitemap.xml"
+  priority = 0.5
+
+# Permalinks config (https://gohugo.io/content-management/urls/#permalinks)
+# Permalinks 配置 (https://gohugo.io/content-management/urls/#permalinks)
+[Permalinks]
+  # posts = ":year/:month/:filename"
+  posts = ":filename"
+
+# Privacy config (https://gohugo.io/about/hugo-and-gdpr/)
+# 隱私信息配置 (https://gohugo.io/about/hugo-and-gdpr/)
+[privacy]
+  # privacy of the Google Analytics
+  # Google Analytics 相關隱私
+  [privacy.googleAnalytics]
+    anonymizeIP = false
+    disable = false
+    respectDoNotTrack = false
+    useSessionStorage = false
+  # privacy of the Intagram (replaced by params.oembed.instagram)
+  [privacy.instagram]
+    # ...
+  [privacy.twitter]
+    enableDNT = true
+  [privacy.youtube]
+    privacyEnhanced = true
+
+# Options to make output .md files
+# 用於輸出 Markdown 格式文檔的設置
+[mediaTypes]
+  [mediaTypes."text/plain"]
+    suffixes = ["md"]
+
+# Options to make output .md files
+# 用於輸出 Markdown 格式文檔的設置
+[outputFormats.MarkDown]
+  mediaType = "text/plain"
+  isPlainText = true
+  isHTML = false
+
+# Options to make hugo output files
+# 用於 Hugo 輸出文檔的設置
+[outputs]
+  home = ["HTML", "RSS", "JSON"]
+  page = ["HTML", "MarkDown"]
+  section = ["HTML", "RSS"]
+  taxonomy = ["HTML", "RSS"]
+  taxonomyTerm = ["HTML"]
+
+# Minify config
+[minify]
+  [minify.tdewolff]
+    [minify.tdewolff.html]
+      # ignore the whitespace as we don't have text around the span tag (https://github.com/khusika/FeelIt/issues/40)
+      keepWhitespace = false
