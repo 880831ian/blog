@@ -1,6 +1,6 @@
 {
-    "name": "FeelIt",
-    "short_name": "FeelIt",
+    "name": "Pin Yi 小天地",
+    "short_name": "Pin Yi 小天地",
     "icons": [
         {
             "src": "/android-chrome-192x192.png",
@@ -14,9 +14,9 @@
             "type": "image/png"
         }
     ],
-    "start_url": "/",
+    "start_url": "https://pin-yi.me",
     "display": "standalone",
-    "orientation" : "portrait",
+    "orientation": "portrait",
     "background_color": "#FFFFFF",
     "theme_color": "#FFFFFF"
 }
