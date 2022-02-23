@@ -545,7 +545,7 @@ ignoreErrors = ["err-missing-comment-accesstoken", "err-missing-oembed-accesstok
       copy = true
       # the maximum number of lines of displayed code by default
       # 默認展開顯示的代碼行數
-      maxShownLines = 10
+      maxShownLines = 20
     # KaTeX mathematical formulas config (KaTeX https://katex.org/)
     # KaTeX 數學公式配置 (KaTeX https://katex.org/)
     [params.page.math]

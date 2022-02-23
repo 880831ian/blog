@@ -3,7 +3,7 @@ weight: 1
 title: "主題文檔 - 基本概念"
 date: 2020-03-06T21:40:32+08:00
 lastmod: 2020-03-06T21:40:32+08:00
-draft: true
+draft: false
 author: "FeelIt"
 authorLink: "https://feelit.khusika.com"
 description: "探索 Hugo - FeelIt 主題的全部內容和背後的核心概念."
@@ -17,6 +17,7 @@ tags: ["installation", "configuration"]
 categories: ["documentation"]
 
 lightgallery: true
+hiddenFromHomePage: true
 
 toc:
   auto: false

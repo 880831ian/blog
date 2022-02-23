@@ -1,8 +1,8 @@
 ---
 weight: 4
 title: "Differences between TCP and UDP"
-date: 2022-02-19T19:34:11+08:00
-lastmod: 2022-02-19T19:34:11+08:00
+date: 2022-02-18T19:34:11+08:00
+lastmod: 2022-02-18T19:34:11+08:00
 draft: false
 author: "PinYi"
 authorLink: "https://feelit.khusika.com"
