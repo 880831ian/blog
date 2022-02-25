@@ -2,7 +2,7 @@
 weight: 4
 title: "PHP 介紹"
 date: 2022-02-22T22:22:22+08:00
-lastmod: 2022-02-23T22:00:22+08:00
+lastmod: 2022-02-25T22:00:22+08:00
 draft: false
 author: "PinYi"
 authorLink: ""
@@ -13,7 +13,7 @@ resources:
 - name: "featured-image-preview"
   src: "featured-image-preview.webp"
 
-tags: ["PHP", "介紹"]
+tags: ["PHP", "PHP 基礎語法", "PHP 常用函式", "PHP 表單", "介紹"]
 categories: ["codenotes"]
 
 lightgallery: true
@@ -74,14 +74,13 @@ CGI 是一種協定，為了保障 web server 傳過來的資料是標準格式
 * PHP-fpm 是一個多進程架構的 FastCGI 服務，內建了 PHP 的解析器，配合Nginx來使用
 
 
-
 ## 2. PHP 基本語法
 
 ### 標籤
 
-PHP 程式可以放置在檔案中的任何位置，其檔案副檔名是"```.php```"，
+PHP 程式可以放置在檔案中的任何位置，其檔案副檔名是```.php```，
 
-* PHP的標籤是開頭 <?php 以及 ?> 結尾
+* PHP的標籤是開頭 < ?php 以及 ? > 結尾
 
 ```php
 <?php 
@@ -280,8 +279,10 @@ Ian_Zhuang 在 學習PHP
 
 變數可以儲存不同型態的資料，以下是 PHP 支持的資料型態 
 
-! 可以用var_dump() 函數
-來查看資料的x態以及值
+{{< admonition type=tip title="小提示" open=true >}}
+可以用var_dump() 函數來查看資料的型態以及值
+{{< /admonition >}}
+
 
 * 字串 (String)
 * 整數 (Integer)
@@ -428,7 +429,7 @@ echo $obj->prop;
 I'm a class Property
 ```
 
-因為有很多物件實例化都來自同一個類別，如果沒有指定被實體化的物件，程式碼會無法判斷，所以要用 **->** 在 PHP 的物件中，來存取物件的屬性和方法。
+因為有很多物件實例化都來自同一個類別，如果沒有指定被實體化的物件，程式碼會無法判斷，所以要用 **<font color='blue'>-></font>** 在 PHP 的物件中，來存取物件的屬性和方法。
 
 
 3. 定義類別(Class)的方法(Methods)，方法(Methods)是類別裡面的函式(Functions)，物件可以藉由執行這些方法來更動每個物件的行為。
@@ -662,7 +663,7 @@ switch($weather)
 
 #### while 
 
-如果條件為真，就執行代碼
+只要指定條件為真，就會循環通過該程式碼
 
 ```php
 <?php
@@ -703,7 +704,7 @@ do {
 ```html
 The number is: 6
 ```
-因為do…while的條件會在執行循環程式碼後才檢查，所以do…while **至少會循環一次**該程式碼。
+因為do…while的條件會在執行循環程式碼後才檢查，所以do…while <font color='red'>**至少會循環一次**</font>該程式碼。
 
 #### for
 
@@ -806,7 +807,7 @@ The number is: 4
 ### 函式
 
 PHP除了內建的函式外，還可以創建自己的函式
-注意：函式名稱必須以字母或下底線開頭。不區分大小寫。
+注意：函式名稱必須<font color='red'>**以字母或下底線開頭**</font>。不區分大小寫。
 
 ```php
 <?php
@@ -875,6 +876,28 @@ Today is 2022.02.22
 Today is 2022-02-22
 Today is Tuesday
 ```
+可以透過輸入參數，顯示想要的時間
+
+* H - 一個小時的 24 小時格式（00 到 23）
+* h - 小時的 12 小時格式，前面補零（01 到 12）
+* i - 前面補零的分鐘（00 到 59）
+* s - 前面補零的秒數（00 到 59）
+* a - 小寫的 Ante meridiem 和 Post meridiem（am 或 pm）
+
+
+```php
+<?php
+date_default_timezone_set("Asia/Taipei"); 
+echo "The time is " . date("h:i:sa");
+?>
+```
+
+* 輸出
+
+```html
+The time is 12:12:10am
+```
+
 可以使用 strtotime()，顯示想要的日期
 
 ```php
@@ -898,27 +921,7 @@ echo date("Y-m-d h:i:sa", $d) . "<br>";
 2022-05-22 04:21:41am
 ```
 
-可以透過輸入參數，顯示想要的時間
 
-* H - 一個小時的 24 小時格式（00 到 23）
-* h - 小時的 12 小時格式，前面補零（01 到 12）
-* i - 前面補零的分鐘（00 到 59）
-* s - 前面補零的秒數（00 到 59）
-* a - 小寫的 Ante meridiem 和 Post meridiem（am 或 pm）
-
-
-```php
-<?php
-date_default_timezone_set("Asia/Taipei"); 
-echo "The time is " . date("h:i:sa");
-?>
-```
-
-* 輸出
-
-```html
-The time is 12:12:10am
-```
 ### json
 
 可以使用 json_encode()，將陣列存為 JSON 格式，也可以用 json_decode()，將JSON格式變成陣列
@@ -1166,6 +1169,11 @@ REST ，指得是一組架構約束條件和原則，符合 REST 設計風格的
 * 傳輸的資源：Web 服務接受與返回的類型，比如：JSON、XML
 
 * 對資源的操作：Web 服務在該資源上所支持的請求方法，比如：POST、GET、PUT、DELETE
+
+{{< admonition type=success title="加油 還有一篇可以一起學習" open=ture >}}
+詳細可以參考另一篇文章 [如何在 Nginx 下實作第一個 PHP 留言板 RESTful API
+](https://pin-yi.me/php-restful-api/) 裡面有更詳細的介紹
+{{< /admonition >}}
 
 
 

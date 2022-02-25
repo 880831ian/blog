@@ -2,7 +2,7 @@
 weight: 4
 title: "如何在 Nginx 下實作第一個 PHP 留言板 RESTful API"
 date: 2022-02-24T22:24:24+08:00
-lastmod: 2022-02-24T22:24:4+08:00
+lastmod: 2022-02-25T22:24:4+08:00
 draft: false
 author: "PinYi"
 authorLink: ""
@@ -51,7 +51,7 @@ REST ，指得是一組架構約束條件和原則，符合 REST 設計風格的
 可以看到這張圖後面的 Endpoint，分別代表應用服務 (Application context) 、 版本 (Version)、 資源(Resource)、 參數(Parameter) 。
 
 * 應用服務：可以取名 api 或是 restful-api 。
-* 版本：可以對 API 進行版本控制，可以有升級的服務，也不會對現有的 API 進行重大更改。
+* 版本：可以對 API 進行版本控制，可以有升級的服務，也不會對現有的 API 造成影響。
 * 資源：要使用名詞而非動詞來命名，且建議使用複數
 	* 壞的命名(以我們要實作的留言板查詢、新增、修改、刪除示範)
 		* 查詢 /selectmessage
@@ -66,7 +66,7 @@ REST ，指得是一組架構約束條件和原則，符合 REST 設計風格的
 
 #### 對資源的操作
 
-RESTful API 傳送時，會依照我們所定的 HTTP Request Method 請求方法，那主要有以下 4 種的 Request
+RESTful API 傳送時，會依照我們所定的 HTTP Request Method 請求方法，那主要有以下 4 種的 Method
 
 * GET : 此方法只能向指定的資源要求取得資料，並不會更動內部的資料
 * POST：向指定的資源要求新增資料
@@ -90,6 +90,7 @@ RESTful API 傳送時，會依照我們所定的 HTTP Request Method 請求方�
 | 404 | Not Found | 沒有找到指定的資源 | GET、PUT、DELETE 方法，該資料不存在
 | 500 | Internal Server Error | 伺服器發生錯誤 | |
 
+( 參考[RESTful Web API 設計指南](https://www.footmark.com.tw/news/programming-language/design/restful-webapi-design-guide/) )
 
 ### 為什麼要使用 RESTful API
 
@@ -107,30 +108,39 @@ RESTful API 傳送時，會依照我們所定的 HTTP Request Method 請求方�
 
 ## 實作開始
 
-### 1. 首先要先來修改我們的 Nginx.conf
+### 1. 修改 Nginx.conf
 
 我們這邊就直接對架設好的 Nginx 設定檔來修改，如果不清楚要怎麼架設的，這方面網路上蠻多文章，如果還是不清楚，可以留言告訴我，我在另外寫一篇文章來介紹環境安裝。
 
-我們待會的實作，會將希望將
+為什麼要先修改 conf 呢？修改的目的就是要讓原本網址
 
 ```url 
-http://localhost/api/index.php?message_board=all
+http://localhost/api/index.php?messages=all
 ```
 變成
 
 ```url 
-http://localhost/api/message_board
+http://localhost/api/messages
 ```
-來實現我們在介紹時所說的直觀簡單的資源網址，我說明一下上面網址的關係，http://localhost 是因為我們本地端運行，如果已經上線的，那就是你自己的網址；/api 是我來放這支 api 的目錄，他位於網頁的根目錄下方(詳細的配置下方會附上)， index.php 是我來放這支 api 的網頁，會在 include request 及 responce 進來，後面的 message_board 是我們這次的資源，後面可以接我想要處理的參數
+來實現我們在介紹時所說的直觀簡單的資源網址，我說明一下上面網址的關係，
 
-那要怎麼達成讓網址變成我們想要呈現的直觀簡單的網址呢，這時候我們就要使用 Nginx.conf 來做設定，網路上的文章比較多的是 apache 的 htaccess ，我一開始還以為 Nginx 也可以使用 htaccess ，試了半天才知道，在 Nginx 要改用 Nginx.conf 來設定 ， 那我下方會附上我原本的 .htaccess 以及轉換後的 conf ，網路上蠻多工具可以線上轉換，我推薦可以用 [Apache htaccess to Nginx converter
-](https://winginx.com/en/htaccess) ，那接下來我一步一步來介紹
+* http://localhost 是因為我們本地端運行，如果已經上線的，那就是你自己的網址，
 
+* /api 是我來放這支 api 的目錄，他位於網頁的根目錄下方(詳細的配置下方會附上)， 
+
+* index.php 是我來放這支 api 的網頁，後面的 messages 是我們這次的資源，後面可以接我想要處理的參數
+
+那要怎麼達成讓網址變成我們想要呈現的直觀簡單的網址呢，這時候我們就要使用 Nginx.conf 來做設定，網路上的文章比較多的是 apache 的 htaccess，我一開始還以為 Nginx 也可以使用 htaccess ，試了半天才知道，在 Nginx 要改用 Nginx.conf 來設定，那我下方會附上我原本的 .htaccess 以及轉換後的 conf，那接下來我一步一步來介紹
+
+{{< admonition type=note title="線上轉換工具" open=true >}}
+網路上蠻多工具可以線上轉換，我推薦可以用 [Apache htaccess to Nginx converter
+](https://winginx.com/en/htaccess){{< /admonition >}}
+ 
 * Apache .htaccess 檔案
 
 ```.htaccess
-RewriteRule ^/api/message_board$   /api/index.php?message_board=all [nc,qsa]
-RewriteRule ^/api/message_board/(\d+)$   /api/index.php?message_board=$1 [nc,qsa]
+RewriteRule ^/api/messages$   /api/index.php?messages=all [nc,qsa]
+RewriteRule ^/api/messages/(\d+)$   /api/index.php?messages=$1 [nc,qsa]
 ```
 這是我會修改部分的 Nginx.conf ，可以看到最後兩條 location，這邊就是我們轉換過來的設定
 
@@ -151,16 +161,28 @@ RewriteRule ^/api/message_board/(\d+)$   /api/index.php?message_board=$1 [nc,qsa
             index  index.html index.htm index.php;
         }
 
-		location = /api/message_board {
-		  rewrite ^(.*)$ /api/index.php?message_board=all;
+		location = /api/messages {
+		  rewrite ^(.*)$ /api/index.php?messages=all;
 		}
 		
 		location /api {
-		  rewrite ^/api/message_board/(\d+)$ /api/index.php?message_board=$1;
+		  rewrite ^/api/messages/(\d+)$ /api/index.php?messages=$1;
 		}
 ```
 
-他的意思代表的我們網址路徑是在 /api/message_board ，我們讓原本 /api/index.php?message_board 這段變成 /api/message_board/ 的設定，設定好記得先下  ```sh sudo nginx -t ``` 指令來檢查一下Nginx.conf檔案是不是都正確，再用 ```sh sudo nginx -s reload ``` 指令重新啟動 Nginx  (是否成功，後面會帶到如何做測試，就繼續一起往下看吧！)
+
+他的意思代表的我們網址路徑是在 /api/messages ，我們讓原本 /api/index.php?messages 這段變成 /api/messages/ 的設定，設定好記得先下  ```sh sudo nginx -t ``` 指令來檢查一下Nginx.conf檔案是不是都正確，再用 ```sh sudo nginx -s reload ``` 指令重新啟動 Nginx  (是否成功，後面會帶到如何做測試，就繼續一起往下看吧！)
+
+
+```mysql
+CREATE TABLE `messages` (
+  `id` int NOT NULL,
+  `name` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `message` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `sendtime` datetime NOT NULL,
+  `version` int DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
 
 
 ## 參考資料
