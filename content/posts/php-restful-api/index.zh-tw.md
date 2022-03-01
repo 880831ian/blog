@@ -2,7 +2,7 @@
 weight: 4
 title: "如何在 Nginx 下實作第一個 PHP 留言板 RESTful API"
 date: 2022-02-24T22:24:24+08:00
-lastmod: 2022-02-25T22:24:4+08:00
+lastmod: 2022-03-01T18:17:22+08:00
 draft: false
 author: "PinYi"
 authorLink: ""
