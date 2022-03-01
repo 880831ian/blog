@@ -22,13 +22,13 @@ toc:
   auto: false
 ---
 
-PHP 全名是(PHP:Hypertext Preprocessor)，是後端的腳本語言
+PHP 全名是超文本前處理器(Hypertext Preprocessor)，是一種開源的通用[電腦手稿語言](https://zh.wikipedia.org/wiki/%E8%84%9A%E6%9C%AC%E8%AF%AD%E8%A8%80)
 
 根據W3Techs的報告，截至2021年9月，有78.9%網站都是使用PHP，像是著名的 FaceBook、Tesla、Slack、WordPress
 <!--more-->
 
 ## 1. PHP 是什麼
-PHP 全名是(PHP:Hypertext Preprocessor)，是後端的腳本語言
+PHP 全名是超文本前處理器(Hypertext Preprocessor)，是一種開源的通用[電腦手稿語言](https://zh.wikipedia.org/wiki/%E8%84%9A%E6%9C%AC%E8%AF%AD%E8%A8%80)
 
 根據W3Techs的報告，截至2021年9月，有78.9%網站都是使用PHP，像是著名的 FaceBook、Tesla、Slack、WordPress
 	
@@ -530,14 +530,14 @@ $x = 3; $y = 6; echo $x %= $y;  //輸出 x = x % y ， 3 = 3 % 6 ，輸出 3
 <?php 
 $x = 3; $y = 6; $z = "6";
 var_dump($x == $y);  // 判斷 x 等於 y (值)，3 不等於6 ，回傳 false
-var_dump($x === $z); // 判斷 x 等於 z (型態)，數字不等於字串 ，回傳 false
+var_dump($x === $z); // 判斷 x 等於 z (型態and值)，數字不等於字串 ，回傳 false
 var_dump($x != $y);  // 判斷 x 不等於 y (值)，3不等於6 ，回傳 true
 var_dump($x <> $y);  // 判斷 x 不等於 y (型態)，數字不等於字串 ，回傳 true
 var_dump($x > $y);   // 判斷 x 大於 y ，3沒有大於6 ，回傳 false
 var_dump($x < $y);   // 判斷 x 小於 y ，3小於6 ，回傳 true
 var_dump($x >= $y);  // 判斷 x 大於等於 y ，3沒有大於等於6 ，回傳 false
 var_dump($x <= $y);  // 判斷 x 小於等於 y ，3小於等於6 ，回傳 true
-var_dump($x <=> $y); // 判斷 x y 的關係 ，如果 x 大於 y ，回傳 1 ; 如果 x 小於 y ，就回傳 0 ; 如果 x 等於 y ，就回傳+1
+var_dump($x <=> $y); // 判斷 x y 的關係 ，如果 x 大於 y ，回傳 1 ; 如果 x 小於 y ，就回傳 -1 ; 如果 x 等於 y ，就回傳 0
 ?>
 ```
 
@@ -547,7 +547,7 @@ var_dump($x <=> $y); // 判斷 x y 的關係 ，如果 x 大於 y ，回傳 1 ; 
 <?php 
 $x = 3; $y = 6;
 if ($x == 3 and $y == 6){  echo "And"; }  // 判斷 x 等於 3 且 y 等於 6 (兩者都要true)
-if ($x == 3 or $y or 9){  echo "Or"; }    // 判斷 x 等於 3 或 y 等於 9 (擇一true)
+if ($x == 3 or $y == 9){  echo "Or"; }    // 判斷 x 等於 3 或 y 等於 9 (擇一true)
 if ($x == 3 && $y == 6){  echo "And"; }   // 判斷 x 等於 3 且 y 等於 6 (兩者都要true)
 if ($x == 3 || $y == 9){  echo "Or"; }    // 判斷 x 等於 3 或 y 等於 9 (擇一true)
 if ($x == 3 xor $y == 9){  echo "Xor"; }  // 判斷 x 等於 3 或 y 等於 9 (任一者為true，但只能一者為true)
@@ -1168,7 +1168,7 @@ REST ，指得是一組架構約束條件和原則，符合 REST 設計風格的
 
 * 傳輸的資源：Web 服務接受與返回的類型，比如：JSON、XML
 
-* 對資源的操作：Web 服務在該資源上所支持的請求方法，比如：POST、GET、PUT、DELETE
+* 對資源的操作：Web 服務在該資源上所支持的請求方法，比如：POST、GET、PUT、PATCH、DELETE
 
 {{< admonition type=success title="加油 還有一篇可以一起學習" open=ture >}}
 詳細可以參考另一篇文章 [如何在 Nginx 下實作第一個 PHP 留言板 RESTful API

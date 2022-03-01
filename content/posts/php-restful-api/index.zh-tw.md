@@ -39,7 +39,7 @@ toc:
 REST ，指得是一組架構約束條件和原則，符合 REST 設計風格的Web API 稱為 RESTful API，主要以下面三點為定義
 
 * 直觀簡單的資源網址 URL 比如：http://example.com/resources
-* 對資源的操作：Web 服務在該資源上所支持的請求方法，比如：POST、GET、PUT、DELETE
+* 對資源的操作：Web 服務在該資源上所支持的請求方法，比如：POST、GET、PUT、PATCH、DELETE
 * 傳輸的資源：Web 服務接受與返回的類型，比如：JSON、XML 
 
 分別說明每一項定義
@@ -60,17 +60,19 @@ REST ，指得是一組架構約束條件和原則，符合 REST 設計風格的
 		* 刪除 /deletemessage
 	* 好的命名
  		* 查詢 GET => /messages (回傳所有留言)
-		* 新增 POST => /messages/1 (新增留言)
-		* 修改 PUT => /messages/1 (修改單筆留言)
+		* 新增 POST => /messages (新增留言)
+		* 修改 PUT => /messages/1 (修改單筆留言全部資料)
+		* 修改 PATCH => /messages/1 (修改單筆留言有更動資料)
 		* 刪除 DELETE => /messages/1 (刪除單筆留言)
 
 #### 對資源的操作
 
-RESTful API 傳送時，會依照我們所定的 HTTP Request Method 請求方法，那主要有以下 4 種的 Method
+RESTful API 傳送時，會依照我們所定的 HTTP Request Method 請求方法，那主要有以下 5 種的 Method
 
 * GET : 此方法只能向指定的資源要求取得資料，並不會更動內部的資料
 * POST：向指定的資源要求新增資料
 * PUT：向指定的資源要求修改資料內容
+* PATCH：向指定的資源要求修改部分資料內容
 * DELETE：向指定的資源要求刪除資料內容
 
 #### 傳輸的資源
