@@ -22,7 +22,7 @@ toc:
   auto: false
 ---
 
-PHP 全名是超文本前處理器(Hypertext Preprocessor)，是一種開源的通用[電腦手稿語言](https://zh.wikipedia.org/wiki/%E8%84%9A%E6%9C%AC%E8%AF%AD%E8%A8%80)
+PHP 全名是超文本前處理器(Hypertext Preprocessor)，是一種開源的通用電腦手稿語言
 
 根據W3Techs的報告，截至2021年9月，有78.9%網站都是使用PHP，像是著名的 FaceBook、Tesla、Slack、WordPress
 <!--more-->
