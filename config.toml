@@ -97,7 +97,7 @@ ignoreErrors = ["err-missing-comment-accesstoken", "err-missing-oembed-accesstok
       # site description
       description = "Here's a little world about a rookie engineer and Youtuber"
       # site keywords
-      keywords = ["CodeNotes", "Engineer", "YouTube"]
+      keywords = ["CodeNotes", "Engineer", "Youtuber"]
       # App icon config
       [languages.en.params.app]
         # optional site title override for the app when added to an iOS home screen or Android launcher
@@ -265,9 +265,9 @@ ignoreErrors = ["err-missing-comment-accesstoken", "err-missing-oembed-accesstok
         weight = 6
     [languages.zh-tw.params]
       # 網站描述
-      description = "這裡是關於一個菜鳥工程師斜槓Youtube的小天地"
+      description = "這裡是關於一個菜鳥工程師斜槓Youtuber的小天地"
       # 網站關鍵詞
-      keywords = ["CodeNotes", "Engineer", "YouTube"]
+      keywords = ["CodeNotes", "Engineer", "Youtuber"]
       # 應用圖標配置
       [languages.zh-tw.params.app]
         # 當添加到 iOS 主屏幕或者 Android 啟動器時的標題, 覆蓋默認標題
@@ -521,7 +521,7 @@ ignoreErrors = ["err-missing-comment-accesstoken", "err-missing-oembed-accesstok
     # 是否顯示原始 Markdown 文檔內容的鏈接
     linkToMarkdown = true
     # whether to show link to improve the article
-    improveArticle = "https://github.com/khusika/FeelIt/edit/main/exampleSite/content/"
+    improveArticle = "https://github.com/880831ian/blog/tree/main/content/"
     # whether to show the full text content in RSS
     # 是否在 RSS 中顯示全文內容
     rssFullText = false
@@ -594,7 +594,7 @@ ignoreErrors = ["err-missing-comment-accesstoken", "err-missing-oembed-accesstok
       enable = true
       Twitter = true
       Facebook = true
-      Linkedin = false
+      Linkedin = true
       Whatsapp = false
       Pinterest = false
       Tumblr = false
@@ -637,9 +637,9 @@ ignoreErrors = ["err-missing-comment-accesstoken", "err-missing-oembed-accesstok
         # Vssue platform API ("bitbucket", "gitea", "gitee", "github", "github-v4", "gitlab")
         # Vssue 平臺 API ("bitbucket", "gitea", "gitee", "github", "github-v4", "gitlab")
         platform = "github"
-        owner = "khusika"
-        repo = "comments"
-        clientId = "85f66799bb256a5064be"
+        owner = "880831ian"
+        repo = "blog"
+        clientId = "df94a178f3ad924026bb"
         clientSecret = ""
       # Gitalk comment config (https://github.com/gitalk/gitalk)
       # Gitalk 評論系統設置 (https://github.com/gitalk/gitalk)
