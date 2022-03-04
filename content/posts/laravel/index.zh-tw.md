@@ -1,6 +1,6 @@
 ---
 weight: 4
-title: "Laravel 介紹"
+title: "Laravel 介紹 (使用 Laravel 從零到有開發出一個留言板功能並搭配 RESTful API 來CRUD) "
 date: 2022-03-02T10:33:45+08:00
 lastmod: 2022-03-02T18:17:22+08:00
 draft: false
@@ -22,7 +22,8 @@ toc:
   auto: false
 ---
 
-本章節會介紹什麼是 Laravel ，以及它有什麼特別之處，可以讓它在2015年被評為最受歡迎的 PHP  框架第一名，並說明為什麼要使用框架，最後再附上實作來作證。
+
+本文章會介紹什麼是 Laravel ，以及它有什麼特別之處，可以讓它在2015年被評為最受歡迎的 PHP  框架第一名，並說明為什麼要使用框架，最後實作一個留言板功能搭配 RESTful API 來CRUD。
 
 <!--more-->
 
@@ -32,25 +33,49 @@ toc:
 
 * 框架 (Framework) 是一個被設計用來完成特定任務的規範，程式開發人員必須遵從這個規則來開發。
 * 目前大多數的框架都是參考 MVC 架構的概念來做設計，原因是在早期開發網頁時，都是直接將 HTML 以及 PHP 混合再一起的方式來編寫，雖然開發上很方便，但在後面維護或是新增功能上，會十分不便利，例如：單純要修改網站畫面的元件時，還需要從混雜的程式碼中找到要修改的元件，也很容易不小心修改到其他的功能。
+
+### MVC
+
 * 於是有人想到把這些各自的任務區分開來，MVC 架構分別代表的是 
 	* M (Model) : 屬於資料的部分，可能是商用邏輯或是資料庫的存取。
 	* V (View)：屬於顯示的部分，像是 HTML、CSS 等
 	* C (Controllor)：會針對請求做出回應或是處理，例如從 Model 取出資料，並顯示在 View 上面
 
+
+<br>
+{{< image src="/images/laravel/mvc.png"  width="700" caption="MVC 架構 [一起走向MVC(上)](https://bak.infolight.com/new/ShareDetail.aspx?DocumentID=NDUz)" src_s="/images/laravel/mvc.png" src_l="/images/laravel/mvc.png" >}}
+<br>
+
+
 ## Laravel 框架
 
 Laravel 是基於上面所說的 MVC 架構打造的框架，並且設計出許多可以讓開發者更有效率的工具。
 
-* Artisan 提供許多指令，讓你可以使用這些指令，來快速完成許多的任務。
-	* Blade 的樣板系統，可以將程式碼與 HTML 頁面完全分離，讓你更專注在網站頁面的設計
-	* Routing 的機制，簡單卻強大的管理網址與頁面的路徑
-	* 利用 Controllor 將程式邏輯隱藏在背後
-* Eloquent ORM 讓你再也不需要撰寫任何的 SQL 指令，就可以跟資料庫進行互動
-* Migtation 工具，讓資料庫的遷移不再是惱人的一件事情
+* Artisan：提供許多指令，讓你可以使用這些指令，來快速完成許多的任務。
+* Routing 路由：管理網址與頁面的路徑指定，辨識傳入的 request 傳送至對應的 Controller，回傳指定的 View。
+* Blade 模板引擎 (View)：模板解析工具， 是 Laravel 所指用的模板引擎，Blade 會將 PHP 以及 HTML 完整分離的工具。
+* Auth 認證：透過 Laravel 預設提供的認證 Controller 快速解決經常用到的驗證需求，像是：使用者註冊、使用者認證、重置密碼的 e-mail 連結、重置密碼邏輯等。
+* Eloquent ORM 物件關聯對映 (Model)：Laravel 預設的ORM，將資料庫的欄位映射成物件 (Ｍodel 模型)，只需要用 PHP 的語法，不需要撰寫 SQL 指令就可以用物件的方式讀取欄位資訊以及與資料庫的互動。
+* Migration 資料庫遷移：聽起來很像是更換資料庫，但他其實算是一種資料庫的版本控制，可以讓團隊在修改資料庫結構的同時，保持彼此的進度ㄧ致，通常會結合結構生成器一起使用，可以簡單管理資料庫結構。
+
+
+{{< admonition type=tip title="小知識" open=true >}}
+ORM：英文叫 Object Relational Mapping，翻譯成中文為物件關聯對映。在網站開發結構中，是在資料庫和Model 資料容器兩者之間，簡單來說，它是可以讓開發者更簡單、安全的方式從資料庫讀取資料，因為 ORM 的特性是可以透過物件導向程式語言去操作資料庫。
+* 優點
+	1. 安全性：可以避免 SQL injection，遇到奇怪的值，會自動擋掉。
+	2. 簡化性：可以將原本 SQL ```Select * From users``` 等指令給簡化。
+	3. 通用性：因為 ORM 是程式語言和資料庫之間的關係，就算有要轉換資料庫，也比較不會遇到要修改程式的狀況。
+* 缺點
+	1. 效能：為了要達成方便性，通常都會犧牲到效能的問題，因為等於多了『把程式語言轉譯成SQL語言』這項工作。
+	2. 學習曲線高：對於初學者來說，ORM 需要融合 SQL 語言以及程式語言兩種不同的概念以及語法，會比單純學 SQL 語法還較複雜。
+	3. 複雜查詢維護性低：有些 SQL 語法 ORM 沒有支援，所以導致有些情況還是需要導入原生 SQL 寫法。
+
+(資料來源：[資料庫設計概念 - ORM](https://ithelp.ithome.com.tw/articles/10207752))
+{{< /admonition >}}
 
 ## PHP 常見框架對比
 
-雖然本次介紹的主題是 Laravel 但我們也簡單介紹一下其他的框架優缺點，附上表格讓大家可以更清楚。
+雖然本次介紹的主題是 Laravel 但我們也簡單介紹一下其他的框架優點，以及附上表格讓大家可以更清楚。
 
 | 差別 | Laravel | Symfony | CodeIgniter | CakePHP | Zend 2 | 
 | --- | :---: | :---: | :---: | :---: | :---: |
@@ -151,7 +176,7 @@ Zend 框架主要受大型IT 企業和銀行等金融機構的青睞。
 ## 實作
 
 {{< admonition type=info title="Laravel 官網" open=true >}}
-我們是參考 [Laravel 官方網站](https://laravel.com) 的文件來進行實作，也可以參考台灣的  [ Laravel.tw](https://laravel.tw/) 來操作歐！
+我是參考 [Laravel 官方網站](https://laravel.com) 的文件來進行實作，也可以參考台灣的  [ Laravel.tw](https://laravel.tw/) 來操作歐！
 {{< /admonition >}}
 
 ### 環境設定
@@ -210,6 +235,8 @@ export PATH="$HOME/.composer/vendor/bin:$PATH"
 $ source .bash_profile
 ````
 
+<br>
+
 我們再次檢查是否安裝好 Laravel 
 
 ```sh
@@ -218,10 +245,20 @@ Laravel Installer 2.3.0
 ```
 <br>
 
-本次配置版本如下
+因為我們後續會使用到資料庫的功能，所以也可以先把他安裝好 [ＭySQL ](https://formulae.brew.sh/formula/mysql)
+
+```sh
+$ mysql -V                                                                                                        
+mysql  Ver 8.0.28 for macos11.6 on x86_64 (Homebrew)
+```
+
+<br>
+
+#### 本次介紹の版本配置
 
 * macOS 11.6
 * PHP 7.1.33
+* MySQL 8.0.28
 * Composer 2.2.7
 * Laravel Installer 2.3.0
 
@@ -260,7 +297,7 @@ Laravel 框架的版本，取決於你的 PHP 版本，所以要找相對應的�
 
 我們可以看到這個專案目錄下，Laravel 幫我們生成了許多資料夾以及檔案，接著來簡單說明每一個資料夾與檔案的功能與用途吧
 
-* app：主要放置 Controller 的地方，提供網站的應用處理流程，包括處理用戶的行為和資料 Model 上的改變等事件之類別方法，提供給 view 來呼叫。透過 laravel 之架構也可透過 controller 輕易建構 RESTful API。
+* app：主要放置 controller 的地方，提供網站的應用處理流程，包括處理用戶的行為和資料 Model 上的改變等事件之類別方法，提供給 view 來呼叫。透過 laravel 之架構也可透過 controller 輕易建構 RESTful API。
 * boostrap：內含之 app.php 為將此框架初始化及建構起來之程式。
 * config：內含此專案網站之環境設定、資料庫設定等設定程式。
 * database：放置資料庫設定 (Model)。
@@ -277,11 +314,12 @@ Laravel 框架的版本，取決於你的 PHP 版本，所以要找相對應的�
 * phpunit.xml：phpunit 測試設定檔，可規範執行單元測試之範圍，做批量測試。
 * webpack.mix.js：build 設定檔，幫助我們將 resources 中之 js 及 sass 等前端設定檔 compile 成 js、css 等檔案並 deploy 到 public 中供頁面使用。
 
+### 建立第一個 Laravel 網頁
+
 {{< admonition type=quote title="文章參考來源" open=true >}}
-下面教學流程是參考ReccaChao [ Laravel 6.0 初體驗！怎麼用最新的 laravel 架網站！](https://ithelp.ithome.com.tw/articles/10213294) 的文章下去說明以及學習，在學期過程中再加上自己的理解以及不同範例的筆記來分享給大家，大家也可以先去瀏覽大大的文章，再回來呦XD
+下面教學流程是參考ReccaChao [ Laravel 6.0 初體驗！怎麼用最新的 laravel 架網站！](https://ithelp.ithome.com.tw/articles/10213294) 的文章下去說明以及學習，在學習過程中再加上自己的理解以及不同範例的筆記來分享給大家，大家也可以先去瀏覽大大的文章，再回來呦XD
 {{< /admonition >}}
 
-### 建立第一個 Laravel 網頁
 
 我們經過千辛萬苦，將 Laravel 給安裝好，也設定好它所需的環境參數，打開 IED 準備開始學習如何建立第一個 Laravel 網頁吧！
 
@@ -336,7 +374,7 @@ $ php artisan up
 維護模式顯示的預設模板放置在 resources/views/errors/503.blade.php。你可以自由的根據需求修改。
 {{< /admonition >}}
 <br>
-#### routes 路由
+#### Routes 路由
 
 我們要來建立我的第一個網頁，網頁的其中一個關鍵就是路徑，那我們網站的路徑，在 Laravel 裡面，都放置在 routes/ 裡面，打開後可以看到4個檔案有
 
@@ -411,7 +449,10 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 ```
+
 middleware 就是一種過濾或是防火牆的概念，這個我們後續會再說明。我們也在此新增一個跟上面一樣的 hello-world，如下
+
+<br>
 
 ```php
 Route::get('/hello-world', function () {
@@ -421,9 +462,250 @@ Route::get('/hello-world', function () {
 
 在 api.php 比較特別的部分是需要在字串前面加入 api ，因為 api.php 就是預設讓我們來放 api 的地方，如範例 url:{domain}/api/hello-world，那就會回傳 ```hello world ~```
 
+<br>
+
+#### View Blade 模板引擎
+
+我們已經知道要怎麼透過路由，讓使用者輸入網址後，根據網址指向想要呈現的畫面，那我們的畫面要怎麼呈現呢 !? 
+
+上面有使用簡單的 HTML 來做說明，那本章節就來介紹怎麼修改我們的前端輸出吧。
+
+##### Layout 
+
+我們在設計網頁時，通常都會使用外觀樣板，讓網頁相同的地方只做一次就可以顯示，不需要每一個頁面都重複寫相同的程式碼，只需要在想要顯示的地方來顯示各自的內容就好
+
+如果聽不太懂，我以我的 Blog 來舉例，紅色框框部分，在每一頁都會顯示，我們可以把他寫成一個檔案，就不需要重複再寫一次，藍色框框部分，會依照每一頁的內容來做顯示。
+
+<br>
+
+{{< image src="/images/laravel/layout.png"  width="700" caption="PinYi 小天地" src_s="/images/laravel/layout.png" src_l="/images/laravel/layout.png" >}}
+
+<br>
+
+那我們可以透過 Laravel 的 Blade Engine 輕鬆地達到這件事情，首先，到 ```resources/views/``` 目錄下建立一個叫 ```layouts``` 的資料夾。這個資料夾之後會讓我們來放不同的模板
+
+<br>
+
+在 ```layouts``` 下建立一個 ```header.blade.php``` 檔案，內容如下
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+        <h1>測試網站，我是標題</h1>
+
+        <div class="container">
+            @yield('content')
+        </div>
+</body>
+</html>
+```
+<br>
+
+可以看到我們把 "測試網站，我是標題"，當作 header，然後在 container 裡面使用了 ```@yield()``` 的語法，這個語法代表我們可以在其他的網頁 call 這個 header 來做顯示，則 container 就會依照該網頁想要呈現的內容來做顯示，我們再繼續看下去
+
+<br>
+
+我們在 ```resources/views/``` 下，新增一個 ```test.blade.php``` 的檔案，內容如下
+
+```php
+@extends('layouts.header')
+
+@section('content')
+    <p>今天天氣很好歐！</p>
+@endsection
+```
+<br>
+
+這邊簡單說明一下這個檔案裡面的意思，
+
+```@extends('layouts.header')```  是指繼承 ```layouts``` 這個資料夾底下的 ```header.blade.php``` 檔案內容，
+
+```@section('content')``` 是指我們剛剛在 ```header.blade.php``` 檔案裡面所下的 ```@yield(content)``` 的內容。
+
+<br>
+
+我們再到 ```route/web.php``` 來設定路由，加入這一段程式碼
+
+```php
+
+Route::get('/test', function () {
+    return view('test');
+});
+```
+<br>
+
+我們在去瀏覽 ```http://127.0.0.1:8000/test``` ，就可以看到成品囉！這代表我們成功將 ```layouts/header.blade.php``` 的模板放到 ```test.blade.php``` 裡面囉。
+
+<br>
+
+{{< image src="/images/laravel/layout_show.png"  width="500" caption="PinYi 小天地" src_s="/images/laravel/layout_show.png" src_l="/images/laravel/layout_show.png" >}}
+
+<br>
+
+當然，我們也可以透過 route 將後端的資料傳到前端，我們先到 ```routes/web.php``` 底下修改成
+
+```php
+Route::get('/test/{name}', function ($name) {
+    return view('test', ['name' => $name]);
+});
+```
+
+<br>
+
+再到， ```resources/views/test.blade.php``` 修改成以下
+
+```php
+@extends('layouts.header')
+
+@section('content')
+    <p>今天天氣很好歐！ {{$name}}</p>
+@endsection
+```
+
+<br> 
+
+就可以看到我們可以輸入 ```http://127.0.0.1:8000/test/pinyi``` ，網頁前端就會顯示
+
+
+<br>
+
+{{< image src="/images/laravel/layout_show_2.png"  width="500" caption="PinYi 小天地" src_s="/images/laravel/layout_show_2.png" src_l="/images/laravel/layout_show_2.png" >}}
+
+<br>
+
+我們就成功將後端的資料送至前端！ 要注意 ```resources/views/test.blade.php``` 底下需要用兩個 {{}} 來括住參數呦，只有一個 {} 他會當成一般的字串來顯示呦～
+
+<br>
+
+#### Controller 控制器
+
+除了剛剛在 ```routes``` 檔案中定義所有請求以及處理外，也可以使用 Controller 來處理邏輯的請求，我們來看一下實際案例吧 !
+
+<br>
+
+題目：我們有一個冷知識產生器，依照我們輸入的 id 不同，會顯示不同的冷知識，那我們要怎麼做呢 !?
+
+首先我們先到 ```routes``` 設定好我們的路由 ```http://127.0.0.1/trivia/(輸入的id)```
+
+```php
+Route::get('/trivia/{id}', 'TriviaController@trivia');
+```
+前面是我們的路由，後面則是我們要對應的 Controller 位置
+
+<br>
+
+接下來使用 ```artisan``` 指令來建立這個 Controller 
+
+```sh
+$ php artisan make:controller TriviaController
+Controller created successfully.
+```
+<br>
+
+Laravel 會自動產生一個 ```TriviaController.php``` 的檔案，位置在 ```app/Http/Controllers``` 底下
+
+<br>
+
+{{< image src="/images/laravel/controller.png"  width="300" caption="Controller 產生檔案位置" src_s="/images/laravel/controller.png" src_l="/images/laravel/controller.png" >}}
+
+<br>
+
+接著我們來修改 ```TriviaController.php``` ，加入我們在 ```routes``` 宣告的函式 ```trivia```，並把剛剛在 ```routes``` 所帶的參數 ```id``` 給帶入
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+
+class TriviaController extends Controller
+{
+    public function trivia($id){
+        return $id;
+    }
+}
+```
+
+使用瀏覽器輸入 ```http://127.0.0.1/trivia/{任意數字}``` 來檢查是否有將 ```routes``` 跟 ```controller``` 串再一起。
+
+正常的話，會看到畫面顯示你所輸入的 {任意數字} (當然因為沒有限制輸入，所以輸入任何字元都可以 XD)
+
+<br>
+
+接下來，依照我們的題目，我們輸入不同的 ```id``` ，要顯示不同的冷知識，那我們要在哪去處理這個邏輯呢 !?
+
+這個問題，網路上大家看法都不一樣，我針對我學習的以及 ReccaChao [Laravel 6.0 初體驗！怎麼用最新的 laravel 架網站！](https://ithelp.ithome.com.tw/articles/10213294) 的看法，將邏輯都寫在 ```Services``` 裡面在由 ```controller``` 來做控制，這樣可以把每一個元件的職責都拆分出來。
+
+<br>
+
+那我們就要先在 ```app``` 底下建立一個 ```Services``` 的資料夾，來存放我們的服務。再建立一個這次題目的邏輯存放的位置 ```TriviaService.php```
+
+```php
+<?php
+
+namespace App\Services;
+
+/**
+ * Class TriviaService
+ */
+class TriviaService
+{
+    /**
+     * @return string
+     */
+    public function trivia($id)
+    {
+        $arr = [
+            '李小龍的動作非常快，快到看不清，所以拍電影時只好放慢膠片的速度。',
+            '流沙一般都不深，根本不像電影里的那樣，所以不用擔心，除非使面部被流沙掩埋，不然根本不會有事。',
+            '最早被打上條形碼的產品是箭牌口香糖。',
+            '在菲律賓溜溜球曾被作為武器。',
+            '打噴嚏時無法睜着眼睛。',
+        ];
+        return $arr[$id];
+    }
+}
+```
+<br>
+
+以及修改 controller.php 檔案內容
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Services\TriviaService; 
+
+class TriviaController extends Controller
+{
+    public function trivia($id){
+         return (new TriviaService())->trivia($id); 
+    }
+}
+```
+記得要 ```use App\Services\TriviaService; ``` ，下面才可以 Call TriviaService() 。
+
+這時候我們再去測試一下，就可以發現，網頁會依照我們所輸入的 ```id```，而顯示不同的冷知識。 <font color='red'>這時候如果輸入非數字或是超過陣列的值，就會出現錯誤！</font>
+
+<br>
+
+{{< image src="/images/laravel/trivia.jpg"  width="700" caption="依照輸入不同的 ```id``` 顯示的冷知識" src_s="/images/laravel/trivia.jpg" src_l="/images/laravel/trivia.jpg" >}}
+
+<br>
+
 #### Database 資料庫
 
-我們在 [Laravel 框架](https://pin-yi.me/laravel/#laravel-框架) 部分有提到 Laravel 支援 MySQL、PostgreSQL、SQLite 、SQL Server 資料庫，本次介紹使用 MySQL 來做說明。
+我們在 [Laravel 框架](#laravel-框架) 部分有提到 Laravel 支援 MySQL、PostgreSQL、SQLite 、SQL Server 資料庫，本次介紹使用 MySQL 來做說明。
 
 首先我們要先確認資料庫是否與 PHP 有所連結，我們先打開 ```.env``` 這個隱藏檔來看，大約在第8行有一段關於資料庫的敘述
 
@@ -438,6 +720,149 @@ DB_PASSWORD=secret
 
 <br>
 
+由於我們本次是以 Mysql 來做說明，所以 DB_CONNECTION 不需要改，DB_HOST 以及 DB_PORT 輸入你要連線的資料庫主機以及 Port 號，DB_DATABASE 輸入想要連線的資料庫名稱，以及你的 DB_USERNAME、DB_PASSWORD 帳號及密碼，都完成後，我們來看一下 database 資料夾下有哪些東西吧	
+* factories：
+* migrations：
+* seeds：
+
+<br>
+{{< admonition type=tap title="小提醒" open=true >}}
+在學習時，有看到大神文章底下有人留言說 DB_USERNAME、DB_PASSWORD 不可以有 `#` ，會導致無法運作。(目前沒有測試過，大家可以再多加留意)
+{{< /admonition >}}
+
+<br>
+
+##### Migration 資料庫遷移
+
+在過去開發時，會有一個很頭痛的一件事情，就是要怎麼樣同步各地方的資料庫格式。如果有一個新進工程師要開始開發，只能請別的工程師匯出自己在開發中的資料庫，十分的麻煩，而且如果要修改格式，還需要告知每一個在開發的工程師。
+
+為了解決這個問題，Laravel 框架提供了一個新的功能：資料庫遷移(Migration)。他是利用程式碼來修改資料庫格式，所以資料庫格式和其他的程式碼都使用版本控制內。這麼一來，每次有新的工程師要建構開發環境時，只需要提醒他在取得程式碼的時後，記得跑一下 migration 就可以囉～
+
+<br>
+
+我們來實作看看吧！我們要下 ```php artisan migrate``` 指令來把這次的 migration 讀入資料庫並建立架構，詳細的指令介紹，放在 [Artisan 相關指令 > Migration](#migration)。
+
+<br>
+
+執行後發現 .... 竟然有錯誤
+
+<br>
+
+{{< image src="/images/laravel/mysql_1.png"  width="800" caption="MySQL 8.x 版本導致錯誤" src_s="/images/laravel/mysql_1.png" src_l="/images/laravel/mysql_1.png" >}}
+
+<br>
+
+在網路上找了一下資料，好像是Mysql 8.x 版本才會出現的問題，發現需要在我們的 ```config\database.php``` mysql 裡面多加一個標籤 modes ，就可以正常運作了！
+
+{{< admonition type=quote title="Laravel Mysql 8.x 錯誤文章" open=true >}}
+ [Laravel mysql migrate error](https://stackoverflow.com/questions/49949526/laravel-mysql-migrate-error) 
+{{< /admonition >}}
+
+```php
+        'mysql' => [
+            'driver' => 'mysql',
+            'host' => env('DB_HOST', '127.0.0.1'),
+            'port' => env('DB_PORT', '3306'),
+            'database' => env('DB_DATABASE', 'forge'),
+            'username' => env('DB_USERNAME', 'forge'),
+            'password' => env('DB_PASSWORD', ''),
+            'unix_socket' => env('DB_SOCKET', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+            'modes'  => [
+                'ONLY_FULL_GROUP_BY',
+                'STRICT_TRANS_TABLES',
+                'NO_ZERO_IN_DATE',
+                'NO_ZERO_DATE',
+                'ERROR_FOR_DIVISION_BY_ZERO',
+                'NO_ENGINE_SUBSTITUTION',
+            ],
+        ],
+```
+<br>
+
+{{< image src="/images/laravel/mysql_2.png"  width="800" caption="加入 modes 修復成功" src_s="/images/laravel/mysql_2.png" src_l="/images/laravel/mysql_2.png" >}}
+如果看到上面這樣，就代表我們遷移運作成功囉～接下來我們去看一下我們資料庫裡面的資料
+
+<br>
+
+{{< image src="/images/laravel/migration.png"  width="800" caption="使用 migration 後的資料庫" src_s="/images/laravel/migration.png" src_l="/images/laravel/migration.png" >}}
+可以看到有三張表，一張是儲存 migration 的內容，另外兩張是 Laravel 預設的資料表。
+
+<br>
+
+##### 建立屬於自己的 migration
+
+{{< admonition type=example title="後續實作題目" open=true >}}
+我們會建立一個留言板的資料表，並且透過 RESTful API 的方式去查詢、新增、修改、刪除。
+{{< /admonition >}}
+
+安裝好之後，我們來建立屬於我們的 migration ，來改變現有的資料庫格式。老樣子，一樣使用 ```artisan``` 來產生一個 migration ```create_message_board_table ``` 。
+
+```sh
+$ php artisan make:migration create_message_board_table
+Created Migration: 2022_03_04_084820_create_message_board_table
+```
+<br>
+
+這樣子就建立好了，那我們來看一下這個檔案裡面寫了什麼吧
+
+```php
+<?php
+
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
+
+class CreateMessageBoardTable extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        //
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        //
+    }
+}
+```
+
+可以看到裡面有一個 up 跟 down 的函式，這兩個代表什麼意思呢？
+
+我們執行 ```migrate``` 的時候，會呼叫到 ```up()``` 函式的內容，如果使用到 ```migrate:rollback```  回溯時，就會呼叫 ```down()``` 函式的內容來還原 ```migrate```  所做的事情。
+
+所以每一個 migration 裡面的 ```down()``` 都必須要能復原 ```up()``` 所做的事情
+
+因為我們還沒有新增 ```migrate``` ，所以回溯機制等等再說明。```migrate``` 可以把他理解新增資料表，那當我們修要修改資料表，就可以使用 ```migrate:rollback```  來回溯歐！
+
+<br>
+
+我先來實際操作看看，我們先在剛剛的 ```create_message_table``` ，裡面改成以下
+
+
+<br>
+
+##### Schema 結構生成器
+
+
+
+ (要怎麼產生資料表，Laravel 是使用[結構生成器 schema](https://laravel.com/docs/5.4/migrations)，可以先去了解一下歐～)
+
+<br>
 
 ## 測試
 
@@ -472,6 +897,8 @@ OK (2 tests, 2 assertions)
 
 奇怪，我們什麼都還沒做，為什麼會有兩個程式已經通過測試了，是因為 Laravel 預設兩個檔案來當測試的案例，分別位於 ```tests/Feature/ExampleTest.php``` 以及 ```tests/Unit/ExampleTest.php```  (單元測試)，我這邊就簡單說明 ```Feature/ExampleTest.php``` 這個測試程式做哪些事情
 
+<br>
+
 ```php
 <?php
 
@@ -500,11 +927,11 @@ class ExampleTest extends TestCase
 
 <br>
 
-他檢查如果連線到 ```/``` ，HTTP Status 有沒有回傳 200 ， 這個測試功能就是在檢查首頁是否存在 ～
+這個  ```Feature/ExampleTest.php```  的 ```testBasicTest()``` 會檢查如果連線到 ```/``` ，HTTP Status 有沒有回傳 200 (成功連線)，這個測試功能就是在檢查首頁是否存在 ～
 
 ### 實作測試程式
 
-大概了解原理後，一樣我們來實作看看，我們想要連線到 ```hello-world/```，HTTP Status 會回傳 200 ，以及網站內要看到『 hello world ~ 』的文字。那我們輸入指令
+大概了解原理後，一樣我們來實作看看，那我們先來輸入指令，產生一個測試程式
 
 ```sh
 $ php artisan make:test HelloWorldTest
@@ -512,7 +939,7 @@ Test created successfully.
 ```
 <br>
 
-Laravel 自動幫我們在 ```tests/Feature``` 底下新增了 HelloWorldTest.php 檔案，內容如下(框架版本5.4)
+Laravel 會自動幫我們在 ```tests/Feature``` 底下新增了 HelloWorldTest.php 檔案，內容如下(框架版本5.4)
 
 ```php
 <?php
@@ -537,8 +964,8 @@ class HelloWorldTest extends TestCase
     }
 }
 ```
-
-我們將他預設的 testExample() 的內容改成
+<br>
+我們測試的項目是想要連線到 ```hello-world/``` 目錄，HTTP Status 會回傳 200 ，以及網站內要看到『 hello world ~ 』的文字，我們將他預設的 testExample() 的內容改成
 
 ```php
     public function testExample()
@@ -552,6 +979,7 @@ class HelloWorldTest extends TestCase
         $response->assertSee('hello world ~');
     }
 ```
+<br>
 
 來運作一下吧，一樣使用同樣的指令來做測試，順便讓大家看一下測試錯誤的錯誤訊息吧！
 
@@ -576,7 +1004,34 @@ Tests: 3, Assertions: 3, Failures: 1.
 
 <br>
 
-我故意在 routes 下沒有 ```hello-world/``` 路徑，所以返回顯示 404 ，而不是 200 ，因此，就可以知道要怎麼去修改程式囉  !
+我故意在 routes 下沒有放 ```hello-world/``` 路徑，所以返回顯示 404 ，而不是 200 ，因此，就可以知道要怎麼去修改程式囉  !
+
+<br>
+
+## Artisan 相關指令
+
+### Controller
+
+```sh
+php artisan make:controller {名稱}Controller //建立一個 Controller
+```
+
+<br>
+
+### Migration
+
+```sh
+php artisan make:seeder  //產生seeder檔案
+php artisan make:factory //產生factory 檔案
+php artisan make:migration //產生migration 檔案
+php artisan migrate //將這次的migration讀入資料庫建立架構
+php artisan migrate:rollback //推回上一次的migration
+php artisan migrate:reset //推回全數的migration
+php artisan migrate:refresh //推回所有遷移並且再執行一次
+php artisan migrate --seed //將這次的migration讀入資料庫建立架構並且也跑seeder
+php artisan migrate:refresh --seed //推回所有遷移並且再執行一次以及seeder
+php artisan db:seed //單純跑資料的seeder 填充資料
+```
 
 ## 參考資料
 
@@ -586,6 +1041,10 @@ Tests: 3, Assertions: 3, Failures: 1.
 ](https://opensourcedoc.com/blog/comparing-php-web-frameworks/)
 
 [Laravel 從入門到放棄 (一) – 透過 composer 架設 laravel 網站](https://christmasq.wordpress.com/2018/12/04/php-laravel-%E5%BE%9E%E5%85%A5%E9%96%80%E5%88%B0%E6%94%BE%E6%A3%84-%E4%B8%80-%E9%80%8F%E9%81%8E-composer-%E6%9E%B6%E8%A8%AD-laravel-%E7%B6%B2%E7%AB%99/)
+
+[PHP Laravel 安裝教學](https://angela52799.medium.com/php-laravel-%E5%AE%89%E8%A3%9D%E6%95%99%E5%AD%B8-16fc4c2271ee)
+
+[資料庫設計概念 - ORM](https://ithelp.ithome.com.tw/articles/10207752)
 
 [Laravel 6.0 初體驗！怎麼用最新的 laravel 架網站！](https://ithelp.ithome.com.tw/articles/10213294) 
 
