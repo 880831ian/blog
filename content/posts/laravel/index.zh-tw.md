@@ -840,6 +840,7 @@ class CreateMessageBoardTable extends Migration
     }
 }
 ```
+<br>
 
 可以看到裡面有一個 up 跟 down 的函式，這兩個代表什麼意思呢？
 
@@ -849,9 +850,59 @@ class CreateMessageBoardTable extends Migration
 
 因為我們還沒有新增 ```migrate``` ，所以回溯機制等等再說明。```migrate``` 可以把他理解新增資料表，那當我們修要修改資料表，就可以使用 ```migrate:rollback```  來回溯歐！
 
+* migrate：可以把他理解成將程式語言轉成 SQL 的功能
+
 <br>
 
-我先來實際操作看看，我們先在剛剛的 ```create_message_table``` ，裡面改成以下
+我先來實際操作看看，我們先在剛剛的 ```create_message_table``` ，裡面改成下方
+
+```php
+<?php
+
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
+
+class CreateMessageBoardTable extends Migration
+{
+    public function up()
+    {
+        Schema::create('message_board', function (Blueprint $table) {
+            $table->bigIncrements('id'); //留言板編號
+            $table->string('name', 20); //留言板姓名
+            $table->string('message'); //留言板內容
+            $table->timestamps(); //留言板建立以及編輯的時間
+        });
+    }
+    
+    public function down()
+    {
+        Schema::dropIfExists('message_board');
+    }
+}
+```
+```up()``` 裡面的是透過 [Schema 結構生成器](#schema-結構生成器)，產生資料表。(Schema 後續有比較詳細的說明)
+
+```down()``` 是指如果進行 ```migrate:rollback``` 回溯時會刪除 message_borad 這個資料表 。
+
+<br>
+
+我們下 ```migrate``` 指令來將 ```create_message_board_table.php``` 轉成資料表，並下指令來檢查一下，是否與我們設定的 Schema 相同。
+
+```sh
+$ php artisan migrate
+Migrating: 2022_03_04_084820_create_message_board_table
+Migrated:  2022_03_04_084820_create_message_board_table
+```
+
+<br>
+
+{{< image src="/images/laravel/mysql_fields.png"  width="800" caption="message_board 欄位" src_s="/images/laravel/mysql_fields.png" src_l="/images/laravel/mysql_fields.png" >}}
+
+<br>
+
+很神奇吧，透過程式就可以直接生成資料表的欄位，這也就是為什麼會說 ```migration``` 可以透過版本控制來讓新工程師建構環境的原因呦，除了生成以外，也可以透過 ```migrate:rollback``` 回溯來刪除資料表，那接著我們來看看要怎麼去修改資料表吧！
+
 
 
 <br>
@@ -859,8 +910,6 @@ class CreateMessageBoardTable extends Migration
 ##### Schema 結構生成器
 
 
-
- (要怎麼產生資料表，Laravel 是使用[結構生成器 schema](https://laravel.com/docs/5.4/migrations)，可以先去了解一下歐～)
 
 <br>
 
@@ -965,6 +1014,7 @@ class HelloWorldTest extends TestCase
 }
 ```
 <br>
+
 我們測試的項目是想要連線到 ```hello-world/``` 目錄，HTTP Status 會回傳 200 ，以及網站內要看到『 hello world ~ 』的文字，我們將他預設的 testExample() 的內容改成
 
 ```php
