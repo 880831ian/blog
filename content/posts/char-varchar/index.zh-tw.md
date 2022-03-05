@@ -2,7 +2,7 @@
 weight: 4
 title: "面試官常問的 MySQL 資料型態差別 char varchar text"
 date: 2022-03-04T17:44:00+08:00
-lastmod: 2022-03-04T17:44:45+47:00
+lastmod: 2022-03-05T13:55:33+47:00
 draft: false
 author: "PinYi"
 authorLink: ""
