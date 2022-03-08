@@ -2,7 +2,7 @@
 weight: 4
 title: "Laravel 介紹 (使用 Laravel 從零到有開發出一個留言板功能並搭配 RESTful API 來實現 CRUD) "
 date: 2022-03-02T10:33:45+08:00
-lastmod: 2022-03-02T18:17:22+08:00
+lastmod: 2022-03-08T16:28:39+08:00
 draft: false
 author: "PinYi"
 authorLink: ""
@@ -13,7 +13,7 @@ resources:
 - name: "featured-image-preview"
   src: "featured-image-preview.webp"
 
-tags: ["PHP", "框架", "Laravel", "實作","介紹"]
+tags: ["PHP", "框架", "Laravel", "RESTful API", "實作","介紹"]
 categories: ["codenotes"]
 
 lightgallery: true
@@ -1465,6 +1465,7 @@ class MessageController extends Controller
 
 <br>
 
+
 <br>
 
 ## 測試
@@ -1642,6 +1643,11 @@ php artisan db:seed //單純跑資料的seeder 填充資料
 ```sh
 php artisan make:test {檔案名稱} //測試程式
 ```
+
+<br>
+
+想必大家到這步驟已經對 Laravel 不陌生了，已經熟悉上面的教學介紹後，可以再去學習下一篇 [Laravel 進階](https://pin-yi.me/laravel-advanced)，會有如何使用內建會員系統，以及如何判斷 RESTful API 是否登入等進階實作ㄡ～ 
+
 
 <br>
 
