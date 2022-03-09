@@ -1,6 +1,6 @@
 ---
 weight: 4
-title: "Laravel 進階 (內建會員系統、驗證 RESTful API 是否登入、使用 repository設計模式)"
+title: "Laravel 進階 (內建會員系統、驗證 RESTful API 是否登入、使用 Repository 設計模式)"
 date: 2022-03-08T09:00:59+08:00
 lastmod: 2022-03-08T14:27:53+08:00
 draft: false
@@ -13,7 +13,7 @@ resources:
 - name: "featured-image-preview"
   src: "featured-image-preview.webp"
 
-tags: ["PHP", "框架", "Laravel", "RESTful API", "實作","介紹"]
+tags: ["PHP", "框架", "Laravel", "RESTful API", "會員系統", "Repository", "實作","介紹"]
 categories: ["codenotes"]
 
 lightgallery: true
@@ -76,6 +76,7 @@ views 底下放的就是顯示的畫面，所以現在可以瀏覽
 
 ### 實作
 
+#### Migration
 我們照上一篇的流程，由於 `route` 已經設定好，所以我們先來設定 `migration` ， 檔案就放在 `database/migrations` 底下的 `{日期時間}_create_users_table.php` ，我們來看一下預設的資料表有哪些欄位吧!
 
 ```php
@@ -135,11 +136,52 @@ views 底下放的就是顯示的畫面，所以現在可以瀏覽
 
 使用 `php artisan migrate` 將 `users` 這個 table 給建起來。
  
- 因為我們修改 name、email 改成 username 這個欄位，所以我們也要修改一下 views 顯示的畫面，由於是簡單的 HTML 這邊就不再多描述，有問題可以下方留言><
+ 因為我們修改 name、email 改成 username 這個欄位，所以我們也要修改一下 views 顯示的畫面，由於是簡單的 HTML 這邊就不再多描述，直接放上修改後的程式碼。
+ 
+ #### View
+ 
+ ##### Login.blade
+ 
+ ```html
+<div class="form-group{{ $errors->has('username') ? ' has-error' : '' }}">
+ <label for="username" class="col-md-4 control-label">Username</label>
+
+   <div class="col-md-6">
+     <input id="username" type="text" class="form-control" name="username" value="{{ old('username') }}" required autofocus>
+                                
+     @if ($errors->has('username'))
+            <span class="help-block">
+                    <strong>{{ $errors->first('username') }}</strong>
+            </span>
+     @endif
+  </div>
+</div>
+```   
+<br>
+
+##### Register.blade
+
+```html
+<div class="form-group{{ $errors->has('username') ? ' has-error' : '' }}">
+ <label for="username" class="col-md-4 control-label">Username</label>
+
+ <div class="col-md-6">
+  	<input id="username" type="text" class="form-control" name="username" value="{{ old('username') }}" required>
+
+     @if ($errors->has('username'))
+            <span class="help-block">
+                    <strong>{{ $errors->first('username') }}</strong>
+            </span>
+     @endif
+  </div>
+</div> 
+```
  
  <br>
  
- 接下來到 `app` 底下找到 `User.php` 檔案，由於筆者習慣將 `model` 放到專屬的資料夾，不要讓他在 `app` 裡面流浪，所以會建立一個 `Models`  的資料夾，來存放所有的 `models` ，那移動原本的 `model` 有些有使用到它的路徑都要做修改，這邊以 `User` 檔案為示範。(因為後續會說到怎麼驗證登入 API ，所以上一篇的 Message model 也要記得修改歐！)
+ #### Model
+ 
+接下來到 `app` 底下找到 `User.php` 檔案，由於筆者習慣將 `model` 放到專屬的資料夾，不要讓他在 `app` 裡面流浪，所以會建立一個 `Models`  的資料夾，來存放所有的 `models` ，那移動原本的 `model` 有些有使用到它的路徑都要做修改，這邊以 `User` 檔案為示範。(因為後續會說到怎麼驗證登入 API ，所以上一篇的 Message model 也要記得修改歐！)
  
  <br>
  
@@ -236,13 +278,215 @@ class User extends Authenticatable
      protected $guarded = [];
  ```
 
+<br>
+
+#### Controller
+
+接下來是要修改我們的 controller，主要需要修改的有兩個，檔案在 `app\Http\Auth` 底下的 `registerController` 、 `loginController` 兩個檔案，我們先來修改 `registerController` 註冊功能，看一下原本的程式碼在做什麼事情。
+
+##### RegisterController
+
+<br>
+原本程式碼
+
+```sh
+    protected function validator(array $data)
+    {
+        return Validator::make($data, [
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:6|confirmed',
+        ]);
+    }
+
+    /**
+     * Create a new user instance after a valid registration.
+     *
+     * @param  array  $data
+     * @return \App\User
+     */
+    protected function create(array $data)
+    {
+        return User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => bcrypt($data['password']),
+        ]);
+    }
+```
+可以看到在 `validator()` 就是在驗證註冊時的欄位，以 email 來說明，他需要符合必填(required)、字串(string)、email格式(email)、最大長度(max:255)、在 users 資料表中唯一(unique:users) 才可以註冊，另外兩個也是如此。
+
+那 `create()` 就是會建立註冊的資料到資料表中，就是這麼簡單XD，詳細可以參考 [Laravel 官網 Form Request Validation](https://laravel.com/docs/5.4/validation#form-request-validation)
+ 
+<br>
+
+那還記得我們把 name、email 給刪掉，改成 username 來做登入嗎，我們來看一下我們要修改哪些東西！
+
+```sh
+    protected function validator(array $data)
+    {
+        return Validator::make($data, [
+            'username' => 'required|string|max:255|unique:users',
+            'password' => 'required|string|min:6|confirmed',
+        ]);
+    }
+
+    /**
+     * Create a new user instance after a valid registration.
+     *
+     * @param  array  $data
+     * @return \App\User
+     */
+    protected function create(array $data)
+    {
+        return User::create([
+            'username' => $data['username'],
+            'api_token' => Str::random(60),
+            'password' => bcrypt($data['password']),
+        ]);
+    }
+``` 
+由於我們刪除 email ，所以要把 unique:users 設定在 username ，因為我們後續會需要用到一組 api_token 來驗證是誰在使用，所以我們在建立帳號時 `create()`，會先使用 `Str::random(60)` 產生一個60字元的隨機亂數，我們用到 str ，所以在上面還要先引用 `use Illuminate\Support\Str;`
+ 
+<br>
+
+##### LoginController
+
+註冊頁面都已經修改好了，理論上連線到 `http://127.0.0.1:8000/register` 頁面，輸入 username 以及 密碼，會可以註冊成功囉，那接下來我們來修改登入的 controller。
+
+```php
+    use AuthenticatesUsers;
+
+    /**
+     * Where to redirect users after login.
+     *
+     * @var string
+     */
+    protected $redirectTo = '/home';
+
+    /**
+     * Create a new controller instance.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        $this->middleware('guest')->except('logout');
+    }
+```
+因為 Laravel 框架內建了驗證登入功能，所以只需要使用 `use AuthenticatesUsers;` 就可以達到驗證效果，登入成功就會使用 `redirectTo` 導向到 `/home`，那問題來了，因為 `AuthenticatesUsers` 預設是使用 email 來做登入驗證，但我們改成 username，我們要怎麼修改呢！？ 一起來看看吧 
+
+```php
+    //由於判斷是用 AuthenticatesUsers 這個內建的 trait 來實作，其中 username() 這個方法就是來指定登入要用的欄位
+    public function username()
+    {
+        return 'username';
+    }
+```
+上面有說因為使用了 `AuthenticatesUsers`  來做驗證，我們盡量不去修改框架內的檔案，當然 Laravel 也有配套措施，只要使用 `username()` 這個方法就可以指定登入要驗證的欄位，因為筆者在學習這段時也找了很久，這邊附上[ Laravel API](https://laravel.com/api/6.x/Illuminate/Foundation/Auth/AuthenticatesUsers.html) 可以去查看一下。
+
+我們這時就可以使用 `http://127.0.0.1:8000/login` 來登入囉！試試看吧～
  
  
+### 驗證 RESTful API 是否登入
+
+本篇會使用到上一篇的 RESTful API 留言板來進行修改，所以有興趣的朋友，可以先去看玩上一篇 [Laravel 介紹]() 歐～
+
+接下來也會同時使用 Repository 設計模式來修改程式碼，那 Repository 設計模式是什麼呢，讓我先來介紹。
+
+#### Repository 設計模式
+
+還記得我們上一次，把所有的處理都放在 `Controller` 裡面嗎！如果只是單一個小專案，還可以這樣做沒關係，但專案越來越大，會使用的功能也越來越多，會造成 `Controller` 檔案肥大且難以維護，基於 SOLID 原則，我們應該要使用 Repository 設計模式來補助  `Controller`，將相關的資料庫邏輯放在不同的 `Repository`，方便中大型的專案做維護。
+
+<br> 
  
+
+{{< admonition type=tip title="小知識" open=true >}}
+SOLID：簡單來說就是物件導向設定上為了讓軟體維護、開發變得更容易的五個準則的縮寫。
+* Single Responsibility Principle (SRP) 單一職責原則
+* Open-Closed Principle (OCP) 開放封閉原則
+* Liskov Substitution Principle (LSP) 里氏替換原則
+* Interface Segregation Principle (ISP) 介面隔離原則
+* Dependency Inversion Principle(DIP) 依賴反轉原則
+
+SOLID目的也就是讓你程式碼達成低耦合、高內聚、降低程式碼壞味道，透過分離與clean code來提高可讀性會讓你的程式碼等同於設計文件，所以在修改或新增過程中降低產生Bug的機率，也可以較快的找到與解決出問題的地方，可以有效的減少技術債。
+
+(資料來源：[我該學會SOLID嗎?](https://medium.com/@f40507777/%E6%88%91%E8%A9%B2%E5%AD%B8%E6%9C%83solid%E5%97%8E-4e73887c9156))
+{{< /admonition >}} 
  
+<br>
+
+不太清楚沒關係，我們會慢慢介紹到！那我們先來看看這次要修改什麼呢！？ 我想要在使用 API 時，去檢查有沒有登入，才會進行動作，舉個例子，我們希望在新增留言、修改留言以及刪除留言都需要登入，且是由本人操作才算成功。
+
+<br>
+
+#### Migration
+
+在此之前，我們先來修改一下上次的 `migration` {日期時間}_create_message_table.php 檔案吧
+
+```php
+    public function up()
+    {
+        Schema::create('message', function (Blueprint $table) {
+            $table->bigIncrements('id'); //留言板編號
+            $table->integer('user_id')->unsigned(); //留言者ID
+            $table->foreign('user_id')->references('id')->on('users');
+            $table->string('name', 20); //留言板姓名
+            $table->string('content',20); //留言板內容
+            $table->integer('like')->unsigned()->nullable(); //按讚者
+            $table->foreign('like')->references('id')->on('users');
+            $table->integer('version')->default(0); 
+            $table->timestamps(); //留言板建立以及編輯的時間
+        });
+    }
+```
+可以看到我們將資料庫的名稱從 `messsages` 改為 `message` ，後續程式部分也都會修改，大家要在注意一下 ～ 
+
+我們這次加入了留言者 ID (使用外鍵連接 `users` 的 `id`)、按讚者 ID (使用外鍵連接 `users` 的 `id`)、留言板樂觀鎖欄位。
+
+我們希望每一個留言都可以對應到 `users` 的 帳號 `id` ，以及新增一個可以讓使用者按讚的功能，使用外鍵來可以存放按讚者的 ID ，還有判斷[樂觀鎖](https://pin-yi.me/mysql#)的欄位。
+
+<br>
+
+列出本次會使用的功能以及對應的方法、是否需要登入、登入後其他人是否可以操作
+<br>
+| 功能 | 方法 | 是否需要登入 | 登入後其他人是否可以操作 | 
+| :---: | :---: | :---: | :---: |
+| 查詢全部留言 | getAllMessage | 否 | 不需登入 | 
+| 查詢{id}留言 | getMessage | 否 | 不需登入 | 
+| 新增留言 | createMessage | 是 | 否 |
+| 修改{id}留言 | updateMessage | 是 | 否 | 
+| 按讚{id}留言 | likeMessage | 是 | 可以 |
+| 刪除{id}留言 | deleteMessage | 是 | 否 |
+
+<br>
+
+我們先設定 Middleware ，什麼是 Middleware 呢！？
+
+#### Middleware
+Middleware 中文翻譯是中介軟體，是指從發出請求 (Request)之後，到接收回應(Response)這段來回的途徑上，用來處理特定用途的程式，比較常用的 **Middleware** 有身份認證 (Identity) 、路由(Routing) 等，再舉個例子
+
+```
+某天早上你去圖書館看書，
+下午去公園畫畫，
+晚上去KTV 唱歌，
+等到要準備回家的時候發現學生證不見了，
+你會去哪裡找? (假設學生證就掉在這3個地方)
+```
+
+對於記憶不好的人來說，會按照 KTV > 公園 > 圖書館的路線去尋找。假設在公園找到學生證，就不會再去圖書館了，相對的，由於這條路是死巷，所以只能返回走去KTV的路，這個就是 **Middleware** 的運作原理。
+
+所以我們需要再請求時，先檢查是否有登入，
+
+
+
 <br>
 
 ## 參考資料
 [Laravel Auth 自定義user 模型目錄結構](https://www.itread01.com/content/1545012913.html)
 
 [user ( Model )](https://ithelp.ithome.com.tw/articles/10220381)
+
+[Laravel Form Request Validation](https://laravel.com/docs/5.4/validation#form-request-validation)
+
+[laravel Validation 驗證格式](https://ithelp.ithome.com.tw/articles/10250237)
