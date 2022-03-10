@@ -136,7 +136,7 @@ OK
 <br>
 
 ##### incr、decr
-Redis 還有一些方便的指令，可以將字串轉成數字，做累加或累減。會使用到 `incr` 、`decr` ，分別代表累加，像是我們的 ++ ，以及累減，像是我們的 - -。 
+Redis 還有一些方便的指令，如果存入的是 integer 型態，就可以使用 `incr` 、`decr` ，來累加與累減，分別代表累加，像是我們的 ++ ，以及累減，像是我們的 - -。 
 
 ```sh
 127.0.0.1:6379> set num 10
@@ -151,6 +151,39 @@ OK
 (integer) 10
 ```
 <br>
+
+##### append
+
+如果 key 已經存在並且它是字串，可以使用 `append` 指令，會在字串最後附加進去，如果不存在，則會直接建立一個，並把值存進去。
+
+```sh
+127.0.0.1:6379> exists mykey
+(integer) 0
+127.0.0.1:6379> append mykey "Hello"
+(integer) 5
+127.0.0.1:6379> append mykey " World~"
+(integer) 12
+127.0.0.1:6379> get mykey
+"Hello World~"
+```
+
+##### getrange
+
+可以輸入字串的開始位元與結束位元，會依照你輸入的去顯示字串。我把它想成是陣列的 key 與 value 的關係。
+
+```sh
+127.0.0.1:6379> set a "This is a string"
+OK
+127.0.0.1:6379> getrange a 0 3
+"This"
+127.0.0.1:6379> getrange a -3 -1
+"ing"
+127.0.0.1:6379> getrange a 0 -1
+"This is a string"
+127.0.0.1:6379> getrange a 10 100
+"string"
+```
+
 
 ##### mset
 我們也可以設定的時候，把要設定的值都一起設定，只需要使用 `mset` 就可以達成。
@@ -188,15 +221,45 @@ OK
 ```
 Hash 的話要使用 `hset`、`hget` 來對 hash 做寫以及讀 。
 
+##### hgetall
+
+想要一次顯示 Hash 裡面的 key 跟 value ，可以使用 `hgetall` 來顯示全部資料。
+
+```sh
+127.0.0.1:6379> hset student name ian phone 0980123456 gender M
+(integer) 3
+127.0.0.1:6379> hgetall student
+1) "name"
+2) "ian"
+3) "phone"
+4) "0980123456"
+5) "gender"
+6) "M"
+```
+
+##### hkeys
+
+想要單獨顯示 Hash 裡面的 key ，可以使用 `hkeys` 來顯示。
+
+```sh
+127.0.0.1:6379> hset student name ian phone 0980123456 gender M
+(integer) 3
+127.0.0.1:6379> hkeys student
+1) "name"
+2) "phone"
+3) "gender"
+```
+
+
 <br>
 
 #### 列表 (List)
 
 這個也是很常見的 list 結構，這邊會使用到 `lpush`、`lrange` 來對 `List` 做讀寫。
 ```sh
-127.0.0.1:6379> LPUSH list2 a a b b c d e
+127.0.0.1:6379> lpush list2 a a b b c d e
 (integer) 7
-127.0.0.1:6379> Lrange list2 0 10
+127.0.0.1:6379> lrange list2 0 10
 1) "e"
 2) "d"
 3) "c"
@@ -264,6 +327,54 @@ Redis 客戶端可以使用 `subscribe` 來訂閱任意數量的頻道。
 <br>
 
 {{< image src="/images/redis/message.png"  width="600" caption="Publish 示意圖" src_s="/images/redis/message.png" src_l="/images/redis/message.png" >}}
+
+<br>
+
+我們來模擬一下吧 ! 先開兩個 Terminal 來執行 `redis-cli` 一個當作發送(pub)，另一個當作接收(sub)。
+
+我們先用第一個 Terminal 訂閱一個頻道 channel_1
+
+```sh
+127.0.0.1:6379> subscribe channel_1
+Reading messages... (press Ctrl-C to quit)
+1) "subscribe"
+2) "channel_1"
+3) (integer) 1
+```
+
+<br>
+
+開啟另一個 Terminal 發送訊息到 channel_1 
+
+```sh
+127.0.0.1:6379> publish channel_1 "Hello World~"
+(integer) 1
+127.0.0.1:6379> publish channel_1 "ian~"
+(integer) 1
+127.0.0.1:6379> publish channel_1 "test~"
+(integer) 1
+```
+
+<br>
+這時候再切換回來第一個 Terminal ，就可以看到他接收到我們傳送的訊息
+
+```sh
+127.0.0.1:6379> subscribe channel_1
+Reading messages... (press Ctrl-C to quit)
+1) "subscribe"
+2) "channel_1"
+3) (integer) 1
+1) "message"
+2) "channel_1"
+3) "Hello World~"
+1) "message"
+2) "channel_1"
+3) "ian~"
+1) "message"
+2) "channel_1"
+3) "test~"
+```
+
 
 <br>
 
