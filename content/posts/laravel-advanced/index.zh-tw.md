@@ -13,7 +13,7 @@ resources:
 - name: "featured-image-preview"
   src: "featured-image-preview.webp"
 
-tags: ["PHP", "框架", "Laravel", "RESTful API", "會員系統", "Repository", "實作","介紹"]
+tags: ["PHP", "框架", "Laravel", "RESTful API", "Repository", "實作","介紹"]
 categories: ["codenotes"]
 
 lightgallery: true
@@ -464,7 +464,9 @@ SOLID目的也就是讓你程式碼達成低耦合、高內聚、降低程式碼
 我們先設定 Middleware ，什麼是 Middleware 呢！？
 
 #### Middleware
-Middleware 中文翻譯是中介軟體，是指從發出請求 (Request)之後，到接收回應(Response)這段來回的途徑上，用來處理特定用途的程式，比較常用的 **Middleware** 有身份認證 (Identity) 、路由(Routing) 等，再舉個例子
+Middleware 中文翻譯是中介軟體，是指從發出請求 (Request)之後，到接收回應(Response)這段來回的途徑上，
+
+用來處理特定用途的程式，比較常用的 **Middleware** 有身份認證 (Identity) 、路由(Routing) 等，再舉個例子
 
 ```
 某天早上你去圖書館看書，
@@ -474,9 +476,416 @@ Middleware 中文翻譯是中介軟體，是指從發出請求 (Request)之後�
 你會去哪裡找? (假設學生證就掉在這3個地方)
 ```
 
-對於記憶不好的人來說，會按照 KTV > 公園 > 圖書館的路線去尋找。假設在公園找到學生證，就不會再去圖書館了，相對的，由於這條路是死巷，所以只能返回走去KTV的路，這個就是 **Middleware** 的運作原理。
+對於記憶不好的人來說，會按照 KTV > 公園 > 圖書館的路線去尋找。
 
-所以我們需要再請求時，先檢查是否有登入，
+假設在公園找到學生證，就不會再去圖書館了，由於這條路是死巷，所以只能返回走去KTV的路，這個就是 **Middleware** 的運作原理。
+
+所以我們需要再請求時，先檢查是否有登入，才可以去執行需要權限的功能。
+我們在建立 `user` 的時候，有多了一個 `api_token` 的欄位，就是來驗證是否登入以及操作的人是誰，那我們來看看要怎麼實作吧！
+
+<br>
+
+先下指令生成一個放置登入驗證權限的 `Middleware` ，我把它取名為 `TokenAuth`
+```sh
+$  php artisan make:middleware TokenAuth
+Middleware created successfully.
+```
+
+<br>
+
+接著要把剛剛生成的 `TokenAuth` 檔案放置在 `app/Http/Kernel.php` 檔案中
+
+```php
+    protected $routeMiddleware = [
+        'auth' => \Illuminate\Auth\Middleware\Authenticate::class,
+        'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
+        'bindings' => \Illuminate\Routing\Middleware\SubstituteBindings::class,
+        'can' => \Illuminate\Auth\Middleware\Authorize::class,
+        'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
+        'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
+        'token.auth' => \App\Http\Middleware\TokenAuth::class  //這邊
+    ];
+```
+
+接下來我們就可以開始撰寫 `TokenAuth` 檔案的內容了
+
+```php
+    public function handle($request, Closure $next)
+    {
+        // 確認 Http Header 的 token 有無對應的使用者
+        $api_token = request()->header('api_token');
+        $auth_user = User::where('api_token', $api_token)->get();
+
+        if(!count($auth_user)){
+            return response(['message' => '用戶需要認證'], 401);
+        }
+
+        // 將通過驗證的使用者存放於 attribute 裡以便將變數傳給 controller
+        $request->attributes->set('auth_user', $auth_user);
+        return $next($request);
+    }
+```
+這邊的意思是指，在 request 的時候，我們的 `api_token` 會夾在 header 中做請求，我們先將他存入 `$api_token` 的變數中，再來檢查 `users` 裡面是否有這個 token ，如果沒有就會回應用戶需要認證 401 的錯誤 status code，如果有這個 token ，我們就可以拿這個 token 對應的帳號名稱以及 ID 來做使用。
+
+<br>
+
+##### Route
+
+接下來，我們要把我們設定好的 `TokenAuth` 設定在 `route\api.php` 的路由中，
+```php
+Route::get('message', 'MessageController@getAll');
+Route::get('message/{id}', 'MessageController@get');
+Route::post('message', 'MessageController@create')->middleware('token.auth');
+Route::put('message/{id}', 'MessageController@update')->middleware('token.auth');
+Route::patch('message/{id}', 'MessageController@like')->middleware('token.auth');
+Route::delete('message/{id}', 'MessageController@delete')->middleware('token.auth');
+```
+可以看到跟我們上一篇的 route 設定的差不多，只是將 `MessageController` 後面的方法做了一點變化，簡化名稱(這與我們後面講到的 Repository 設計模式有關)，以及加上 `like` 這個方法來當作我們的按讚功能，後面將我們需要登入驗證才可以使用的功能，加入 `middleware('token.auth');`
+
+<br>
+
+##### Model
+
+因為我們在取得資料時，不希望顯示 `user_id` 以及 `version` 給使用者，所以在 `app\Models\Message.php` 這個 model 裡面用 `hidden` 來做設定。
+
+```php
+    protected $table = 'Message';
+    protected $fillable = [
+        'content'
+    ];
+    protected $hidden = [
+        'user_id','version'
+    ];
+```
+
+<br>
+
+##### Controller/Repository
+
+接下來會連同 Repository 設計模式一起說明，所以會講得比較詳細。還記得我們上次把 RESTful API 要處理的邏輯都寫在 Controller 裡面嗎，我們光是一個小功能就讓整個 Controller 變得肥大，在後續維護時或是新增功能時，會導致十分不便利，因此我們要將 Repository 設計模式 給導入，那要怎麼實作呢～
+
+<br>
+
+我們要先在 `app` 底下新增一個 `Repositories` 目錄，在目錄底下再新增一個 `MessageRepository.php` 檔案來放我們處理邏輯以及與資料庫拿資料的程式，我們整個檔案分成幾段來看
+
+<br>
+
+先新增這個檔案的命名空間，並將我們原先放在 `MessageController` 的引用給拿進來。
+```php
+namespace App\Repositories;
+
+use App\Models\Message;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+```
+
+<br>
+
+設定一個變數 `$message` 用 __construct 做初始化，把 Message model 可以使用 $tihs->message 來做代替
+```php
+    /** @var Message 注入的 Message model */
+
+    private $message;
+
+    public function __construct(Message $message)
+    {
+        $this->message = $message;
+    }
+```
+
+<br>
+
+由於我們會重複做一些功能，所以我們也把這些功能給拉出來，後續就不需要重覆做一樣的事情
+```php
+    // 回傳{id}是否存在
+    public function is_exists($id){
+        return $this->message->where('id',$id)->exists();
+    }
+    
+    // 回傳content是否大於20
+    public function max20_content(Request $request){
+        $rules = ['content' => 'max:20'];
+        $validator = Validator::make($request->all(), $rules);
+        return $validator->fails();
+    }
+```
+分別是 `is_exists()` 檢查輸入的 `$id` 是否存在，以及 `max20_content()` 是檢查 request 的 content 是否符合小於20的格式。
+
+<br>
+
+**查詢留言功能**
+```php
+    // 回傳全部的留言資料
+    public function getAllMessage() {
+        return  response($this->message->get()->toJson(JSON_PRETTY_PRINT), 200);   
+    }
+
+    // 回傳{id}留言資料
+    public function getMessage($id){
+        if ($this->is_exists($id)) {
+            return response($this->message->where('id',$id)->get()->toJson(JSON_PRETTY_PRINT), 200);
+        }
+        return response()->json(["message" => "找不到訊息"], 404);
+    }
+```
+回傳全部的留言資料 `getAllMessage()`，將 model 的資料表所有的資料 get()，再去做 tojson 並回應 200 的 status code ; 
+
+回傳{id}留言資料 `getMessage($id)` 會先使用到我們的 `is_exist()` 來做檢查，如果有就搜尋這個 id ，並他的資料做  get() ，再去做 tojson 並回應 200 的 status code ; 如果沒有，就回應找不到訊息以及 404 的 status code 。
+
+<br>
+
+**新增留言功能**
+
+```php
+    // 回傳是否新增留言成功
+    public function createMessage(Request $request) { 
+        if ($this->max20_content($request)) {
+            return response()->json(["message" => "內容長度超過20個字元"], 400);
+        }
+            $auth_user = request()->get('auth_user')->first();
+            $message = new Message;
+            $message->user_id = $auth_user['id'];
+            $message->name = $auth_user['username'];
+            $message->content = $request->content;
+            $message->like = NULL;
+            $message->updated_at = NULL;
+            $message->save();
+            return response()->json(["message" => "新增紀錄成功"], 201);
+    }
+```
+先檢查 request 是否符合 `max20_content ()` ，如果符合就回應內容長度超過20個字元以及 400 的 status code ; 如果不符合就取我們 `TokenAuth` 的 `auth_user` 將他的 $auth_user['id'] 以及 $auth_user['username'] 寫入 $message->user_id 跟 $message->name ，以及其他的資料做儲存，最後回應新增紀錄成功 201 的 status code 。
+
+<br>
+
+**修改留言功能**
+
+```php
+    // 回傳是否修改留言成功
+    public function updateMessage(Request $request,$id) {
+        if ($this->is_exists($id) && Message::where('version',0)->lockForUpdate() ) { 
+            if ($this->max20_content($request)) {
+                return response()->json(["message" => "內容長度超過20個字元"], 400);
+            }
+                $auth_user = request()->get('auth_user')->first();
+                $message = Message::find($id);
+                if ($auth_user['id'] == $message->user_id) {
+                    $message->user_id = $auth_user['id'];
+                    $message->name = $auth_user['username'];
+                    $message->content = is_null($request->content) ? $message->content : $request->content;
+                    $message->like = NULL;
+                    $message->version = '1';
+                    $message->save();
+                    return response()->json(["message" => "修改成功"],200);
+                }
+                return response()->json(["message" => "權限不正確"],403);
+        }
+            return response()->json(["message" => "找不到訊息"],404);
+    }
+```
+先檢查 `is_exists($id)` 是否存在以及 version 做 lockForUpdate，再檢查 max20_content() 內容有沒有超過，如果都沒有才可以進行修改，修改時，也會檢查是否有 request content ，沒有就照舊使用原始資料，也會依照判斷回傳修改成功 200、權限不正確 403、找不到訊息 404 的 status code 。
+
+<br>
+
+**按讚留言功能**
+
+```php
+    // 回傳是否按讚留言成功
+    public function likeMessage(Request $request,$id) {
+        if ($this->is_exists($id)) {
+            $auth_user = request()->get('auth_user')->first();
+            $message = Message::find($id);
+            $message->like = is_null($message->like) ? $auth_user['id'] : NULL;
+            $message->save();
+            return response()->json(["message" => "按讚成功"],200);
+        }
+            return response()->json(["message" => "找不到訊息"],404);
+    }
+```
+由於按讚功能，只需要檢查按讚 id 是否存在即可，故使用 is_exists($id) 來做判斷，有 id 就回應按讚成功 200，沒有就回應找不到訊息 404。
+
+<br>
+
+**刪除功能**
+
+```php
+    // 回傳是否刪除留言成功
+    public function deleteMessage($id) {
+        if ($this->is_exists($id)) {
+            $auth_user = request()->get('auth_user')->first();
+            $message = Message::find($id);
+            if ($auth_user['id'] == $message->user_id) {
+                $message->delete();
+                return response()->json(["message" => "刪除成功,沒有返回任何內容"],204);
+            }
+            return response()->json(["message" => "權限不正確"],403);
+        } 
+            return response()->json(["message" => "找不到訊息"],404);
+    }
+```
+也一樣，先檢查 id 是否存在，再檢查刪除者是否與留言者為同一人。
+
+<br>
+
+到這裡我們講完 `MessageRepository.php` 的內容了，那原本的 Controller 剩下什麼呢 !?
+
+```php
+namespace App\Http\Controllers;
+
+use App\Models\Message;
+use Illuminate\Http\Request;
+use App\Repositories\MessageRepository;
+```
+一樣基本的命名空間以及引用都沒變。
+
+<br>
+
+```php
+   protected $messageRepository;
+
+    public function __construct(MessageRepository $messageRepository)
+    {
+        $this->messageRepository = $messageRepository;
+
+    }
+
+    // 查詢全部留言
+    public function getAll()
+    {
+        return $this->messageRepository->getAllMessage();  
+    }
+    // 查詢{id}留言
+    public function get($id)
+    {
+       return $this->messageRepository->getMessage($id);
+    }
+    // 新增留言
+    public function create(Request $request)
+    {
+        return $this->messageRepository->createMessage($request);
+    }
+    // 修改{id}留言
+    public function update(Request $request,$id)
+    {
+        return $this->messageRepository->updateMessage($request,$id);
+    }  
+    // 按讚{id}留言
+    public function like(Request $request,$id)
+    {
+        return $this->messageRepository->likeMessage($request,$id);
+    }  
+    // 刪除{id}留言
+    public function delete($id)
+    {
+        return $this->messageRepository->deleteMessage($id);
+    }  
+``` 
+我們將它改成這樣，可以讓我們的 Controller 變的更容易閱讀，以及更方便修改。
+
+<br>
+
+
+### Postman 測試
+
+那我們一樣來看一下 Postman 的測試，這邊只顯示有加入 api_token 以及沒有的差別。
+
+
+##### 新增留言 - 成功
+
+{{< image src="/images/laravel-advanced/post-api-success.png"  width="600" caption="新增留言 成功" src_s="/images/laravel-advanced/post-api-success.png" src_l="/images/laravel-advanced/post-api-success.png" >}}
+
+<br> 
+
+新增留言成功，因為 **<font color='blue'>api 有輸入 api_token</font>** 會顯示新增紀錄成功以及回應 201 Created
+
+<br>
+
+##### 新增留言 - 失敗
+
+{{< image src="/images/laravel-advanced/post-api-error.png"  width="600" caption="新增留言 失敗" src_s="/images/laravel-advanced/post-api-error.png" src_l="/images/laravel-advanced/post-api-error.png" >}}
+
+<br> 
+
+新增留言失敗，因為 **<font color='red'>api 沒有輸入 api_token</font>** ，所以會顯示用戶需要認證以及回應 401 Unauthorized
+
+<br>
+
+##### 修改留言 - 成功
+
+{{< image src="/images/laravel-advanced/put-api-success"  width="600" caption="修改留言 成功" src_s="/images/laravel-advanced/put-api-success.png" src_l="/images/laravel-advanced/put-api-success.png" >}}
+
+<br> 
+
+修改留言成功，因為 **<font color='blue'>api 有輸入 api_token</font>** ，會顯示修改成功以及回應 200 OK
+
+<br>
+
+##### 修改留言 - 失敗 - 沒有Token
+
+{{< image src="/images/laravel-advanced/put-api-error-1.png"  width="600" caption="修改留言 失敗" src_s="/images/laravel-advanced/put-api-error-1.png" src_l="/images/laravel-advanced/put-api-error-1.png" >}}
+
+<br> 
+
+修改留言失敗，因為 **<font color='red'>api 沒有輸入 api_token</font>** ，會顯示用戶需要認證以及回應 401 Unauthorized
+
+<br>
+
+##### 修改留言 - 失敗 - 權限不足
+
+{{< image src="/images/laravel-advanced/put-api-error-2.png"  width="600" caption="修改留言 失敗" src_s="/images/laravel-advanced/put-api-error-2.png" src_l="/images/laravel-advanced/put-api-error-2.png" >}}
+
+<br> 
+
+修改留言失敗，雖然 **<font color='red'>有輸入正確的 token ，但不是當初的留言者</font>** ，會顯示權限不正確以及回應 403 Forbidden
+
+<br>
+
+##### 按讚留言 - 成功
+
+{{< image src="/images/laravel-advanced/patch-api-success"  width="600" caption="修改留言 成功" src_s="/images/laravel-advanced/patch-api-success.png" src_l="/images/laravel-advanced/patch-api-success.png" >}}
+
+<br> 
+
+按讚留言成功，因為 **<font color='blue'>api 有輸入 api_token</font>** ，會顯示按讚成功以及回應 200 OK
+
+<br>
+
+##### 按讚留言 - 失敗 - 沒有Token
+
+{{< image src="/images/laravel-advanced/patch-api-error.png"  width="600" caption="修改留言 失敗" src_s="/images/laravel-advanced/patch-api-error.png" src_l="/images/laravel-advanced/patch-api-error.png" >}}
+
+<br> 
+
+按讚留言失敗，因為 **<font color='red'>api 沒有輸入 api_token</font>** ，會顯示用戶需要認證以及回應 401 Unauthorized
+
+<br>
+
+##### 刪除留言 - 成功
+
+{{< image src="/images/laravel-advanced/delete-api-success.png"  width="600" caption="刪除留言 成功" src_s="/images/laravel-advanced/delete-api-success.png" src_l="/images/laravel-advanced/delete-api-success.png" >}}
+
+<br> 
+
+刪除留言成功，因為 **<font color='blue'>api 有輸入 api_token</font>** ，不會顯示訊息但會回應 204 No Content
+
+<br>
+
+##### 刪除留言 - 失敗 - 沒有Token
+
+{{< image src="/images/laravel-advanced/delete-api-error-1.png"  width="600" caption="刪除留言 失敗" src_s="/images/laravel-advanced/delete-api-error-1.png" src_l="/images/laravel-advanced/delete-api-error-1.png" >}}
+
+<br> 
+
+刪除留言失敗，因為 **<font color='red'>api 沒有輸入 api_token</font>** ，會顯示用戶需要認證以及回應 401 Unauthorized
+
+<br>
+
+##### 刪除留言 - 失敗 - 權限不足
+
+{{< image src="/images/laravel-advanced/delete-api-error-2.png"  width="600" caption="刪除留言 失敗" src_s="/images/laravel-advanced/delete-api-error-2.png" src_l="/images/laravel-advanced/delete-api-error-2.png" >}}
+
+<br> 
+
+刪除留言失敗，雖然 **<font color='red'>有輸入正確的 token ，但不是當初的留言者</font>** ，會顯示權限不正確以及回應 403 Forbidden
 
 
 

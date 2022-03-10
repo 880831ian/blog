@@ -1411,7 +1411,7 @@ class MessageController extends Controller
 
 <br> 
 
-新增留言成功，會顯示新增紀錄成功以及回應 200 Ok
+新增留言成功，會顯示新增紀錄成功以及回應 201 Created
 
 <br>
 
