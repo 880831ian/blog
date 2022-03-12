@@ -24,7 +24,7 @@ toc:
 
 ## 什麼是 Redis ?
 
-Redis 全名是 Remote Dictionary Server ，是快速的開源記憶體鍵值資料存放區 (keys-value database)。
+Redis 全名是 Remote Dictionary Server ，是快速的開源記憶體鍵值資料庫 (keys-value database)。
 
 由於 Redis 的回應時間極短，低於一毫秒，可以讓遊戲、金融服務、醫療保健等即時應用服務每秒處理幾百萬個請求。
 
@@ -32,11 +32,11 @@ Redis 全名是 Remote Dictionary Server ，是快速的開源記憶體鍵值資
 
 #### 效能
 
-所有的 Redis 資料都是存放在記憶體中，進而去實現低延遲和高傳輸量的資料存取。
+所有的 Redis 資料都是存放在記憶體中，進而實現低延遲和高傳輸量的資料存取。
 
 #### 彈性的資料結構
 
-一般的鍵值資料存放區提供的資料結構有限，而 Redis 提供多樣化的資料結構來滿足服務的需求，包含字串(Strings)、雜湊(Hash)、列表(List)、集合(Sets)、有序集合(Zset)。(後續會有詳細介紹)
+一般的鍵值資料庫提供的資料結構有限，而 Redis 提供多樣化的資料結構來滿足服務的需求，包含字串(Strings)、哈希(Hash)、列表(List)、集合(Sets)、有序集合(Zset)。(後續會有詳細介紹)
 
 #### 簡單易用
 
@@ -118,12 +118,16 @@ PONG
 
 接下來，我們都會在 Cli 視窗做測試，會詳細介紹每一個資料型態以及其適合情境。
 
+{{< admonition tip "redis 圖形化工具" ture >}}
+後續會使用 Cli 畫面來做示範，但也有不錯的圖形化工具可以用於 redis 上 [AnotherRedisDesktopManager](https://github.com/qishibo/AnotherRedisDesktopManager) 大家可以去試用看看~
+{{< /admonition >}}
+
 ### 資料型態 
 
 #### 字串 (Strings)
 
 ##### set、get
-這是最基本的型態，一個 Strings 的欄位，最高可儲存 512 MB，這裡會用到的指令是 `set`、`get` ，分別用來儲存以及讀取字串，我們來看一下範例吧。
+這是最基本的型態，可以存放 binary, string, integer, float資料，一個 Strings 的欄位，最高可儲存 512 Megabytes，這裡會用到的指令是 `set`、`get` ，分別用來儲存以及讀取字串，我們來看一下範例吧。
 
 ```sh
 127.0.0.1:6379> set string hello-world
@@ -131,12 +135,12 @@ OK
 127.0.0.1:6379> get string
 "hello-world"
 ```
-我們先用 `set` 將 hello-world 字串存到 string 這個 key，再用 `get` 顯示 string 裡面的值。
+我們先用 `set` 將 hello-world 字串存到 string 這個 key，再用 `get` 顯示 string 裡面的 value。
 
 <br>
 
 ##### incr、decr
-Redis 還有一些方便的指令，如果存入的是 integer 型態，就可以使用 `incr` 、`decr` ，來累加與累減，分別代表累加，像是我們的 ++ ，以及累減，像是我們的 - -。 
+Redis 還有一些方便的指令，如果存入的 value 是 integer 型態，就可以使用 `incr` 、`decr` ，來累加與累減。分別代表累加，像是我們的 ++ ，以及累減，像是我們的 - -。 
 
 ```sh
 127.0.0.1:6379> set num 10
@@ -169,7 +173,7 @@ OK
 
 ##### getrange
 
-可以輸入字串的開始位元與結束位元，會依照你輸入的去顯示字串。我把它想成是陣列的 key 與 value 的關係。
+可以輸入字串的開始位元與結束位元，會依照你輸入的去顯示字串。我把它理解成是陣列的 key 與 value 的關係。
 
 ```sh
 127.0.0.1:6379> set a "This is a string"
@@ -202,12 +206,27 @@ OK
 
 <br>
 
-#### 雜湊 (Hash)
+##### 字串型態適合場景
+
+**字串(strings) 型態適合用於圖片快取 （使用binary）、累計次數、觀看累計次數**
+
+<br>
+
+{{< image src="/images/redis/string.png"  width="700" caption="String 適用場景圖" src_s="/images/redis/string.png" src_l="/images/redis/string.png" >}}
+
+
+<br>
+
+#### 哈希 (Hash)
 可以把他想像成二維陣列，應該會比較好理解，我網路上找了一張圖，應該會比較清楚！
 
 {{< image src="/images/redis/hash.png"  width="500" caption="Hash 示意圖 ([Redis 基本資料形態](https://blog.judysocute.com/2020/10/04/redis-%E5%9F%BA%E6%9C%AC%E8%B3%87%E6%96%99%E5%BD%A2%E6%85%8B/))" src_s="/images/redis/hash.png" src_l="/images/redis/hash.png" >}}
 
+Hash是用來存放一組相同性質的資料，這些資料 Hash 或是物件的某一屬性，與 String 較為不同的是他可以取回單一個欄位資料，但 String 必須取回所有資料，單一個 Key 可以存放2^32 - 1的資料欄位，
+
 他的資料型態有像是，一個 user001 裡面是一個 Hash，Hash 裡面又會存放 name、phone、gender ，我們來實際操作看看。
+
+##### hset、hget
 
 ```sh
 127.0.0.1:6379> hset student name ian phone 0980123456 gender M
@@ -219,7 +238,7 @@ OK
 127.0.0.1:6379> hget student gender
 "M"
 ```
-Hash 的話要使用 `hset`、`hget` 來對 hash 做寫以及讀 。
+Hash 的話要使用 `hset`、`hget` 來對 hash 做儲存以及讀取。
 
 ##### hgetall
 
@@ -250,12 +269,89 @@ Hash 的話要使用 `hset`、`hget` 來對 hash 做寫以及讀 。
 3) "gender"
 ```
 
+<br>
+
+##### hvals
+
+想要單獨顯示 Hash 裡面的 value ，可以使用 `hvals` 來顯示。
+
+
+```sh 
+127.0.0.1:6379> hset student name ian phone 0980123456 gender M
+(integer) 3
+127.0.0.1:6379> hvals student
+1) "ian"
+2) "0980123456"
+3) "M"
+```
+
+<br>
+
+##### hlen
+
+想要顯示 Hash 裡面的 key 長度，可以使用 `hlen ` 來顯示。
+
+
+```sh
+127.0.0.1:6379> hgetall student
+1) "name"
+2) "ian"
+3) "gender"
+4) "M"
+127.0.0.1:6379> hlen student
+(integer) 2
+```
+
+<br>
+
+##### hincrby
+
+想要增加 Hash 裡面的 value 整數長度，可以使用 `hincrby ` 來新增。
+
+
+```sh
+127.0.0.1:6379> hset test a 10 b 20
+(integer) 2
+127.0.0.1:6379> hincrby test a 2
+(integer) 12
+```
+
+<br>
+
+##### hdel
+
+想要刪除 Hash 裡面的 key，可以使用 `hdel ` 來刪除。
+
+```sh
+127.0.0.1:6379> hset student name ian phone 0980123456 gender M
+(integer) 3
+127.0.0.1:6379> hdel student phone
+(integer) 1
+127.0.0.1:6379> hgetall student
+1) "name"
+2) "ian"
+3) "gender"
+4) "M"
+```
+
+<br>
+
+##### 哈希型態適合場景
+
+**哈希(Hash) 型態適合用於每次只需要取用一部分的資料**
+
+<br>
+
+{{< image src="/images/redis/hash-template.png"  width="700" caption="Hash 適用場景圖" src_s="/images/redis/hash-template.png" src_l="/images/redis/hash-template.png" >}}
 
 <br>
 
 #### 列表 (List)
 
-這個也是很常見的 list 結構，這邊會使用到 `lpush`、`lrange` 來對 `List` 做讀寫。
+##### lpush、lrange
+
+List 資料型態可以想像成程式語言中的Array物件。List 單一個Key可以存放2^32 - 1，這邊會使用到 `lpush`、`lrange` 來對 `List` 做儲存以及讀取。
+
 ```sh
 127.0.0.1:6379> lpush list2 a a b b c d e
 (integer) 7
@@ -268,10 +364,67 @@ Hash 的話要使用 `hset`、`hget` 來對 hash 做寫以及讀 。
 6) "a"
 7) "a"
 ```
+
+<br>
+
+##### rpush
+除了從隊伍頭放入資料，也可以用 `rpush` 從隊伍尾放入資料，如果使用 `lrange` 來顯示方向也會相反歐。
+
+```sh
+127.0.0.1:6379> rpush list3 a a b b c d e
+(integer) 7
+127.0.0.1:6379> lrange list3 0 10
+1) "a"
+2) "a"
+3) "b"
+4) "b"
+5) "c"
+6) "d"
+7) "e"
+```
+
+<br>
+
+##### lpop、rpop
+也可以使用 `lpop`、`rpop` 分別從隊伍頭或尾彈出一筆資料。
+
+```sh
+127.0.0.1:6379> rpush list3 a a b b c d e
+(integer) 7
+127.0.0.1:6379> lpop list3
+"a"
+127.0.0.1:6379> rpop list3
+"e"
+```
+
+<br>
+
+##### lset
+可以使用 `lset` 來設定指定位置的資料。
+
+```sh
+127.0.0.1:6379> lrange list3 0 2
+1) "a"
+2) "b"
+3) "c"
+127.0.0.1:6379> lset list3 1 w
+OK
+127.0.0.1:6379> lrange list3 0 2
+1) "a"
+2) "w"
+3) "c"
+```
+
+<br>
+
+##### 列表型態適合場景
+
+**列表(List) 型態適合用於文章列表或者資料分頁展示的應用**
+
 <br>
 
 #### 集合 (Sets)
-其實跟 List 一樣，就是資料的集合，只是 `Sets` 多了一層限制，就是集合中的值不能重複，這邊會使用到 `sadd`、`smembers` 來對 `Sets` 做讀寫。
+其實跟 List 一樣，就是資料的集合，只是 `Sets` 多了一層限制，就是集合中的值不能重複，這邊會使用到 `sadd`、`smembers` 來對 `Sets` 做儲存以及讀取。
 
 ```sh
 127.0.0.1:6379> sadd list3 a b c d a a b b
@@ -283,6 +436,46 @@ Hash 的話要使用 `hset`、`hget` 來對 hash 做寫以及讀 。
 4) "d"
 ```
 可以看到他實際寫入的只有 4 筆資料。
+
+<br>
+
+##### spop
+將 `set` 隨機跳出一定 `count` 數量資料。
+
+```sh
+127.0.0.1:6379> sadd set1 a a b b c d
+(integer) 4
+127.0.0.1:6379> spop set1 2
+1) "c"
+2) "d"
+127.0.0.1:6379> spop set1 2
+1) "a"
+2) "b"
+```
+
+<br>
+
+##### sdiff
+會顯示第一個集合與其他集合不同的值。
+
+```sh
+127.0.0.1:6379> sadd set1 a b c d
+(integer) 4
+127.0.0.1:6379> sadd set2 a b 
+(integer) 2
+127.0.0.1:6379> sadd set3  b 
+(integer) 1
+127.0.0.1:6379> sdiff set1 set2 set3
+1) "c"
+2) "d"
+```
+
+<br>
+
+##### 集合型態適合場景
+
+**集合(Sets) 型態適合用於文章中的Tag標籤、或是要排除相同資料**
+
 
 <br>
 
@@ -306,6 +499,12 @@ Hash 的話要使用 `hset`、`hget` 來對 hash 做寫以及讀 。
 4) "99"
 ```
 就可以看出在顯示的時候並不是依照寫入順序，而是依照我們所設定的權重去排序的。
+<br>
+
+##### 有序集合型態適合場景
+
+**有序集合(Zset) 型態適合用於需要有序排列的資料**
+
 <br>
 
 ### 發布訂閱 (PUB/SUB)	
