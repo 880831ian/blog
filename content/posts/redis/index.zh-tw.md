@@ -36,7 +36,7 @@ Redis 全名是 Remote Dictionary Server ，是快速的開源記憶體鍵值資
 
 #### 彈性的資料結構
 
-一般的鍵值資料庫提供的資料結構有限，而 Redis 提供多樣化的資料結構來滿足服務的需求，包含字串(Strings)、哈希(Hash)、列表(List)、集合(Sets)、有序集合(Zset)。(後續會有詳細介紹)
+一般的鍵值資料庫提供的資料結構有限，而 Redis 提供多樣化的資料結構來滿足服務的需求，包含字串(Strings)、哈希(Hashes)、列表(Lists)、集合(Sets)、有序集合(Zset)。(後續會有詳細介紹)
 
 #### 簡單易用
 
@@ -44,7 +44,7 @@ Redis 可以用更少、更精簡的指令來取代傳統複雜的程式碼，�
 
 #### 複寫和持久性
 
-Redis 主要採主副本架構，支援非同步複寫，可以將資料複製到多個伺服器。不但可以提升讀取效能(因為請求可分割到多部伺服器)，還可以再主服務器發生故障時快速恢復。至於持久性，Redis 支援時間點備份，會將資料複製到磁碟中。
+Redis 採主要-複本架構，支援非同步複寫，可以將資料複寫到多個複本伺服器。不但可以提升讀取效能(因為請求可分割到多部伺服器)，還可以再主服務器發生故障時快速恢復。至於持久性，Redis 支援時間點備份，會將資料複製到磁碟中。
 
 <br>
 
@@ -217,14 +217,14 @@ OK
 
 <br>
 
-#### 哈希 (Hash)
+#### 哈希 (Hashes)
 可以把他想像成二維陣列，應該會比較好理解，我網路上找了一張圖，應該會比較清楚！
 
-{{< image src="/images/redis/hash.png"  width="500" caption="Hash 示意圖 ([Redis 基本資料形態](https://blog.judysocute.com/2020/10/04/redis-%E5%9F%BA%E6%9C%AC%E8%B3%87%E6%96%99%E5%BD%A2%E6%85%8B/))" src_s="/images/redis/hash.png" src_l="/images/redis/hash.png" >}}
+{{< image src="/images/redis/hash.png"  width="500" caption="Hashes 示意圖 ([Redis 基本資料形態](https://blog.judysocute.com/2020/10/04/redis-%E5%9F%BA%E6%9C%AC%E8%B3%87%E6%96%99%E5%BD%A2%E6%85%8B/))" src_s="/images/redis/hash.png" src_l="/images/redis/hash.png" >}}
 
-Hash是用來存放一組相同性質的資料，這些資料 Hash 或是物件的某一屬性，與 String 較為不同的是他可以取回單一個欄位資料，但 String 必須取回所有資料，單一個 Key 可以存放2^32 - 1的資料欄位，
+Hashes 是用來存放一組相同性質的資料，這些資料 Hashes 或是物件的某一屬性，與 String 較為不同的是他可以取回單一個欄位資料，但 String 必須取回所有資料，單一個 Key 可以存放2^32 - 1的資料欄位，
 
-他的資料型態有像是，一個 user001 裡面是一個 Hash，Hash 裡面又會存放 name、phone、gender ，我們來實際操作看看。
+他的資料型態有像是，一個 user001 裡面是一個 Hashes，Hashes 裡面又會存放 name、phone、gender ，我們來實際操作看看。
 
 ##### hset、hget
 
@@ -238,11 +238,11 @@ Hash是用來存放一組相同性質的資料，這些資料 Hash 或是物件�
 127.0.0.1:6379> hget student gender
 "M"
 ```
-Hash 的話要使用 `hset`、`hget` 來對 hash 做儲存以及讀取。
+Hashes 的話要使用 `hset`、`hget` 來對 Hashes 做儲存以及讀取。
 
 ##### hgetall
 
-想要一次顯示 Hash 裡面的 key 跟 value ，可以使用 `hgetall` 來顯示全部資料。
+想要一次顯示 Hashes 裡面的 key 跟 value ，可以使用 `hgetall` 來顯示全部資料。
 
 ```sh
 127.0.0.1:6379> hset student name ian phone 0980123456 gender M
@@ -258,7 +258,7 @@ Hash 的話要使用 `hset`、`hget` 來對 hash 做儲存以及讀取。
 
 ##### hkeys
 
-想要單獨顯示 Hash 裡面的 key ，可以使用 `hkeys` 來顯示。
+想要單獨顯示 Hashes 裡面的 key ，可以使用 `hkeys` 來顯示。
 
 ```sh
 127.0.0.1:6379> hset student name ian phone 0980123456 gender M
@@ -273,7 +273,7 @@ Hash 的話要使用 `hset`、`hget` 來對 hash 做儲存以及讀取。
 
 ##### hvals
 
-想要單獨顯示 Hash 裡面的 value ，可以使用 `hvals` 來顯示。
+想要單獨顯示 Hashes 裡面的 value ，可以使用 `hvals` 來顯示。
 
 
 ```sh 
@@ -289,7 +289,7 @@ Hash 的話要使用 `hset`、`hget` 來對 hash 做儲存以及讀取。
 
 ##### hlen
 
-想要顯示 Hash 裡面的 key 長度，可以使用 `hlen ` 來顯示。
+想要顯示 Hashes 裡面的 key 長度，可以使用 `hlen ` 來顯示。
 
 
 ```sh
@@ -306,7 +306,7 @@ Hash 的話要使用 `hset`、`hget` 來對 hash 做儲存以及讀取。
 
 ##### hincrby
 
-想要增加 Hash 裡面的 value 整數長度，可以使用 `hincrby ` 來新增。
+想要增加 Hashes 裡面的 value 整數長度，可以使用 `hincrby ` 來新增。
 
 
 ```sh
@@ -320,7 +320,7 @@ Hash 的話要使用 `hset`、`hget` 來對 hash 做儲存以及讀取。
 
 ##### hdel
 
-想要刪除 Hash 裡面的 key，可以使用 `hdel ` 來刪除。
+想要刪除 Hashes 裡面的 key，可以使用 `hdel ` 來刪除。
 
 ```sh
 127.0.0.1:6379> hset student name ian phone 0980123456 gender M
@@ -338,19 +338,19 @@ Hash 的話要使用 `hset`、`hget` 來對 hash 做儲存以及讀取。
 
 ##### 哈希型態適合場景
 
-**哈希(Hash) 型態適合用於每次只需要取用一部分的資料**
+**哈希(Hashes) 型態適合用於每次只需要取用一部分的資料**
 
 <br>
 
-{{< image src="/images/redis/hash-template.png"  width="700" caption="Hash 適用場景圖" src_s="/images/redis/hash-template.png" src_l="/images/redis/hash-template.png" >}}
+{{< image src="/images/redis/hash-template.png"  width="700" caption="Hashes 適用場景圖" src_s="/images/redis/hash-template.png" src_l="/images/redis/hash-template.png" >}}
 
 <br>
 
-#### 列表 (List)
+#### 列表 (Lists)
 
 ##### lpush、lrange
 
-List 資料型態可以想像成程式語言中的Array物件。List 單一個Key可以存放2^32 - 1，這邊會使用到 `lpush`、`lrange` 來對 `List` 做儲存以及讀取。
+Lists 資料型態可以想像成程式語言中的Array物件。Lists 單一個Key可以存放2^32 - 1，這邊會使用到 `lpush`、`lrange` 來對 `Lists` 做儲存以及讀取。
 
 ```sh
 127.0.0.1:6379> lpush list2 a a b b c d e
@@ -419,12 +419,12 @@ OK
 
 ##### 列表型態適合場景
 
-**列表(List) 型態適合用於文章列表或者資料分頁展示的應用**
+**列表(Lists) 型態適合用於文章列表或者資料分頁展示的應用**
 
 <br>
 
 #### 集合 (Sets)
-其實跟 List 一樣，就是資料的集合，只是 `Sets` 多了一層限制，就是集合中的值不能重複，這邊會使用到 `sadd`、`smembers` 來對 `Sets` 做儲存以及讀取。
+其實跟 Lists 一樣，就是資料的集合，只是 `Sets` 多了一層限制，就是集合中的值不能重複，這邊會使用到 `sadd`、`smembers` 來對 `Sets` 做儲存以及讀取。
 
 ```sh
 127.0.0.1:6379> sadd list3 a b c d a a b b
