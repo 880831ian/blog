@@ -67,7 +67,7 @@ $ redis-cli -v
 redis-cli 6.2.6
 ```
 
-還記得我們上面有說 Redis 會分成主副架構，一個是 Server、另一個是 Cli，所以在稍後測試時，需要開啟兩個 Terminal 來執行歐！
+一個是 Server、另一個是 Cli，所以在稍後測試時，需要開啟兩個 Terminal 來執行歐！
 
 ### 執行 Redis
 
@@ -306,7 +306,7 @@ Hashes 的話要使用 `hset`、`hget` 來對 Hashes 做儲存以及讀取。
 
 ##### hincrby
 
-想要增加 Hashes 裡面的 value 整數長度，可以使用 `hincrby ` 來新增。
+想要增加 Hashes 裡面的 value 整數，可以使用 `hincrby ` 來新增。
 
 
 ```sh
