@@ -158,16 +158,16 @@ OK
 
 ##### append
 
-如果 key 已經存在並且它是字串，可以使用 `append` 指令，會在字串最後附加進去，如果不存在，則會直接建立一個，並把值存進去。
+如果 key 已經存在並且它是字串，可以使用 `append` 指令，會從字串最後面附加進去，如果不存在，則會直接建立一個，並把值存進去。
 
 ```sh
-127.0.0.1:6379> exists mykey
+127.0.0.1:6379> exists str
 (integer) 0
-127.0.0.1:6379> append mykey "Hello"
+127.0.0.1:6379> append str "Hello"
 (integer) 5
-127.0.0.1:6379> append mykey " World~"
+127.0.0.1:6379> append str " World~"
 (integer) 12
-127.0.0.1:6379> get mykey
+127.0.0.1:6379> get str
 "Hello World~"
 ```
 
@@ -423,13 +423,17 @@ OK
 
 <br>
 
+{{< image src="/images/redis/list.png"  width="700" caption="Lists 適用場景圖" src_s="/images/redis/list.png" src_l="/images/redis/list.png" >}}
+
+<br>
+
 #### 集合 (Sets)
 其實跟 Lists 一樣，就是資料的集合，只是 `Sets` 多了一層限制，就是集合中的值不能重複，這邊會使用到 `sadd`、`smembers` 來對 `Sets` 做儲存以及讀取。
 
 ```sh
-127.0.0.1:6379> sadd list3 a b c d a a b b
+127.0.0.1:6379> sadd set1 a b c d a a b b
 (integer) 4
-127.0.0.1:6379> smembers list3
+127.0.0.1:6379> smembers set1
 1) "c"
 2) "a"
 3) "b"
@@ -440,7 +444,8 @@ OK
 <br>
 
 ##### spop
-將 `set` 隨機跳出一定 `count` 數量資料。
+ 從 `set` 集合中隨機跳出一定數量的資料。
+
 
 ```sh
 127.0.0.1:6379> sadd set1 a a b b c d
@@ -455,6 +460,37 @@ OK
 
 <br>
 
+##### sismember
+
+可以使用 `sismember` 來檢查輸入值是否為 `Set` 集合的成員。
+
+```sh
+127.0.0.1:6379> sadd set a b b c d
+(integer) 4
+127.0.0.1:6379> sismember set d
+(integer) 1
+127.0.0.1:6379> sismember set f
+(integer) 0
+```
+
+<br>
+
+##### srem
+
+可以使用 `srem` 來刪除 `Set` 集合中的成員。
+
+```sh
+127.0.0.1:6379> sadd set a b b c d
+(integer) 4
+127.0.0.1:6379> srem set a d
+(integer) 2
+127.0.0.1:6379> smembers set
+1) "b"
+2) "c"
+```
+
+<br>
+
 ##### sdiff
 會顯示第一個集合與其他集合不同的值。
 
@@ -463,7 +499,7 @@ OK
 (integer) 4
 127.0.0.1:6379> sadd set2 a b 
 (integer) 2
-127.0.0.1:6379> sadd set3  b 
+127.0.0.1:6379> sadd set3 b 
 (integer) 1
 127.0.0.1:6379> sdiff set1 set2 set3
 1) "c"
@@ -476,12 +512,15 @@ OK
 
 **集合(Sets) 型態適合用於文章中的Tag標籤、或是要排除相同資料**
 
+<br>
+
+{{< image src="/images/redis/set.png"  width="700" caption="Sets 適用場景圖" src_s="/images/redis/set.png" src_l="/images/redis/set.png" >}}
 
 <br>
 
 #### 有序集合 (Zset)
 
-故名思義，有序集合就是有排序的集合，Sorted Sets 結構會 **多一個數字值去為排序的權重** 來決定先後順序，這邊會使用到 `zadd` 、 ` zrangebyscore` 來對 `Zset` 做讀寫。
+故名思義，有序集合就是有排序的集合，Sorted Sets 結構會 **多一個數字值去為排序的權重** 來決定先後順序，這邊會使用到 `zadd` 、 ` zrangebyscore` 來對 `Zset` 做儲存以及讀取。
 
 ```sh
 127.0.0.1:6379> zadd sortset 10 '10'
@@ -501,9 +540,72 @@ OK
 就可以看出在顯示的時候並不是依照寫入順序，而是依照我們所設定的權重去排序的。
 <br>
 
+##### withscores
+如果想要顯示 value 與 score ，可以使用 withscores 來顯示。
+
+```sh
+127.0.0.1:6379> zadd money 2000 tom
+(integer) 1
+127.0.0.1:6379> zadd money 3500 peter
+(integer) 1
+127.0.0.1:6379> zadd money 5000 jack
+(integer) 1
+127.0.0.1:6379> zrange money 0 -1 withscores
+1) "tom"
+2) "2000"
+3) "peter"
+4) "3500"
+5) "jack"
+6) "5000"
+```
+
+<br>
+
+##### zremrangebyscore
+移除有序集合中，指定分數內區間的所有成員。
+
+```sh
+127.0.0.1:6379> zadd money 2000 tom
+(integer) 1
+127.0.0.1:6379> zadd money 3500 peter
+(integer) 1
+127.0.0.1:6379> zadd money 5000 jack
+(integer) 1
+127.0.0.1:6379> zremrangebyscore money 1500 3500
+(integer) 2
+127.0.0.1:6379> zrange money 0 -1 withscores
+1) "jack"
+2) "5000"
+```
+
+<br>
+
+##### zcard
+可以使用 zcard 來計算集合中元素的數量。
+
+```sh
+127.0.0.1:6379> zadd sort 10 10
+(integer) 1
+127.0.0.1:6379> zadd sort 3 3
+(integer) 1
+127.0.0.1:6379> zadd sort 66 66
+(integer) 1
+127.0.0.1:6379> zadd sort 33 33
+(integer) 1
+127.0.0.1:6379> zcard sort
+(integer) 4
+```
+
+<br>
+
 ##### 有序集合型態適合場景
 
 **有序集合(Zset) 型態適合用於需要有序排列的資料**
+
+<br>
+
+{{< image src="/images/redis/zset.png"  width="700" caption="Zset 適用場景圖" src_s="/images/redis/zset.png" src_l="/images/redis/zset.png" >}}
+
 
 <br>
 
