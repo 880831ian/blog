@@ -48,7 +48,7 @@ PWA 全名是 Progressive Web App，也就是漸進式的網站應用程式，�
 
 
 ## 實際安裝
-z{{< admonition tip "面試者前往公司面試前，應事先準備以下幾點常見問題" ture >}}
+{{< admonition tip "範例下載位置" ture >}}
 先下載 https://nas.pin-yi.com/sharing/nElXqbqyt (放置小弟NAS雲端上)
 內有兩個檔案，分別是manifest.json、service-worker.js，以下各別做介紹
 {{< /admonition >}}
