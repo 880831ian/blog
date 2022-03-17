@@ -1,8 +1,8 @@
 ---
 weight: 4
-title: "Docker 介紹 (如何使用 Docker-compose 打包 PHP+MySQl+Nginx 環境)"
+title: "Docker 介紹 (如何使用 Docker-compose 建置 PHP+MySQl+Nginx 環境)"
 date: 2022-03-14T17:23:11+08:00
-lastmod: 2022-03-14T17:23:11+08:00
+lastmod: 2022-03-17T11:57:11+08:00
 draft: false
 author: "PinYi"
 authorLink: ""
@@ -581,7 +581,7 @@ demo-image             latest    1f56acbcbe9e   24 hours ago   166MB
 
 <br>
 
-接下來就使用 `docket push`，將映像檔上傳到 Docker hub 上！
+接下來就使用 `docker push`，將映像檔上傳到 Docker hub 上！
 ```sh
 $ docker push 880831ian/demo-image
 Using default tag: latest
@@ -768,10 +768,11 @@ ian~
 在執行 `docker run` 其中一個參數是 `--net` ，他可以設定 Container 要使用哪一種的網路模式，以下分別說明這些網路模式
 
 * none：在執行 Container 時，網路功能是關閉的，所以無法與此 Container 連線。
-* container：使用相同的 Network Namespace ，假設 Container 1 的 IP 是 172.17.0.2，那 Container 2 的 IP 也是 172.17.0.2。
+*  container：使用相同的 Network Namespace ，假設 Container 1 的 IP 是 172.17.0.2，那 Container 2 的 IP 也是 172.17.0.2。
 * host：Container 的網路設定和實體主機使用相同的網路設定，所以 Container 裡面也可以修改實體機器的網路設定，因此使用此模式需要考慮網路安全性上的問題。
 * bridge：Docker 預設就是此網路模式，這個網路模式就像是 NAT 的網路模式，例如實體主機的 IP 是 192.168.1.10 它會對應到 Container 裡面的 172.17.0.2，在啟動 Docker 的服務時會有一個 docker0 的網路卡來做此網路的橋接。
 * overlay：Container 之間可以在不同的實體機器上做連線，例如 Ｈost 1 有一個 Container 1 ，然後 Host 2 有一個 Container 2，Container 1 可以直接使用 overlay 的網路模式和 Container 2 做網路連線。
+* macvlan：可以直接分配實體網卡的 	MAC address 給特定的 Container，讓 Container 透過實體的網卡使用網路。
 
 <br>
 
@@ -845,6 +846,9 @@ br-36a27cab1817 Link encap:Ethernet  HWaddr 02:42:20:DF:DB:FD
           .... 省略 ....
  ```
 
+{{< image src="/images/docker/host.png"  width="500" caption="host 網路模式" src_s="/images/docker/host.png" src_l="/images/docker/host.png" >}}
+
+
 <br>
 
 #### bridge 
@@ -855,11 +859,177 @@ br-36a27cab1817 Link encap:Ethernet  HWaddr 02:42:20:DF:DB:FD
 docker run --net=bridge -it jonlabelle/network-tools
 ```
 
-可以看到使用 Bridge 模式，會建立 172.17.0.2 的 IP ，它會橋接到實體主機的 docker0 虛擬網卡
+<br>
+
+docker 會新增一個虛擬網卡作為容器網路對外的出口，預設名稱為 `docker0`，docker0 會跟本機的對外網卡(圖中的 `eth0` )相連，藉此取得對外連線的能力，也因為每一個容器都會使用一個 veth device 與 docker0 相連，所以也具備對外連線的能力。
+
+{{< image src="/images/docker/bridge.png"  width="600" caption="bridge 網路模式" src_s="/images/docker/bridge.png" src_l="/images/docker/bridge.png" >}}
+
 
 <br>
 
-{{< image src="/images/docker/bridge.png"  width="600" caption="bridge 網路模式" src_s="/images/docker/bridge.png" src_l="/images/docker/bridge.png" >}}
+#### overlay
+
+下圖是說明 Host1 實體主機裡面有 Container1，然後 Host2 實體主機裡面有 Container2，可以透過 Docker overlay 模式將 Container1 和 Container2 連接做溝通。另外還需要一個 Consol 來存連線的資料庫，在使用 overlay 時要先在 Docker 做設定，這樣才能存放 overlay 網路模式的連線資訊。
+
+
+{{< image src="/images/docker/overlay.png"  width="600" caption="overlay 網路模式" src_s="/images/docker/overlay.png" src_l="/images/docker/overlay.png" >}}
+
+
+<br>
+
+#### macvlan 
+
+macvlan 的原理就是在本機的網卡上虛擬出很多個子網卡，通過不同的 MAC 位置在數據鏈路層進行網路資料的轉發。
+
+{{< image src="/images/docker/macvlan.png"  width="450" caption="macvlan 網路模式" src_s="/images/docker/macvlan.png" src_l="/images/docker/macvlan.png" >}}
+
+
+<br>
+
+### Docker-compose
+
+我們在執行多個容器時，需要重複的下 `run` 指令來執行，以及容器與容器之間要做關聯也要記得每一個之間要怎麼連結，會變得很麻煩且不易管理，所以有了 `docker-compose` 可以將多個容器組合起來，變成一個強大的功能。
+
+只要寫一個 `docker-compose.yml` 把所有會使用到的 Docker image 以及每一個容器之間的關連或是網路的設定都寫上去，最後再使用 `docker-compose up` 指令，就可以把所有的容器都執行起來囉！
+
+<br>
+
+我們就直接來實作我們這次的標題，要使用 docker-compose 來整合 PHP  環境。
+
+1. 我們先開啟一個資料夾，取名叫 `docker-compose` ，來放置我們的 docker-compose 檔案
+2. 接著新增 `docker-compose.yml` 檔案，要準備來撰寫我們的設定檔囉！ 由於內容有點長，所以我分段說明，([這邊有放已經寫好的檔案歐](https://github.com/880831ian/docker-compose-php-mysql-nginx))
+
+<br>
+
+```yml
+version: "3.8"
+
+services:
+... 省略 ....
+```
+可以看到一開頭，會先寫版本，這邊代表的是會使用 3.8 版本的設定檔，詳細版本對照可以參考 [Compose file versions and upgrading](https://docs.docker.com/compose/compose-file/compose-versioning/) 
+
+services 可以設定用來啟動多的容器，裡面我們總共放了四個容器，分別是 nginx、php、app-data、mysql ，至於為什麼會多一個 app-data ，後面會講到。
+
+那我們來看看 nginx 裡面放了什麼吧！我會依照程式碼往下說明，有不清楚的可以底下留言！
+
+<br>
+
+#### nginx
+
+```yml
+  nginx:
+    build: ./nginx/
+    container_name: nginx
+    ports:
+      - 7777:80
+    networks:
+      mynetwork:
+    volumes_from:
+      - app-data
+```
+
+
+nginx 的 `build` 就是要執行這個 nginx 容器的映像檔，還記得我們也可以使用 Dockerfile 來撰寫映像檔案嗎！?
+ 
+由於我們還要設定其他內容，所以特別另外拉一個 nginx 資料夾來放置，裡面放了兩個檔案，分別是 Dockerfile、default.conf。
+
+Dockerfile 檔案裡面會使用 nginx 版本 1.20 ，並將 default.conf 複製到容器的 /etc/nginx/conf.d/default.conf 來取代設定。
+
+以及我們使用 `ports` 將容器80 Port 指向本機 7777 Port ，格式是 `本機 Port : 容器 Port`，
+
+再使用 `network` 設定我們 nginx 容器的網路要使用 mynetwork，最後將路徑共同掛載到 app-data。
+
+<br>
+
+#### php
+
+```yml
+  php:
+    build: ./php/
+    container_name: php
+    networks:
+      mynetwork:    
+    expose:
+      - 9000
+    volumes_from:
+      - app-data
+```
+
+php 的 `build` 是要執行這個 php 容器的映像檔，由於我們還要設定其他內容，所以特別另外拉一個 php 資料夾來放置 Dokcerfile。
+
+Dockerfile 檔案裡面會使用 php 版本 7.4-fpm，並且在容器執行 `docker-php-ext-install`、`mysqli`。
+
+並將 Port 9000 發佈於本機，再使用 `network` 設定我們 php 容器的網路要使用 mynetwork，最後將路徑共同掛載到 app-data。
+
+<br>
+
+#### app-data
+
+```yml
+  app-data:
+    image: php:7.4-fpm
+    container_name: app-data
+    volumes:
+      - ~/Desktop/docker-volume/html/:/var/www/html/
+      - ~/Desktop/docker-volume/log/:/var/log/nginx/
+    command: "true"
+```
+
+app-data 使用的映像檔是 php 版本是 7.4-fpm，我們為了要本機端可以修改 nginx 根目錄的內容，所以將容器的 /var/www/html 映射到本地端 Desktop/docker-volume/html 資料夾，
+
+以及想要查看 log ，所以將容器的 /var/log/nginx 映射到本地端 Desktop/docker-volume/log 資料夾。
+
+<br>
+
+#### mysql
+
+```yml
+  mysql:
+    image: mysql:8.0.28
+    container_name: mysql
+    networks:
+      mynetwork:
+        ipv4_address: 172.18.0.2
+    volumes:
+      - ~/Desktop/docker-volume/mysql/:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: mydb
+      MYSQL_USER: myuser
+      MYSQL_PASSWORD: password
+```
+
+mysql 使用的映像檔是 mysql 版本是 8.0.28，我們一樣使用 mynetwork 來當我們的網路，但比較特別的是，我們用 ipv4 將他設定固定 IP，方便我們後續連接資料庫使用。
+
+我們為了要保留資料庫的資料，所以將容器的 /var/lib/mysql 映射到本地端  Desktop/docker-volume/mysql 資料夾。
+
+最後的環境變數，設定 root 帳號的登入密碼，以及要使用的資料庫、使用者的帳號、使用者的密碼。
+
+<br>
+
+#### network
+
+```yml
+networks:
+  mynetwork:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.18.0.0/24
+```
+
+我們剛剛有設定一個叫 mynetwork 的網路設定，我們在最後要來定義一下他的模式以及內容，我們將他的模式定義成 橋接 (bridge) ，也是 Docker 預設的模式，再設定子網路 172.18.0.0/24。
+
+<br>
+
+最後在上面的 ([這邊有放已經寫好的檔案歐](https://github.com/880831ian/docker-compose-php-mysql-nginx)) 裡面還有多一個 html 的資料夾，裡面放的檔案是可以放在 Desktop/docker-volume/html 資料夾中，
+
+index.php 的內容會顯示 php 的版本、以及使用我們所設定的 mysql ip、使用者帳號、密碼 來做對 MySQL 做測試，如果開啟後可以顯示下方畫面，就代表我們成功用 docker-compose 將 PHP MySQL Nginx 整合再一起囉！
+
+
+{{< image src="/images/docker/localhost-7777.png"  width="600" caption="測試是否成功用 docker-compose 整合 PHP MySQL Nginx" src_s="/images/docker/localhost-7777.png" src_l="/images/docker/localhost-7777.png" >}}
 
 
 <br>
@@ -874,3 +1044,7 @@ docker run --net=bridge -it jonlabelle/network-tools
 [Dockerfile 建立自訂映像檔 — 架起網站快速又簡單（一）](https://medium.com/@jackercleaninglab/dockerfile-%E5%BB%BA%E7%AB%8B%E8%87%AA%E8%A8%82%E6%98%A0%E5%83%8F%E6%AA%94-%E6%9E%B6%E8%B5%B7%E7%B6%B2%E7%AB%99%E5%BF%AB%E9%80%9F%E5%8F%88%E7%B0%A1%E5%96%AE-%E4%B8%80-22b2743f97b9)
 
 [用30天來介紹和使用 Docker](https://ithelp.ithome.com.tw/users/20103456/ironman/1320)
+
+[Docker 網路簡介](https://godleon.github.io/blog/Docker/docker-network-overview/)
+
+[Docker-compose Giving static IP in network mode : bridge](https://stackoverflow.com/questions/61949319/docker-compose-giving-static-ip-in-network-mode-bridge)
