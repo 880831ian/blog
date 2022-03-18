@@ -49,7 +49,7 @@ Docker 是一種軟體平台，它可以快速建立、測試和部署應用程�
 
 * 更有效率的虛擬化：Docker 容器的執行不需要額外的虛擬化支援，它是核心層級的虛擬化，因此可以實作更高的效能和效率。
 
-* 更輕鬆的遷移和擴展：Docker 容器幾乎可以在任意的平台上執行，包括實體機器、虛擬機、公有雲、私有雲、個人電腦、伺服器等。 這種兼容性可以讓使用者把一個應用程式從一個平台直接遷移到另外一個。
+* 更輕鬆的遷移和擴展：Docker 容器幾乎可以在任意的平台上執行，包括實體機器、虛擬機、公有雲、私有雲、個人電腦、伺服器等。 這種兼容性可以讓使用者把一個服務從一個平台直接遷移到另外一個。
 
 * 更簡單的管理：使用 Docker，只需要小小的修改，就可以替代以往大量的更新工作。所有的修改都以增量的方式被分發和更新，從而實作自動化並且有效率的管理。
 
@@ -117,21 +117,8 @@ Docker 是利用容器來執行應用程式。
 
 #### 如何從倉庫取得映像檔
 
-我們可以先到 [Docker hub](https://hub.docker.com/) 上面看看有什麼服務或程式想要下載來做使用 [ 詳細介紹會放到[倉庫 (Repository) ](https://pin-yi.me/docker/#倉庫-repository-1)章節]，找到想要的服務，我們可以下 `docker pull {要下載的服務、程式名稱}` ，<font color='green'>我們這邊就與我們這次要實作的主題一樣，先下載 PHP+Mysql+Nginx 這三個映像檔</font>。
+我們可以先到 [Docker hub](https://hub.docker.com/) 上面看看有什麼服務或程式想要下載來做使用 [ 詳細介紹會放到[倉庫 (Repository) ](https://pin-yi.me/docker/#倉庫-repository-1)章節]，找到想要的服務，我們可以下 `docker pull {要下載的服務、程式名稱}` ，我們這邊就先下載 Mysql 這個映像檔。
 
-* php
-```sh
-$ docker pull php
-Using default tag: latest
-latest: Pulling from library/php
-f7a1c6dad281: Pull complete
-.... 省略 ....
-Digest: sha256:296a2346b33b4c561b07b48cd1c3d97c5a79dd5dcab92ec9f3bf1520d418f163
-Status: Downloaded newer image for php:latest
-docker.io/library/php:latest
-```
-
-<br>
 
 * mysql
 ```sh
@@ -147,18 +134,6 @@ docker.io/library/mysql:latest
 
 <br>
 
-* nginx
-```sh
-$ docker pull nginx
-Using default tag: latest
-latest: Pulling from library/nginx
-f7a1c6dad281: Already exists
-4d3e1d15534c: Pull complete
-.... 省略 ....
-Digest: sha256:1c13bc6de5dfca749c377974146ac05256791ca2fe1979fc8e8278bf0121d285
-Status: Downloaded newer image for nginx:latest
-docker.io/library/nginx:latest
-```
 由於我們下載的沒有加任何的 `tag` ，也就是版本，所以我們都是下載最新版 latest ，如果想要下載特定版本，可以在服務名稱後面加上 `:{版本}` ，就可以下載對應的版本囉！
 
 <br>
@@ -200,9 +175,9 @@ nginx        latest    c919045c4c2b   13 days ago   142MB
 
 想要儲存映像檔，可以使用 `docker save {映像檔名稱} > {檔案名稱}.tar`，來做儲存。
 ```sh
-$ docker save nginx > nginx.tar
-$ ls | grep 'nginx'
-nginx.tar
+$ docker save mysql > mysql.tar
+$ ls | grep 'mysql'
+mysql.tar
 ```
 
 
@@ -269,7 +244,7 @@ vim Dockerfile
 FROM ubuntu:latest
 
 # 維護者資訊
-MAINTAINER ian
+LABEL maintainer="880831ian@gmail.com"
 
 # 映像檔操作指令
 RUN apt-get update -y\
@@ -290,7 +265,7 @@ CMD ["nginx","-g","daemon off;"]
 
 <br>
 
-`MAINTAINER ian` 
+`LABEL maintainer="880831ian@gmail.com"` 
 
 維護者資訊想不也是不可以少的，這邊也可以輸入 Email 資訊，只是要注意的是此資訊會寫入產出映像檔的Author名稱屬性中。
 
