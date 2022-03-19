@@ -114,7 +114,6 @@ views 底下放的就是顯示的畫面，所以現在可以瀏覽
             $table->increments('id');
             $table->string('username')->unique();
             $table->string('password');
-            $table->string('api_token', 80)->unique();
             $table->rememberToken();
             $table->timestamps();
         });
@@ -250,7 +249,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'username', 'api_token', 'password',
+        'username',  'password',
     ];
 
     /**
@@ -259,7 +258,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $hidden = [
-        'password', 'api_token', 'remember_token', 
+        'password',  'remember_token',
     ];
 }
  ```
@@ -335,18 +334,17 @@ class User extends Authenticatable
      * Create a new user instance after a valid registration.
      *
      * @param  array  $data
-     * @return \App\User
+     * @return \App\Models\User
      */
     protected function create(array $data)
     {
         return User::create([
             'username' => $data['username'],
-            'api_token' => Str::random(60),
             'password' => bcrypt($data['password']),
         ]);
     }
 ``` 
-由於我們刪除 email ，所以要把 unique:users 設定在 username ，因為我們後續會需要用到一組 api_token 來驗證是誰在使用，所以我們在建立帳號時 `create()`，會先使用 `Str::random(60)` 產生一個60字元的隨機亂數，我們用到 str ，所以在上面還要先引用 `use Illuminate\Support\Str;`
+由於我們刪除 email ，所以要把 unique:users 設定在 username。
  
 <br>
 
@@ -396,7 +394,7 @@ class User extends Authenticatable
 
 #### Repository 設計模式
 
-還記得我們上一次，把所有的處理都放在 `Controller` 裡面嗎！如果只是單一個小專案，還可以這樣做沒關係，但專案越來越大，會使用的功能也越來越多，會造成 `Controller` 檔案肥大且難以維護，基於 SOLID 原則，我們應該要使用 Repository 設計模式來補助  `Controller`，將相關的資料庫邏輯放在不同的 `Repository`，方便中大型的專案做維護。
+還記得我們上一次，把所有的邏輯以及資料庫的處理的都放在 `Controller` 裡面嗎！如果只是單一個小專案，還可以這樣做沒關係，但專案越來越大，會使用的功能也越來越多，會造成 `Controller` 檔案肥大且難以維護，基於 SOLID 原則，我們應該要使用 Repository 設計模式來補助  `Controller`，將相關的資料庫邏輯放在不同的 `Repository`，方便中大型的專案做維護。
 
 <br> 
  
@@ -428,23 +426,39 @@ SOLID目的也就是讓你程式碼達成低耦合、高內聚、降低程式碼
     public function up()
     {
         Schema::create('message', function (Blueprint $table) {
-            $table->bigIncrements('id'); //留言板編號
+            $table->increments('id'); //留言板編號
             $table->integer('user_id')->unsigned(); //留言者ID
             $table->foreign('user_id')->references('id')->on('users');
-            $table->string('name', 20); //留言板姓名
-            $table->string('content',20); //留言板內容
-            $table->integer('like')->unsigned()->nullable(); //按讚者
-            $table->foreign('like')->references('id')->on('users');
-            $table->integer('version')->default(0); 
+            $table->string('name', 20); //留言者姓名
+            $table->string('content', 20); //留言板內容
+            $table->integer('version')->default(0);
             $table->timestamps(); //留言板建立以及編輯的時間
+            $table->softDeletes(); //軟刪除時間
         });
     }
 ```
 可以看到我們將資料庫的名稱從 `messsages` 改為 `message` ，後續程式部分也都會修改，大家要在注意一下 ～ 
 
-我們這次加入了留言者 ID (使用外鍵連接 `users` 的 `id`)、按讚者 ID (使用外鍵連接 `users` 的 `id`)、留言板樂觀鎖欄位。
+我們這次加入了留言者 ID (使用外鍵連接 `users` 的 `id`)、按讚者 ID (使用外鍵連接 `users` 的 `id`)、留言板樂觀鎖、softDeletes軟刪除的欄位(軟刪除後續會提到)。
 
-我們希望每一個留言都可以對應到 `users` 的 帳號 `id` ，以及新增一個可以讓使用者按讚的功能，使用外鍵來可以存放按讚者的 ID ，還有判斷[樂觀鎖](https://pin-yi.me/mysql#)的欄位。
+我們還希望可以多一個來存放是誰按讚的的資料表。所以一樣使用 `migration`  新增一個 {日期時間}_create_like_table.php 檔案
+
+```php
+    public function up()
+    {
+        Schema::create('like', function (Blueprint $table) {
+            $table->bigIncrements('id'); //按讚紀錄編號
+            $table->integer('message_id')->unsigned()->nullable(); //文章編號
+            $table->foreign('message_id')->references('id')->on('message');
+            $table->integer('user_id')->unsigned()->nullable(); //帳號編號
+            $table->foreign('user_id')->references('id')->on('users');
+            $table->dateTime('created_at'); //按讚紀錄建立時間
+            $table->softDeletes(); //軟刪除時間
+        });
+    }
+```
+會存放文章的編號並且使用外鍵連接 `message ` 的 `id`，以及按讚者的 ID 也使用外鍵連接 `users ` 的 `id`。
+
 
 <br>
 
@@ -461,7 +475,62 @@ SOLID目的也就是讓你程式碼達成低耦合、高內聚、降低程式碼
 
 <br>
 
-我們先設定 Middleware ，什麼是 Middleware 呢！？
+
+#### 登入 API 
+
+我們上面介紹有使用到 Laravel 內建的登入 LoginController 來進行登入，但通常我們在使用時，都會另外再多一個登入用的 API ，那我們來看一下要怎麼設計吧！
+
+我們先使用 `php artisan make:controller LoginController` 新增一個登入的 API，他會產生在 `app/Http/Controllers/` 目錄下
+
+```php
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
+
+class LoginController extends Controller
+{
+    public function login(Request $request)
+    {
+        $rules = [
+            'username' => 'required',
+            'password' => 'required'
+        ];
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            return response()->json(["message" => "格式錯誤"], 400);
+        }
+
+        if (!Auth::attempt([
+            'username' => $request->username,
+            'password' => $request->password
+        ])) {
+            return response()->json(["message" => "登入失敗"], 404);
+        }
+        return response()->json(["message" => "登入成功"], 200);
+    }
+
+    public function logout()
+    {
+        Auth::logout();
+        return response()->json(["message" => "登出成功"], 200);
+    }
+}
+```
+這邊的 Login 會先驗證格式是否正確，在使用 `Auth:attempt` 來檢查是否有註冊過，並且回傳相對應的訊息， Logout 就使用 `Auth::logout` 即可。
+
+好了後我們先到 routes/api.php 新增登入跟登出 API 的路徑
+
+```php
+Route::post('login', 'LoginController@login');
+Route::post('logout', 'LoginController@logout');
+```
+
+
+<br>
+
+我們接下來設定 Middleware ，什麼是 Middleware 呢！？
 
 #### Middleware
 Middleware 中文翻譯是中介軟體，是指從發出請求 (Request)之後，到接收回應(Response)這段來回的途徑上，
@@ -481,19 +550,20 @@ Middleware 中文翻譯是中介軟體，是指從發出請求 (Request)之後�
 假設在公園找到學生證，就不會再去圖書館了，由於這條路是死巷，所以只能返回走去KTV的路，這個就是 **Middleware** 的運作原理。
 
 所以我們需要再請求時，先檢查是否有登入，才可以去執行需要權限的功能。
-我們在建立 `user` 的時候，有多了一個 `api_token` 的欄位，就是來驗證是否登入以及操作的人是誰，那我們來看看要怎麼實作吧！
+
+我們可以使用內建的 `Auth::check` 來檢查是否有登入，我們接著看要怎麼做吧！
 
 <br>
 
-先下指令生成一個放置登入驗證權限的 `Middleware` ，我把它取名為 `TokenAuth`
+先下指令生成一個放置登入驗證權限的 `Middleware` ，我把它取名為 `ApiAuth`
 ```sh
-$  php artisan make:middleware TokenAuth
+$  php artisan make:middleware ApiAuth
 Middleware created successfully.
 ```
 
 <br>
 
-接著要把剛剛生成的 `TokenAuth` 檔案放置在 `app/Http/Kernel.php` 檔案中
+接著要把剛剛生成的 `ApiAuth` 檔案放置在 `app/Http/Kernel.php` 檔案中
 
 ```php
     protected $routeMiddleware = [
@@ -503,60 +573,63 @@ Middleware created successfully.
         'can' => \Illuminate\Auth\Middleware\Authorize::class,
         'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
-        'token.auth' => \App\Http\Middleware\TokenAuth::class  //這邊
+        'api.auth' => \App\Http\Middleware\ApiAuth::class // 這邊
     ];
 ```
 
-接下來我們就可以開始撰寫 `TokenAuth` 檔案的內容了
+接下來我們就可以開始撰寫 `ApiAuth` 檔案的內容了
 
 ```php
     public function handle($request, Closure $next)
     {
-        // 確認 Http Header 的 token 有無對應的使用者
-        $api_token = request()->header('api_token');
-        $auth_user = User::where('api_token', $api_token)->get();
-
-        if(!count($auth_user)){
+        if (!Auth::check()) {
             return response(['message' => '用戶需要認證'], 401);
         }
-
-        // 將通過驗證的使用者存放於 attribute 裡以便將變數傳給 controller
-        $request->attributes->set('auth_user', $auth_user);
         return $next($request);
     }
 ```
-這邊的意思是指，在 request 的時候，我們的 `api_token` 會夾在 header 中做請求，我們先將他存入 `$api_token` 的變數中，再來檢查 `users` 裡面是否有這個 token ，如果沒有就會回應用戶需要認證 401 的錯誤 status code，如果有這個 token ，我們就可以拿這個 token 對應的帳號名稱以及 ID 來做使用。
+這邊的意思是指，在 request 的時候，我們使用內建的 `Auth::check` 來檢查，如果登入就可以繼續使用，如果沒有登入會回傳用戶需要認證以及 401 的 status code。
 
 <br>
 
 ##### Route
 
-接下來，我們要把我們設定好的 `TokenAuth` 設定在 `route\api.php` 的路由中，
+接下來，我們要把我們設定好的 `ApiAuth` 設定在 `route\api.php` 的路由中，
 ```php
 Route::get('message', 'MessageController@getAll');
 Route::get('message/{id}', 'MessageController@get');
-Route::post('message', 'MessageController@create')->middleware('token.auth');
-Route::put('message/{id}', 'MessageController@update')->middleware('token.auth');
-Route::patch('message/{id}', 'MessageController@like')->middleware('token.auth');
-Route::delete('message/{id}', 'MessageController@delete')->middleware('token.auth');
+Route::post('message', 'MessageController@create')->middleware('api.auth');
+Route::put('message/{id}', 'MessageController@update')->middleware('api.auth');
+Route::patch('message/{id}', 'MessageController@like')->middleware('api.auth');
+Route::delete('message/{id}', 'MessageController@delete')->middleware('api.auth');
 ```
-可以看到跟我們上一篇的 route 設定的差不多，只是將 `MessageController` 後面的方法做了一點變化，簡化名稱(這與我們後面講到的 Repository 設計模式有關)，以及加上 `like` 這個方法來當作我們的按讚功能，後面將我們需要登入驗證才可以使用的功能，加入 `middleware('token.auth');`
+可以看到跟我們上一篇的 route 設定的差不多，只是將 `MessageController` 後面的方法做了一點變化，簡化名稱(這與我們後面講到的 Repository 設計模式有關)，以及加上 `like` 這個方法來當作我們的按讚功能，後面將我們需要登入驗證才可以使用的功能，加入 `middleware('api.auth');`
 
 <br>
 
 ##### Model
 
-因為我們在取得資料時，不希望顯示 `user_id` 以及 `version` 給使用者，所以在 `app\Models\Message.php` 這個 model 裡面用 `hidden` 來做設定。
+因為我們在取得資料時，不希望顯示 `user_id` 以及 `version` 跟 `deleted_at` 給使用者，所以在 `app\Models\Message.php` 這個 model 裡面用 `hidden` 來做設定。
 
 ```php
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class Message extends Model
+{
+    use SoftDeletes;
+
     protected $table = 'Message';
     protected $fillable = [
-        'content'
+        'user_id', 'name', 'content'
     ];
     protected $hidden = [
-        'user_id','version'
+        'user_id', 'version', 'deleted_at'
     ];
+}
 ```
+可以看到我們還多引用 SoftDeletes ，它叫軟刪除，一般來說我們在設計資料庫時，不會真正意義上的把資料刪掉，還記得我們再新增 message 跟 like 資料表時，有多了一個  `softDeletes()` 欄位嗎，這個欄位就是當我們刪除時，他會記錄刪除時間，但在查詢時就不會顯示這筆資料，讓使用者覺得資料已經真正刪除了，但實際上資料還是存在在資料庫中。
+
 
 <br>
 
@@ -566,66 +639,57 @@ Route::delete('message/{id}', 'MessageController@delete')->middleware('token.aut
 
 <br>
 
-我們要先在 `app` 底下新增一個 `Repositories` 目錄，在目錄底下再新增一個 `MessageRepository.php` 檔案來放我們處理邏輯以及與資料庫拿資料的程式，我們整個檔案分成幾段來看
+我們要先在 `app` 底下新增一個 `Repositories` 目錄，在目錄底下再新增一個 `MessageRepository.php` 檔案來專門放我們與資料庫拿資料的程式，讓 Controller 單純處理商業邏輯我們整個檔案分成幾段來看
 
 <br>
 
-先新增這個檔案的命名空間，並將我們原先放在 `MessageController` 的引用給拿進來。
+先新增這個檔案的命名空間，並將我們原先放在 `MessageController` 的引用給拿進來，我們 Repositories 單純處理與資料庫的交握，或是引用 Message 跟 like 的 Models。
 ```php
 namespace App\Repositories;
 
 use App\Models\Message;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use App\Models\Like;
 ```
 
 <br>
 
-設定一個變數 `$message` 用 __construct 做初始化，把 Message model 可以使用 $tihs->message 來做代替
+由於我們在 Controller 會先做一些權限的判斷，分別是 getMessageUserID 取得 message 的發文者 id 以及 getLikeMessage 取得 like 的 id。
 ```php
-    /** @var Message 注入的 Message model */
-
-    private $message;
-
-    public function __construct(Message $message)
+    public static function getMessageUserID($id)
     {
-        $this->message = $message;
+        $message = Message::find($id);
+        return $message->user_id;
+    }
+
+    public static function getLikeMessage($id)
+    {
+        return Like::find($id);
     }
 ```
-
-<br>
-
-由於我們會重複做一些功能，所以我們也把這些功能給拉出來，後續就不需要重覆做一樣的事情
-```php
-    // 回傳{id}是否存在
-    public function is_exists($id){
-        return $this->message->where('id',$id)->exists();
-    }
-    
-    // 回傳content是否大於20
-    public function max20_content(Request $request){
-        $rules = ['content' => 'max:20'];
-        $validator = Validator::make($request->all(), $rules);
-        return $validator->fails();
-    }
-```
-分別是 `is_exists()` 檢查輸入的 `$id` 是否存在，以及 `max20_content()` 是檢查 request 的 content 是否符合小於20的格式。
 
 <br>
 
 **查詢留言功能**
 ```php
-    // 回傳全部的留言資料
-    public function getAllMessage() {
-        return  response($this->message->get()->toJson(JSON_PRETTY_PRINT), 200);   
+    public static function getAllMessage()
+    {
+        return Message::select('message.*')
+            ->leftjoin('like', 'message.id', '=', 'like.message_id')
+            ->selectRaw('count(like.id) as like_count')
+            ->groupBy('id')
+            ->get()
+            ->toArray();
     }
 
-    // 回傳{id}留言資料
-    public function getMessage($id){
-        if ($this->is_exists($id)) {
-            return response($this->message->where('id',$id)->get()->toJson(JSON_PRETTY_PRINT), 200);
-        }
-        return response()->json(["message" => "找不到訊息"], 404);
+    public static function getMessage($id)
+    {
+        return Message::select('message.*')
+            ->leftjoin('like', 'message.id', '=', 'like.message_id')
+            ->selectRaw('count(like.id) as like_count')
+            ->groupBy('id')
+            ->get()
+            ->where('id', $id)
+            ->toArray();
     }
 ```
 回傳全部的留言資料 `getAllMessage()`，將 model 的資料表所有的資料 get()，再去做 tojson 並回應 200 的 status code ; 
@@ -637,20 +701,13 @@ use Illuminate\Support\Facades\Validator;
 **新增留言功能**
 
 ```php
-    // 回傳是否新增留言成功
-    public function createMessage(Request $request) { 
-        if ($this->max20_content($request)) {
-            return response()->json(["message" => "內容長度超過20個字元"], 400);
-        }
-            $auth_user = request()->get('auth_user')->first();
-            $message = new Message;
-            $message->user_id = $auth_user['id'];
-            $message->name = $auth_user['username'];
-            $message->content = $request->content;
-            $message->like = NULL;
-            $message->updated_at = NULL;
-            $message->save();
-            return response()->json(["message" => "新增紀錄成功"], 201);
+    public static function createMessage($id, $username, $content)
+    {
+        Message::create([
+            'user_id' => $id,
+            'name' => $username,
+            'content' => $content,
+        ]);
     }
 ```
 先檢查 request 是否符合 `max20_content ()` ，如果符合就回應內容長度超過20個字元以及 400 的 status code ; 如果不符合就取我們 `TokenAuth` 的 `auth_user` 將他的 $auth_user['id'] 以及 $auth_user['username'] 寫入 $message->user_id 跟 $message->name ，以及其他的資料做儲存，最後回應新增紀錄成功 201 的 status code 。
@@ -660,26 +717,16 @@ use Illuminate\Support\Facades\Validator;
 **修改留言功能**
 
 ```php
-    // 回傳是否修改留言成功
-    public function updateMessage(Request $request,$id) {
-        if ($this->is_exists($id) && Message::where('version',0)->lockForUpdate() ) { 
-            if ($this->max20_content($request)) {
-                return response()->json(["message" => "內容長度超過20個字元"], 400);
-            }
-                $auth_user = request()->get('auth_user')->first();
-                $message = Message::find($id);
-                if ($auth_user['id'] == $message->user_id) {
-                    $message->user_id = $auth_user['id'];
-                    $message->name = $auth_user['username'];
-                    $message->content = is_null($request->content) ? $message->content : $request->content;
-                    $message->like = NULL;
-                    $message->version = '1';
-                    $message->save();
-                    return response()->json(["message" => "修改成功"],200);
-                }
-                return response()->json(["message" => "權限不正確"],403);
-        }
-            return response()->json(["message" => "找不到訊息"],404);
+    public static function updateMessage($id, $user_id, $username, $content)
+    {
+        Message::where('version', 0)
+            ->where('id', $id)
+            ->update([
+                'user_id' => $user_id,
+                'name' => $username,
+                'content' => $content,
+                'version' => 1
+            ]);
     }
 ```
 先檢查 `is_exists($id)` 是否存在以及 version 做 lockForUpdate，再檢查 max20_content() 內容有沒有超過，如果都沒有才可以進行修改，修改時，也會檢查是否有 request content ，沒有就照舊使用原始資料，也會依照判斷回傳修改成功 200、權限不正確 403、找不到訊息 404 的 status code 。
@@ -689,16 +736,13 @@ use Illuminate\Support\Facades\Validator;
 **按讚留言功能**
 
 ```php
-    // 回傳是否按讚留言成功
-    public function likeMessage(Request $request,$id) {
-        if ($this->is_exists($id)) {
-            $auth_user = request()->get('auth_user')->first();
-            $message = Message::find($id);
-            $message->like = is_null($message->like) ? $auth_user['id'] : NULL;
-            $message->save();
-            return response()->json(["message" => "按讚成功"],200);
-        }
-            return response()->json(["message" => "找不到訊息"],404);
+    public static function likeMessage($id, $user_id)
+    {
+        Like::create([
+            'message_id' => $id,
+            'user_id' => $user_id,
+            'created_at' => \Carbon\Carbon::now()
+        ]);
     }
 ```
 由於按讚功能，只需要檢查按讚 id 是否存在即可，故使用 is_exists($id) 來做判斷，有 id 就回應按讚成功 200，沒有就回應找不到訊息 404。
@@ -708,18 +752,14 @@ use Illuminate\Support\Facades\Validator;
 **刪除功能**
 
 ```php
-    // 回傳是否刪除留言成功
-    public function deleteMessage($id) {
-        if ($this->is_exists($id)) {
-            $auth_user = request()->get('auth_user')->first();
-            $message = Message::find($id);
-            if ($auth_user['id'] == $message->user_id) {
-                $message->delete();
-                return response()->json(["message" => "刪除成功,沒有返回任何內容"],204);
-            }
-            return response()->json(["message" => "權限不正確"],403);
-        } 
-            return response()->json(["message" => "找不到訊息"],404);
+    public static function deletelikeMessage($id)
+    {
+        Like::where('message_id', $id)->delete();
+    }
+
+    public static function deleteMessage($id)
+    {
+        Message::find($id)->delete();
     }
 ```
 也一樣，先檢查 id 是否存在，再檢查刪除者是否與留言者為同一人。
@@ -731,53 +771,105 @@ use Illuminate\Support\Facades\Validator;
 ```php
 namespace App\Http\Controllers;
 
-use App\Models\Message;
-use Illuminate\Http\Request;
 use App\Repositories\MessageRepository;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 ```
-一樣基本的命名空間以及引用都沒變。
+我們在商業邏輯上會處理 Request 內容，以及使用 MessageRepository 來對資料庫做存取、Auth 取的登入者的資訊等等功能，所以要記得先把他引用進來歐。
 
 <br>
 
 ```php
-   protected $messageRepository;
-
-    public function __construct(MessageRepository $messageRepository)
-    {
-        $this->messageRepository = $messageRepository;
-
-    }
-
-    // 查詢全部留言
+class MessageController extends Controller
+{
+    // 查詢全部的留言
     public function getAll()
     {
-        return $this->messageRepository->getAllMessage();  
+        return MessageRepository::getAllMessage();
     }
-    // 查詢{id}留言
+
+    // 查詢id留言
     public function get($id)
     {
-       return $this->messageRepository->getMessage($id);
+        if (!MessageRepository::getMessage($id)) {
+            return response()->json(["message" => "找不到留言"], 404);
+        }
+        return MessageRepository::getMessage($id);
     }
+
     // 新增留言
     public function create(Request $request)
     {
-        return $this->messageRepository->createMessage($request);
+        $user = Auth::user();
+
+        $rules = ['content' => 'max:20'];
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            return response()->json(["message" => "內容長度超過20個字元"], 400);
+        }
+
+        MessageRepository::createMessage($user->id, $user->username, $request->content);
+        return response()->json(["message" => "新增紀錄成功"], 201);
     }
-    // 修改{id}留言
-    public function update(Request $request,$id)
+
+    // 更新id留言
+    public function update(Request $request, $id)
     {
-        return $this->messageRepository->updateMessage($request,$id);
-    }  
-    // 按讚{id}留言
-    public function like(Request $request,$id)
+        $user = Auth::user();
+
+        if (!MessageRepository::getMessage($id)) {
+            return response()->json(["message" => "找不到留言"], 404);
+        }
+
+        $rules = ['content' => 'max:20'];
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            return response()->json(["message" => "內容長度超過20個字元"], 400);
+        }
+
+        if (MessageRepository::getMessageUserID($id) != $user->id) {
+            return response()->json(["message" => "權限不正確"], 403);
+        }
+
+        MessageRepository::updateMessage($id, $user->id, $user->username, $request->content);
+        return response()->json(["message" => "修改成功"], 200);
+    }
+
+    // 按讚id留言
+    public function like($id)
     {
-        return $this->messageRepository->likeMessage($request,$id);
-    }  
-    // 刪除{id}留言
+        $user = Auth::user();
+
+        if (!MessageRepository::getMessage($id)) {
+            return response()->json(["message" => "找不到留言"], 404);
+        }
+
+        MessageRepository::likeMessage($id, $user->id);
+        return response()->json(["message" => "按讚成功"], 200);
+    }
+
+    // 刪除id留言
     public function delete($id)
     {
-        return $this->messageRepository->deleteMessage($id);
-    }  
+        $user = Auth::user();
+
+        if (!MessageRepository::getMessage($id)) {
+            return response()->json(["message" => "找不到留言"], 404);
+        }
+
+        if (MessageRepository::getMessageUserID($id) != $user->id) {
+            return response()->json(["message" => "權限不正確"], 403);
+        }
+
+        if (MessageRepository::getLikeMessage($id)->exists()) {
+            MessageRepository::deletelikeMessage($id);
+        }
+
+        MessageRepository::deleteMessage($id);
+        return response()->json(["message" => "刪除成功,沒有返回任何內容"], 204);
+    }
+}
 ``` 
 我們將它改成這樣，可以讓我們的 Controller 變的更容易閱讀，以及更方便修改。
 
