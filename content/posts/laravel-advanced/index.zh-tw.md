@@ -611,6 +611,8 @@ Route::delete('message/{id}', 'MessageController@delete')->middleware('api.auth'
 
 因為我們在取得資料時，不希望顯示 `user_id` 以及 `version` 跟 `deleted_at` 給使用者，所以在 `app\Models\Message.php` 這個 model 裡面用 `hidden` 來做設定。
 
+**message**
+
 ```php
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -628,14 +630,35 @@ class Message extends Model
     ];
 }
 ```
+
+<br>
+
+**like**
+
+```php
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class Like extends Model
+{
+    use SoftDeletes;
+
+    protected $table = 'like';
+    protected $fillable = [
+        'message_id', 'user_id', 'created_at'
+    ];
+    public $timestamps = false;
+}
+```
+
 可以看到我們還多引用 SoftDeletes ，它叫軟刪除，一般來說我們在設計資料庫時，不會真正意義上的把資料刪掉，還記得我們再新增 message 跟 like 資料表時，有多了一個  `softDeletes()` 欄位嗎，這個欄位就是當我們刪除時，他會記錄刪除時間，但在查詢時就不會顯示這筆資料，讓使用者覺得資料已經真正刪除了，但實際上資料還是存在在資料庫中。
 
 
 <br>
 
-##### Controller/Repository
+##### Repository
 
-接下來會連同 Repository 設計模式一起說明，所以會講得比較詳細。還記得我們上次把 RESTful API 要處理的邏輯都寫在 Controller 裡面嗎，我們光是一個小功能就讓整個 Controller 變得肥大，在後續維護時或是新增功能時，會導致十分不便利，因此我們要將 Repository 設計模式 給導入，那要怎麼實作呢～
+還記得我們上次把 RESTful API 要處理的邏輯都寫在 Controller 裡面嗎，我們光是一個小功能就讓整個 Controller 變得肥大，在後續維護時或是新增功能時，會導致十分不便利，因此我們要將 Repository 設計模式 給導入，那要怎麼實作呢～
 
 <br>
 
@@ -669,7 +692,7 @@ use App\Models\Like;
 
 <br>
 
-**查詢留言功能**
+**查詢留言資料讀取**
 ```php
     public static function getAllMessage()
     {
@@ -692,13 +715,13 @@ use App\Models\Like;
             ->toArray();
     }
 ```
-回傳全部的留言資料 `getAllMessage()`，將 model 的資料表所有的資料 get()，再去做 tojson 並回應 200 的 status code ; 
+回傳全部的留言資料 `getAllMessage()`，使用 Message model 的資料表收尋 message要輸出的資料(不想要顯示的已經在 model 透過 hidden 給隱藏)，最後多一個來顯示各個文章的總數。
 
-回傳{id}留言資料 `getMessage($id)` 會先使用到我們的 `is_exist()` 來做檢查，如果有就搜尋這個 id ，並他的資料做  get() ，再去做 tojson 並回應 200 的 status code ; 如果沒有，就回應找不到訊息以及 404 的 status code 。
+回傳{id}留言資料 `getMessage($id)`，一樣跟回傳全部的留言資料一樣，只是多一個 where 來顯示輸出的 id 留言資料。
 
 <br>
 
-**新增留言功能**
+**新增留言資料讀取**
 
 ```php
     public static function createMessage($id, $username, $content)
@@ -710,11 +733,11 @@ use App\Models\Like;
         ]);
     }
 ```
-先檢查 request 是否符合 `max20_content ()` ，如果符合就回應內容長度超過20個字元以及 400 的 status code ; 如果不符合就取我們 `TokenAuth` 的 `auth_user` 將他的 $auth_user['id'] 以及 $auth_user['username'] 寫入 $message->user_id 跟 $message->name ，以及其他的資料做儲存，最後回應新增紀錄成功 201 的 status code 。
+使用 create 來新增資料，將 user_id 帶入傳值進來的 `$id`，name 帶入 `$username`，content 帶入 `$content`。
 
 <br>
 
-**修改留言功能**
+**修改留言資料讀取**
 
 ```php
     public static function updateMessage($id, $user_id, $username, $content)
@@ -729,11 +752,11 @@ use App\Models\Like;
             ]);
     }
 ```
-先檢查 `is_exists($id)` 是否存在以及 version 做 lockForUpdate，再檢查 max20_content() 內容有沒有超過，如果都沒有才可以進行修改，修改時，也會檢查是否有 request content ，沒有就照舊使用原始資料，也會依照判斷回傳修改成功 200、權限不正確 403、找不到訊息 404 的 status code 。
+先使用 where 來檢查樂觀鎖 version ，在查詢此 id 是否存在，最後用 update 來更新資料表，分別更新 user_id 、name、content、version 等欄位。
 
 <br>
 
-**按讚留言功能**
+**按讚留言資料讀取**
 
 ```php
     public static function likeMessage($id, $user_id)
@@ -745,11 +768,11 @@ use App\Models\Like;
         ]);
     }
 ```
-由於按讚功能，只需要檢查按讚 id 是否存在即可，故使用 is_exists($id) 來做判斷，有 id 就回應按讚成功 200，沒有就回應找不到訊息 404。
+按讚我們會在 like 的資料表中來新增紀錄，所以也是使用 create 來新增，新增 message_id、user_id、created_at 。
 
 <br>
 
-**刪除功能**
+**刪除留言資料讀取**
 
 ```php
     public static function deletelikeMessage($id)
@@ -762,9 +785,12 @@ use App\Models\Like;
         Message::find($id)->delete();
     }
 ```
-也一樣，先檢查 id 是否存在，再檢查刪除者是否與留言者為同一人。
+刪除功能由於 FK 外鍵的緣故，所以刪除 message 時，必須先刪除綁定的 like id ，所以分別會有兩個，一個是刪除 like 、另一個是刪除 message。
 
 <br>
+
+
+##### Controller
 
 到這裡我們講完 `MessageRepository.php` 的內容了，那原本的 Controller 剩下什麼呢 !?
 
@@ -780,9 +806,10 @@ use Illuminate\Support\Facades\Validator;
 
 <br>
 
+**查詢留言功能**
+
+
 ```php
-class MessageController extends Controller
-{
     // 查詢全部的留言
     public function getAll()
     {
@@ -797,7 +824,18 @@ class MessageController extends Controller
         }
         return MessageRepository::getMessage($id);
     }
+``` 
 
+<font color='red'>由於我們 MessageRepository 都只有單純與資料庫進行交握，所以所有的判斷以及回傳都會在 controller 來做處理</font>，`getAll()` 會使用到 MessageRepository::getAllMessage() 的查詢並回傳顯示查詢的資料。
+
+`get(id)` 會先用 MessageRepository::getMessage($id) 來檢查 id 是否存在，如果不存在就會回傳找不到留言 404 的 status code，如果存在就回傳 MessageRepository::getMessage($id) 的資料。
+
+<br>
+
+
+**新增留言功能**
+
+```php
     // 新增留言
     public function create(Request $request)
     {
@@ -812,7 +850,15 @@ class MessageController extends Controller
         MessageRepository::createMessage($user->id, $user->username, $request->content);
         return response()->json(["message" => "新增紀錄成功"], 201);
     }
+```
 
+我們先使用 `Auth::user()` 將登入的使用者資料存在 `$user` 中，在檢查輸入的 request 內容是否有超過 20 的字元，如果有就回傳內容長度超過20個字元 400。接著就用 MessageRepository::createMessage 將要新增的資料帶入，最後回傳新增紀錄成功 201 。
+
+<br>
+
+**修改留言功能**
+
+```php
     // 更新id留言
     public function update(Request $request, $id)
     {
@@ -835,7 +881,15 @@ class MessageController extends Controller
         MessageRepository::updateMessage($id, $user->id, $user->username, $request->content);
         return response()->json(["message" => "修改成功"], 200);
     }
+```
 
+一樣先把登入的使用者存入 `$user`，檢查是否有這個 id ，沒有就回傳找不到留言 404，接下來檢查輸入的內容長度，如果超過，就回傳內容長度超過20個字元 400，再檢查要修改留言的與留言者是不是同一個使用者，如果不是就回傳權限不正確 403，最後就將資料透過 MessageRepository::updateMessage 來做更新，並回傳修改成功 200。
+
+<br>
+
+**按讚留言功能**
+
+```php
     // 按讚id留言
     public function like($id)
     {
@@ -848,7 +902,14 @@ class MessageController extends Controller
         MessageRepository::likeMessage($id, $user->id);
         return response()->json(["message" => "按讚成功"], 200);
     }
+```
+一樣先把登入的使用者存入 `$user`，先檢查是否有這個留言，沒有就回傳找不到留言 404，接著就使用 MessageRepository::likeMessage 來記錄按讚留言，並回傳按讚成功 404。
 
+<br>
+
+**刪除留言功能**
+
+```php
     // 刪除id留言
     public function delete($id)
     {
@@ -869,16 +930,15 @@ class MessageController extends Controller
         MessageRepository::deleteMessage($id);
         return response()->json(["message" => "刪除成功,沒有返回任何內容"], 204);
     }
-}
-``` 
-我們將它改成這樣，可以讓我們的 Controller 變的更容易閱讀，以及更方便修改。
+```
+
+一樣先把登入的使用者存入 `$user`，先檢查是否有這個留言，沒有就回傳找不到留言 404，在檢查文章權限，錯誤就回傳權限不正確 403，最後檢查是否有被按讚，有的話要先刪除 like 裡面的按讚紀錄，最後再刪除文章(所有的刪除，因為我們在 model 裡面有使用 softdelete 軟刪除，所以不會真的刪除，而是在欄位的 deleted_at 加入刪除時間，來讓查詢時以為他被刪除了！)
 
 <br>
 
-
 ### Postman 測試
 
-那我們一樣來看一下 Postman 的測試，這邊只顯示有加入 api_token 以及沒有的差別。
+那我們一樣來看一下 Postman 的測試，這邊只顯示是否有登入去使用 API。
 
 
 ##### 新增留言 - 成功
