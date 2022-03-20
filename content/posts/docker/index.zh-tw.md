@@ -578,12 +578,10 @@ latest: digest: sha256:814caacaf3dad3eccb43dc9bcad635d0473bd5946295d40ca1ec23d13
 
 ## Docker 進階
 
-本章節會分成五個常用功能來說明
+本章節會分成三個常用功能來說明
 
 * Volumes 介紹
 * Network 模式介紹和比較
-* Services 間如何連線
-* DB/Redis 資料如何永久保存
 * Docker-compose 介紹與實作
 
 <br>
