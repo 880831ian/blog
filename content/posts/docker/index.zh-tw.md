@@ -13,7 +13,7 @@ resources:
 - name: "featured-image-preview"
   src: "featured-image-preview.webp"
 
-tags: ["Docker" , "容器" , "虛擬化"]
+tags: ["Docker" , "容器" , "虛擬化" , "實作", "介紹"]
 categories: ["codenotes"]
 
 lightgallery: true
