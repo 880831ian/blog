@@ -593,7 +593,7 @@ latest: digest: sha256:814caacaf3dad3eccb43dc9bcad635d0473bd5946295d40ca1ec23d13
 所以我們可以使用兩種方式來解決！
 
 1. 在執行 `docker run` 指令時加入 `-v` 參數，將 Container 的檔案路徑映射到本地端的檔案路徑。
-2. 在撰寫 Dockerfile 時，加入 `VOLUME` 指令，可以做到把資料存放在實體主機上。使用這個方法還要搭配我們介紹 [Container 的狀態 > 檢查容器狀態 (inspect)](https://pin-yi.me/docker/#檢查容器狀態-inspect) ，來查詢本地端檔案的存放路徑在哪。
+2. 在撰寫 Dockerfile 時，加入 `VOLUME` 指令，可以將資料存放在實體主機上。使用這個方法還要搭配我們介紹 [Container 的狀態 > 檢查容器狀態 (inspect)](https://pin-yi.me/docker/#檢查容器狀態-inspect) ，來查詢本地端檔案的存放路徑在哪。
 
 <br>
 
@@ -864,11 +864,11 @@ macvlan 的原理就是在本機的網卡上虛擬出很多個子網卡，通過
 
 我們在執行多個容器時，需要重複的下 `run` 指令來執行，以及容器與容器之間要做關聯也要記得每一個之間要怎麼連結，會變得很麻煩且不易管理，所以有了 `docker-compose` 可以將多個容器組合起來，變成一個強大的功能。
 
-只要寫一個 `docker-compose.yml` 把所有會使用到的 Docker image 以及每一個容器之間的關連或是網路的設定都寫上去，最後再使用 `docker-compose up` 指令，就可以把所有的容器都執行起來囉！
+只要寫一個 `docker-compose.yml` 把所有會使用到的 Docker image 以及每一個容器之間的關聯或是網路的設定都寫上去，最後再使用 `docker-compose up` 指令，就可以把所有的容器都執行起來囉！
 
 <br>
 
-我們就直接來實作我們這次的標題，要使用 docker-compose 來整合 PHP  環境。
+我們就直接來實作我們這次的標題，要使用 docker-compose 來整合 PHP MySQL Nginx 環境。
 
 1. 我們先開啟一個資料夾，取名叫 `docker-compose` ，來放置我們的 docker-compose 檔案
 2. 接著新增 `docker-compose.yml` 檔案，要準備來撰寫我們的設定檔囉！ 由於內容有點長，所以我分段說明，([這邊有放已經寫好的檔案歐](https://github.com/880831ian/docker-compose-php-mysql-nginx))
