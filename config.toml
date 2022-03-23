@@ -629,11 +629,11 @@ ignoreErrors = ["err-missing-comment-accesstoken", "err-missing-oembed-accesstok
         enable = true
         # Disqus shortname to use Disqus in posts
         # Disqus 的 shortname，用來在文章中啟用 Disqus 評論系統
-        shortname = ""
+        shortname = "pin-yi"
       # Vssue comment config (https://github.com/meteorlxy/vssue)
       # Vssue 評論系統設置 (https://github.com/meteorlxy/vssue)
       [params.page.comment.vssue]
-        enable = true
+        enable = false
         # Vssue platform API ("bitbucket", "gitea", "gitee", "github", "github-v4", "gitlab")
         # Vssue 平臺 API ("bitbucket", "gitea", "gitee", "github", "github-v4", "gitlab")
         platform = "github"
@@ -698,7 +698,7 @@ ignoreErrors = ["err-missing-comment-accesstoken", "err-missing-oembed-accesstok
       # Commento comment config (https://commento.io/)
       # Commento comment 評論系統設置 (https://commento.io/)
       [params.page.comment.commento]
-        enable = true
+        enable = false
       # Utterances comment config (https://utteranc.es/)
       # Utterances comment 評論系統設置 (https://utteranc.es/)
       [params.page.comment.utterances]
