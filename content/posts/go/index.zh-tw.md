@@ -123,7 +123,7 @@ GOROOT="/usr/local/go"
 在 Go 1.11 後提供了 go modules 讓我們不一定要把專案程式碼放在 `$GOPATH/src` 中做開發，因此我們先來設定我在要放專案的資料夾，打開 `.bash_profile`：
 
 ```
-export GOPATH=/Desktop/你專案的路徑/goworkspace
+export GOPATH=你專案的路徑/goworkspace
 $ source .bash_profile
 ```
 
@@ -295,12 +295,12 @@ dlv          go-outline   gomodifytags goplay       gopls        gotests      he
 
 ```
 $  ls
-go.mod   hello    hello.go
+go.mod   hello    .
 
 $ go clean
 
 $ ls 
-go.mod   hello.go
+go.mod   .
 ```
 
 <br>
@@ -412,9 +412,9 @@ Hello World //黃色
 
 <br>
 
-## Go 變數型態
+## Go 資料型態
 
-我們在學習 Go 語言之前，要先了解一下基本的變數型態，可以簡單分為 字串、整數、浮點數、布林值
+我們在學習 Go 語言之前，要先了解一下基本的資料型態，可以簡單分為 字串、整數、浮點數、布林值、字符
 
 ### 字串
 
@@ -430,7 +430,7 @@ func main() {
 ```      
 
 ```sh
-$ go run hello.go
+$ go run .
 資料型態 name : ian(string)
 資料型態 address : 台中市太平區(string)
 ```
@@ -477,7 +477,7 @@ func main() {
 ```
 
 ```sh
-$ go run hello.go
+$ go run .
 97, 1200, 500, 034, 0xff
 ```
 
@@ -503,7 +503,7 @@ func main() {
 ```
 
 ```sh
-$ go run hello.go
+$ go run .
 245.466400(float64)
 1452.339966(float32)
 ```
@@ -523,7 +523,7 @@ func main() {
 ```
 
 ```sh
-$  go run hello.go 
+$ go run . 
 true(bool)
 false(bool)
 ```
@@ -543,11 +543,40 @@ func main() {
 ```
 
 ```sh
-$  go run hello.go 
+$ go run . 
 true
 false
 false
 true
+```
+
+<br>
+
+### 字符
+
+字符串中的每一個元素叫做字符，字符會使用單引號匡起來，像是 `"abc"` 這個字符串，其中 `'a'`、`'b'`、`'c'` 就是字符，可以從字符串元素中來獲得字符。
+
+Go 語言的字符有以下兩種：
+* 一種叫 byte 類型，可以叫做 uint8 類型，代表 ASCll 碼的一個字符。
+* 另一種是 rune 類型，代表一個 UTF-8 字符，當需要處理中文、日文或是其他複合字符時，就會使用到 rune 類型。rune 類型等於 int32 類型。
+
+```go
+func main (){
+	var a byte = 'A'
+	var b rune = '嗨'
+	fmt.Printf("%d(%T) %d(%T)\n",a,a,b,b) //%d 十進制表示,%T 輸出型態
+	fmt.Printf("%c %c\n",a,b) //%c 相應Unicode碼點所表示的字符
+	fmt.Printf("%x %x\n",a,b) //%x 六進制表示
+	fmt.Printf("%U %U\n",a,b) //%U 輸出格式為Unicode格式:U+hhhh的字符串
+}
+```
+
+```sh
+$ go run . 
+65(uint8) 21992(int32)
+A 嗨
+41 55e8
+U+0041 U+55E8
 ```
 
 <br>
@@ -579,6 +608,11 @@ func main() {
 	fmt.Printf("res1 : %v, res2 : %v, res3 : %v\n", res1, res2, res3)
 }
 ```
+
+```sh
+res1 : 40, res2 : 10, res3 : 38.48451000647496
+```
+
 <br>
 
 ### 型別轉換
@@ -595,9 +629,9 @@ func main() {
 ```
 
 ```sh
-$ go run hello.go 
+$ go run . 
 # command-line-arguments
-./hello.go:11:19: invalid operation: a + c (mismatched types int64 and int)
+./.:11:19: invalid operation: a + c (mismatched types int64 and int)
 ```
 就會跳出錯誤說明別不同，無法直接做運算，那要怎麼辦呢！？
 
@@ -615,7 +649,7 @@ func main() {
 ```
 
 ```sh
-$ go run hello.go 
+$ go run . 
 4 4 504
 ```
 一般將值 `v` 轉換為型別 `T` 的語法是 `T(V)` 。
@@ -633,3 +667,5 @@ $ go run hello.go
 [30天就Go(3)：操作指令及Hello World!](https://ithelp.ithome.com.tw/articles/10186546)
 
 [Golang 基本型別、運算子和型別轉換](https://calvertyang.github.io/2019/11/05/golang-basic-types-operators-type-conversion/)
+
+[Go語言字符類型（byte和rune）](http://c.biancheng.net/view/18.html)

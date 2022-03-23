@@ -931,7 +931,7 @@ ignoreErrors = ["err-missing-comment-accesstoken", "err-missing-oembed-accesstok
 [author]
   name = "PinYi"
   email = "880831ian@gmail.com"
-  link = ""
+  link = "https://pin-yi.me"
 
 # Sitemap config
 # 網站地圖配置
