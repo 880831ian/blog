@@ -22,7 +22,7 @@ toc:
   auto: false
 ---
 
-本篇是 [Laravel 介紹](https://pin-yi.me/laravel/) 的進階篇，由於有些說明介紹會沿用上一篇的內容，建議要先瀏覽過上一篇呦～
+本篇是 [Laravel 介紹](https://pin-yi.me/laravel/) 的進階篇，由於有些說明介紹會沿用上一篇的內容，建議要先瀏覽過上一篇呦～ ([可以從這裡下載最後程式碼！](https://github.com/880831ian/laravel-restful-api-messageboard))
 
 ## Laravel 內建會員系統
 
@@ -388,7 +388,7 @@ class User extends Authenticatable
  
 ### 驗證 RESTful API 是否登入
 
-本篇會使用到上一篇的 RESTful API 留言板來進行修改，所以有興趣的朋友，可以先去看玩上一篇 [Laravel 介紹]() 歐～
+本篇會使用到上一篇的 RESTful API 留言板來進行修改，所以有興趣的朋友，可以先去看玩上一篇 [Laravel 介紹](https://pin-yi.me/laravel) 歐～
 
 接下來也會同時使用 Repository 設計模式來修改程式碼，那 Repository 設計模式是什麼呢，讓我先來介紹。
 
@@ -429,7 +429,6 @@ SOLID目的也就是讓你程式碼達成低耦合、高內聚、降低程式碼
             $table->increments('id'); //留言板編號
             $table->integer('user_id')->unsigned(); //留言者ID
             $table->foreign('user_id')->references('id')->on('users');
-            $table->string('name', 20); //留言者姓名
             $table->string('content', 20); //留言板內容
             $table->integer('version')->default(0);
             $table->timestamps(); //留言板建立以及編輯的時間
@@ -439,7 +438,7 @@ SOLID目的也就是讓你程式碼達成低耦合、高內聚、降低程式碼
 ```
 可以看到我們將資料庫的名稱從 `messsages` 改為 `message` ，後續程式部分也都會修改，大家要在注意一下 ～ 
 
-我們這次加入了留言者 ID (使用外鍵連接 `users` 的 `id`)、按讚者 ID (使用外鍵連接 `users` 的 `id`)、留言板樂觀鎖、softDeletes軟刪除的欄位(軟刪除後續會提到)。
+我們這次加入了留言者 ID (使用外鍵連接 `users` 的 `id`)、按讚者 ID (使用外鍵連接 `users` 的 `id`)、留言板樂觀鎖、softDeletes軟刪除的欄位(軟刪除後續會提到)，並且因為我們同樣的資料不要重複儲存，所以刪除 `name` 要查詢就使用 join 來做查詢。
 
 我們還希望可以多一個來存放是誰按讚的的資料表。所以一樣使用 `migration`  新增一個 {日期時間}_create_like_table.php 檔案
 
@@ -506,7 +505,7 @@ class LoginController extends Controller
             'username' => $request->username,
             'password' => $request->password
         ])) {
-            return response()->json(["message" => "登入失敗"], 404);
+            return response()->json(["message" => "登入失敗"], 401);
         }
         return response()->json(["message" => "登入成功"], 200);
     }
@@ -609,11 +608,13 @@ Route::delete('message/{id}', 'MessageController@delete')->middleware('api.auth'
 
 ##### Model
 
-因為我們在取得資料時，不希望顯示 `user_id` 以及 `version` 跟 `deleted_at` 給使用者，所以在 `app\Models\Message.php` 這個 model 裡面用 `hidden` 來做設定。
+因為我們在取得資料時，不希望顯示 `deleted_at` 給使用者，所以在 `app\Models\Message.php` 這個 model 裡面用 `hidden` 來做設定。
 
 **message**
 
 ```php
+namespace App\Models;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -626,7 +627,7 @@ class Message extends Model
         'user_id', 'name', 'content'
     ];
     protected $hidden = [
-        'user_id', 'version', 'deleted_at'
+        'deleted_at'
     ];
 }
 ```
@@ -678,28 +679,20 @@ use App\Models\Like;
 
 <br>
 
-由於我們在 Controller 會先做一些權限的判斷，分別是 getMessageUserID 取得 message 的發文者 id 以及 getLikeMessage 取得 like 的 id。
-```php
-    public static function getMessageUserID($id)
-    {
-        $message = Message::find($id);
-        return $message->user_id;
-    }
-
-    public static function getLikeMessage($id)
-    {
-        return Like::find($id);
-    }
-```
-
-<br>
-
 **查詢留言資料讀取**
 ```php
     public static function getAllMessage()
     {
-        return Message::select('message.*')
+        return Message::select(
+            'message.id',
+            'message.user_id',
+            "users.username as name",
+            'message.version',
+            'message.created_at',
+            'message.updated_at'
+        )
             ->leftjoin('like', 'message.id', '=', 'like.message_id')
+            ->leftjoin('users', 'message.user_id', '=', 'users.id')
             ->selectRaw('count(like.id) as like_count')
             ->groupBy('id')
             ->get()
@@ -708,8 +701,16 @@ use App\Models\Like;
 
     public static function getMessage($id)
     {
-        return Message::select('message.*')
+        return Message::select(
+            'message.id',
+            'message.user_id',
+            "users.username as name",
+            'message.version',
+            'message.created_at',
+            'message.updated_at'
+        )
             ->leftjoin('like', 'message.id', '=', 'like.message_id')
+            ->leftjoin('users', 'message.user_id', '=', 'users.id')
             ->selectRaw('count(like.id) as like_count')
             ->groupBy('id')
             ->get()
@@ -717,7 +718,7 @@ use App\Models\Like;
             ->toArray();
     }
 ```
-回傳全部的留言資料 `getAllMessage()`，使用 Message model 的資料表收尋 message要輸出的資料(不想要顯示的已經在 model 透過 hidden 給隱藏)，最後多一個來顯示各個文章的總數。
+回傳全部的留言資料 `getAllMessage()`，由於我們想要顯示留言者 id，只能一個一個把我們想要的 select 出來，不能透過 model 來顯示，使用 leftjoin 來查詢，最後多一個來顯示各個文章的總數。
 
 回傳{id}留言資料 `getMessage($id)`，一樣跟回傳全部的留言資料一樣，只是多一個 where 來顯示輸出的 id 留言資料。
 
@@ -726,35 +727,33 @@ use App\Models\Like;
 **新增留言資料讀取**
 
 ```php
-    public static function createMessage($id, $username, $content)
+    public static function createMessage($id, $content)
     {
         Message::create([
             'user_id' => $id,
-            'name' => $username,
-            'content' => $content,
+            'content' => $content
         ]);
     }
 ```
-使用 create 來新增資料，將 user_id 帶入傳值進來的 `$id`，name 帶入 `$username`，content 帶入 `$content`。
+使用 create 來新增資料，將 user_id 帶入傳值進來的 `$id`，content 帶入 `$content`。
 
 <br>
 
 **修改留言資料讀取**
 
 ```php
-    public static function updateMessage($id, $user_id, $username, $content)
+    public static function updateMessage($id, $user_id, $content, $version)
     {
-        Message::where('version', 0)
+        return Message::where('version', $version)
             ->where('id', $id)
+            ->where('user_id', $user_id)
             ->update([
-                'user_id' => $user_id,
-                'name' => $username,
                 'content' => $content,
-                'version' => 1
+                'version' => $version + 1
             ]);
     }
 ```
-先使用 where 來檢查樂觀鎖 version ，在查詢此 id 是否存在，最後用 update 來更新資料表，分別更新 user_id 、name、content、version 等欄位。
+先使用 where 來檢查樂觀鎖 version ，在查詢此 id 是否存在，以及編輯者是否為發文者，最後用 update 來更新資料表，分別更新 user_id、content、version(樂觀鎖每次加1) 等欄位。
 
 <br>
 
@@ -777,17 +776,14 @@ use App\Models\Like;
 **刪除留言資料讀取**
 
 ```php
-    public static function deletelikeMessage($id)
+    public static function deleteMessage($id, $user_id)
     {
-        Like::where('message_id', $id)->delete();
-    }
-
-    public static function deleteMessage($id)
-    {
-        Message::find($id)->delete();
+        return Message::where('id', $id)
+            ->where('user_id', $user_id)
+            ->delete();
     }
 ```
-刪除功能由於 FK 外鍵的緣故，所以刪除 message 時，必須先刪除綁定的 like id ，所以分別會有兩個，一個是刪除 like 、另一個是刪除 message。
+刪除功能因為我們使用軟刪除，所以不用顧慮 FK 外鍵，所以可以直接刪除 message。
 
 <br>
 
@@ -821,16 +817,16 @@ use Illuminate\Support\Facades\Validator;
     // 查詢id留言
     public function get($id)
     {
-        if (!MessageRepository::getMessage($id)) {
+        if (!$message = MessageRepository::getMessage($id)) {
             return response()->json(["message" => "找不到留言"], 404);
         }
-        return MessageRepository::getMessage($id);
+        return $message;
     }
 ``` 
 
-<font color='red'>由於我們 MessageRepository 都只有單純與資料庫進行交握，所以所有的判斷以及回傳都會在 controller 來做處理</font>，`getAll()` 會使用到 MessageRepository::getAllMessage() 的查詢並回傳顯示查詢的資料。
+<font color='red'>由於我們 MessageRepository 都只有單純與資料庫進行交握，所有的判斷以及回傳都會在 controller 來做處理</font>，`getAll()` 會使用到 `MessageRepository::getAllMessage()` 的查詢並回傳顯示查詢的資料。
 
-`get(id)` 會先用 MessageRepository::getMessage($id) 來檢查 id 是否存在，如果不存在就會回傳找不到留言 404 的 status code，如果存在就回傳 MessageRepository::getMessage($id) 的資料。
+`get(id)` 會先用 MessageRepository::getMessage($id) 來檢查 id 是否存在，如果不存在就會回傳找不到留言 404 的 status code，如果存在就回傳存在變數 `message` 的 `MessageRepository::getMessage($id)` 資料。
 
 <br>
 
@@ -849,7 +845,7 @@ use Illuminate\Support\Facades\Validator;
             return response()->json(["message" => "內容長度超過20個字元"], 400);
         }
 
-        MessageRepository::createMessage($user->id, $user->username, $request->content);
+        MessageRepository::createMessage($user->id, $request->content);
         return response()->json(["message" => "新增紀錄成功"], 201);
     }
 ```
@@ -866,7 +862,7 @@ use Illuminate\Support\Facades\Validator;
     {
         $user = Auth::user();
 
-        if (!MessageRepository::getMessage($id)) {
+        if (!$message = MessageRepository::getMessage($id)) {
             return response()->json(["message" => "找不到留言"], 404);
         }
 
@@ -876,16 +872,21 @@ use Illuminate\Support\Facades\Validator;
             return response()->json(["message" => "內容長度超過20個字元"], 400);
         }
 
-        if (MessageRepository::getMessageUserID($id) != $user->id) {
+        foreach ($message as $key => $value) {
+            $user_id = $value['user_id'];
+            $version = $value['version'];
+        }
+
+        if ($user_id != $user->id) {
             return response()->json(["message" => "權限不正確"], 403);
         }
 
-        MessageRepository::updateMessage($id, $user->id, $user->username, $request->content);
+        MessageRepository::updateMessage($id, $user->id, $request->content, $version);
         return response()->json(["message" => "修改成功"], 200);
     }
 ```
 
-一樣先把登入的使用者存入 `$user`，檢查是否有這個 id ，沒有就回傳找不到留言 404，接下來檢查輸入的內容長度，如果超過，就回傳內容長度超過20個字元 400，再檢查要修改留言的與留言者是不是同一個使用者，如果不是就回傳權限不正確 403，最後就將資料透過 MessageRepository::updateMessage 來做更新，並回傳修改成功 200。
+一樣先把登入的使用者存入 `$user`，檢查是否有這個 id ，沒有就回傳找不到留言 404，接下來檢查輸入的內容長度，如果超過，就回傳內容長度超過20個字元 400，再檢查要修改留言的與留言者是不是同一個使用者，如果不是就回傳權限不正確 403，最後就將資料透過 `MessageRepository::updateMessage` 來做更新，並回傳修改成功 200。
 
 <br>
 
@@ -905,7 +906,7 @@ use Illuminate\Support\Facades\Validator;
         return response()->json(["message" => "按讚成功"], 200);
     }
 ```
-一樣先把登入的使用者存入 `$user`，先檢查是否有這個留言，沒有就回傳找不到留言 404，接著就使用 MessageRepository::likeMessage 來記錄按讚留言，並回傳按讚成功 404。
+一樣先把登入的使用者存入 `$user`，先檢查是否有這個留言，沒有就回傳找不到留言 404，接著就使用 `MessageRepository::likeMessage` 來記錄按讚留言，並回傳按讚成功 404。
 
 <br>
 
@@ -917,19 +918,19 @@ use Illuminate\Support\Facades\Validator;
     {
         $user = Auth::user();
 
-        if (!MessageRepository::getMessage($id)) {
+        if (!$message = MessageRepository::getMessage($id)) {
             return response()->json(["message" => "找不到留言"], 404);
         }
 
-        if (MessageRepository::getMessageUserID($id) != $user->id) {
+        foreach ($message as $key => $value) {
+            $user_id = $value['user_id'];
+        }
+
+        if ($user_id != $user->id) {
             return response()->json(["message" => "權限不正確"], 403);
         }
 
-        if (MessageRepository::getLikeMessage($id)->exists()) {
-            MessageRepository::deletelikeMessage($id);
-        }
-
-        MessageRepository::deleteMessage($id);
+        MessageRepository::deleteMessage($id, $user->id);
         return response()->json(["message" => "刪除成功,沒有返回任何內容"], 204);
     }
 ```
@@ -940,8 +941,17 @@ use Illuminate\Support\Facades\Validator;
 
 ### Postman 測試
 
-那我們一樣來看一下 Postman 的測試，這邊只顯示是否有登入去使用 API。
+那我們一樣來看一下 Postman 的測試，這邊只顯示需要登入才能使用的 API。
 
+##### 登入
+
+{{< image src="/images/laravel-advanced/login.png"  width="600" caption="新增留言 成功" src_s="/images/laravel-advanced/login.png" src_l="/images/laravel-advanced/login.png" >}}
+
+<br> 
+
+我們把帳號密碼放到 Body 來傳送，如果帳號密碼正確，就會顯示登入成功，並且在 Cookie 裡面的 laravel_session，可以用來判斷是否登入，以及登入的人是誰。
+
+<br> 
 
 ##### 新增留言 - 成功
 
@@ -949,7 +959,7 @@ use Illuminate\Support\Facades\Validator;
 
 <br> 
 
-新增留言成功，因為 **<font color='blue'>api 有輸入 api_token</font>** 會顯示新增紀錄成功以及回應 201 Created
+新增留言成功，因為 **<font color='blue'>有登入，所以可以從 Cookie 裡面的 laravel_session 來驗證是否登入</font>** 會顯示新增紀錄成功以及回應 201 Created
 
 <br>
 
@@ -959,7 +969,7 @@ use Illuminate\Support\Facades\Validator;
 
 <br> 
 
-新增留言失敗，因為 **<font color='red'>api 沒有輸入 api_token</font>** ，所以會顯示用戶需要認證以及回應 401 Unauthorized
+新增留言失敗，因為 **<font color='red'>沒有登入，無法從 Cookie 裡面的 laravel_session 來驗證是否登入</font>** ，所以會顯示用戶需要認證以及回應 401 Unauthorized
 
 <br>
 
@@ -969,17 +979,17 @@ use Illuminate\Support\Facades\Validator;
 
 <br> 
 
-修改留言成功，因為 **<font color='blue'>api 有輸入 api_token</font>** ，會顯示修改成功以及回應 200 OK
+修改留言成功，因為 **<font color='blue'>有登入，所以可以從 Cookie 裡面的 laravel_session 來驗證是否登入</font>** ，會顯示修改成功以及回應 200 OK
 
 <br>
 
-##### 修改留言 - 失敗 - 沒有Token
+##### 修改留言 - 失敗 - 沒有登入
 
 {{< image src="/images/laravel-advanced/put-api-error-1.png"  width="600" caption="修改留言 失敗" src_s="/images/laravel-advanced/put-api-error-1.png" src_l="/images/laravel-advanced/put-api-error-1.png" >}}
 
 <br> 
 
-修改留言失敗，因為 **<font color='red'>api 沒有輸入 api_token</font>** ，會顯示用戶需要認證以及回應 401 Unauthorized
+修改留言失敗，因為 **<font color='red'>沒有登入，無法從 Cookie 裡面的 laravel_session 來驗證是否登入</font>** ，會顯示用戶需要認證以及回應 401 Unauthorized
 
 <br>
 
@@ -989,7 +999,7 @@ use Illuminate\Support\Facades\Validator;
 
 <br> 
 
-修改留言失敗，雖然 **<font color='red'>有輸入正確的 token ，但不是當初的留言者</font>** ，會顯示權限不正確以及回應 403 Forbidden
+修改留言失敗，雖然 **<font color='red'>有登入，但存在 Cookie 裡面的 laravel_session 不是當初的留言者</font>** ，會顯示權限不正確以及回應 403 Forbidden
 
 <br>
 
@@ -999,17 +1009,17 @@ use Illuminate\Support\Facades\Validator;
 
 <br> 
 
-按讚留言成功，因為 **<font color='blue'>api 有輸入 api_token</font>** ，會顯示按讚成功以及回應 200 OK
+按讚留言成功，因為 **<font color='blue'>有登入，所以可以從 Cookie 裡面的 laravel_session 來驗證是否登入</font>** ，會顯示按讚成功以及回應 200 OK
 
 <br>
 
-##### 按讚留言 - 失敗 - 沒有Token
+##### 按讚留言 - 失敗 - 沒有登入
 
 {{< image src="/images/laravel-advanced/patch-api-error.png"  width="600" caption="修改留言 失敗" src_s="/images/laravel-advanced/patch-api-error.png" src_l="/images/laravel-advanced/patch-api-error.png" >}}
 
 <br> 
 
-按讚留言失敗，因為 **<font color='red'>api 沒有輸入 api_token</font>** ，會顯示用戶需要認證以及回應 401 Unauthorized
+按讚留言失敗，因為 **<font color='red'>沒有登入，無法從 Cookie 裡面的 laravel_session 來驗證是否登入</font>** ，會顯示用戶需要認證以及回應 401 Unauthorized
 
 <br>
 
@@ -1019,17 +1029,17 @@ use Illuminate\Support\Facades\Validator;
 
 <br> 
 
-刪除留言成功，因為 **<font color='blue'>api 有輸入 api_token</font>** ，不會顯示訊息但會回應 204 No Content
+刪除留言成功，因為 **<font color='blue'>有登入，所以可以從 Cookie 裡面的 laravel_session 來驗證是否登入</font>** ，不會顯示訊息但會回應 204 No Content
 
 <br>
 
-##### 刪除留言 - 失敗 - 沒有Token
+##### 刪除留言 - 失敗 - 沒有登入
 
 {{< image src="/images/laravel-advanced/delete-api-error-1.png"  width="600" caption="刪除留言 失敗" src_s="/images/laravel-advanced/delete-api-error-1.png" src_l="/images/laravel-advanced/delete-api-error-1.png" >}}
 
 <br> 
 
-刪除留言失敗，因為 **<font color='red'>api 沒有輸入 api_token</font>** ，會顯示用戶需要認證以及回應 401 Unauthorized
+刪除留言失敗，因為 **<font color='red'>沒有登入，無法從 Cookie 裡面的 laravel_session 來驗證是否登入</font>** ，會顯示用戶需要認證以及回應 401 Unauthorized
 
 <br>
 
