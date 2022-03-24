@@ -29,12 +29,11 @@ Go 全名是 go programming language 又被稱為 Golang，是因為 go 這個�
 Go 是由 Google 開發並維護的編譯程式語言，支援垃圾回收與併發，由於開發人之一也是 C 語言的作者，所以 Go 也繼承了許多 C 的風格
 其特點有以下幾點：
 
-* 開源：Go 為開放原始碼，可以直接到[專案的 GitHub](https://github.com/golang/go) 來查看 Go 底層的原始碼。
 * 靜態型別：因爲靜態型別的特性，可以在編譯期間就進行完整的型別檢查，可以找出大部分的型別錯誤。
 * 編譯速度：因為 Go 語言先天優勢是架構設計非常單純，並不像物件導向語言龐大，取在編譯時不用相依其他的 library，因此讓他有更好的執行效率。
 * 語法簡潔：Go 關鍵字不多，不到30幾個，因為其關鍵字不少也與 C 的關鍵字重複，學習更容易上手。
-* 原生支援併發：在目前電腦都是多顆核心的時代下， Go 在先天設計上就支援了併發，也就是所謂的 `goroutine` ，這是 Go 最大特色之一，thread 的使用是非常消耗系統資源的，當使用越多管理上也越困難，而 goroutine 有輕巧低消耗資源的特性，而這個優點在於系統支援的消耗也會比較少。
-
+*  垃圾回收：Go 有自動內存回收機制，不需要由開發人員來管理。垃圾回收是一種記憶體管理機制。當程式所佔用記憶體不再被該程式給存取時，會借助垃圾回收演算法，將記憶體空間歸還給作業系統。
+* 原生支援併發：Go 語言支持併發，只需要透過 `go` 關鍵字來開啟 `goroutine` 將可。`goroutine` 是輕量級的線程，`goroutine` 的調度是由 Go 運行時進行管理的。 
 <br>
 
 {{< admonition tip "靜態型別/動態型別" ture >}}
@@ -414,7 +413,7 @@ Hello World //黃色
 
 ## Go 資料型態
 
-我們在學習 Go 語言之前，要先了解一下基本的資料型態，可以簡單分為 字串、整數、浮點數、布林值、字符
+我們在學習 Go 語言之前，要先了解一下基本的資料型態，可以簡單分為 字串、字符、整數、浮點數、布林值、字典
 
 ### 字串
 
@@ -433,6 +432,35 @@ func main() {
 $ go run .
 資料型態 name : ian(string)
 資料型態 address : 台中市太平區(string)
+```
+
+<br>
+
+### 字符
+
+字串中的每一個元素叫做字符，字符會使用單引號匡起來，像是 `"abc"` 這個字串，其中 `'a'`、`'b'`、`'c'` 就是字符，可以從字串元素中來獲得字符。
+
+Go 語言的字符有以下兩種：
+* 一種叫 byte 類型，可以叫做 uint8 類型，代表 ASCll 碼的一個字符。
+* 另一種是 rune 類型，代表一個 UTF-8 字符，當需要處理中文、日文或是其他複合字符時，就會使用到 rune 類型。rune 類型等於 int32 類型。
+
+```go
+func main (){
+	var a byte = 'A'
+	var b rune = '嗨'
+	fmt.Printf("%c %c\n",a,b) //%c 所表示的字符
+	fmt.Printf("%d(%T) %d(%T)\n",a,a,b,b) //%d 十進制表示,%T 輸出型態
+	fmt.Printf("%x %x\n",a,b) //%x 十六進制表示
+	fmt.Printf("%U %U\n",a,b) //%U 輸出格式為 Unicode 格式:U+hhhh的字串
+}
+```
+
+```sh
+$ go run . 
+A 嗨
+65(uint8) 21992(int32)
+41 55e8
+U+0041 U+55E8
 ```
 
 <br>
@@ -552,34 +580,28 @@ true
 
 <br>
 
-### 字符
+### 字典
 
-字符串中的每一個元素叫做字符，字符會使用單引號匡起來，像是 `"abc"` 這個字符串，其中 `'a'`、`'b'`、`'c'` 就是字符，可以從字符串元素中來獲得字符。
-
-Go 語言的字符有以下兩種：
-* 一種叫 byte 類型，可以叫做 uint8 類型，代表 ASCll 碼的一個字符。
-* 另一種是 rune 類型，代表一個 UTF-8 字符，當需要處理中文、日文或是其他複合字符時，就會使用到 rune 類型。rune 類型等於 int32 類型。
+字典 (Map) 是 Go 內建的類型，是一種無序列的鍵值(key-value)的集合，可以透過 key 快速查詢並找到數據。
 
 ```go
 func main (){
-	var a byte = 'A'
-	var b rune = '嗨'
-	fmt.Printf("%d(%T) %d(%T)\n",a,a,b,b) //%d 十進制表示,%T 輸出型態
-	fmt.Printf("%c %c\n",a,b) //%c 相應Unicode碼點所表示的字符
-	fmt.Printf("%x %x\n",a,b) //%x 六進制表示
-	fmt.Printf("%U %U\n",a,b) //%U 輸出格式為Unicode格式:U+hhhh的字符串
+	var map3 = map[int]string{99 : "Go", 87 : "Python", 79 : "Java", 93: "Html"}
+	fmt.Println(map3)
+	fmt.Println("map3[99] =",map3[99],"map3[79] =",map3[79])
+	map3[79] = "PHP"
+	fmt.Println("修改數據後，map3[99] =",map3[99],"map3[79] =",map3[79])
 }
 ```
 
 ```sh
-$ go run . 
-65(uint8) 21992(int32)
-A 嗨
-41 55e8
-U+0041 U+55E8
+map[79:Java 87:Python 93:Html 99:Go]
+map3[99] = Go map3[79] = Java
+修改數據後，map3[99] = Go map3[79] = PHP
 ```
 
 <br>
+
 
 ### 數字型別的運算
 
@@ -656,6 +678,422 @@ $ go run .
 
 <br>
 
+## 變數
+
+在使用變數做宣告時，Go 有三種宣告的方式：
+
+<br>
+
+### 使用 `:=` 來宣告
+
+表示之前沒有進行宣告過。這是 Go 中最常見的變數宣告方式，但不能用縮寫方式來定義變數 (`foo := bar`) ，因為 package scope 的變數都是以 keyword 作為開頭。且只能在 function 中使用。
+
+```go
+func main (){
+	a := "bar"
+	b := 4
+	c := true
+	// 也可以簡寫成這樣
+	d,e,f := "bar",4,true
+
+	fmt.Println(a,b,c);
+	fmt.Println(d,e,f);
+}
+```
+
+```sh
+$ go run . 
+bar 4 true
+bar 4 true
+```
+
+<br>
+
+### 先宣告資料型態
+
+當不知道變數的起始值，或是需要在 package scope 中宣告變數時可以使用。
+
+```go
+var a string
+var b int 
+
+// 也可以簡寫成這樣
+var (
+	c string
+	d float64
+)
+func main (){
+	a = "Hello"
+	b = 123
+	c = "ian"
+	d = 3.5
+	fmt.Println(a,b,c,d)
+}
+```
+⚠️ 不建議把變數寫在全域變數中 ⚠️
+
+```sh
+$ go run . 
+Hello 123 ian 3.5
+```
+
+<br>
+
+### 直接宣告並賦值
+
+```go
+func main (){
+	var (
+		a string = "Hello"
+		b int = 9999
+	)
+	fmt.Println(a,b)
+}
+```
+
+```sh
+$ go run . 
+Hello 9999
+```
+
+<br>
+
+### 常見宣告錯誤
+
+#### 重複宣告變數
+
+```go
+func main (){
+	name := "ian"
+	name := "pinyi"
+}
+```
+
+```sh
+$ go run . 
+# github.com/880831ian/go/test
+./test.go:4:2: name declared but not used
+./test.go:5:7: no new variables on left side of :=
+```
+
+<br>
+
+#### 在 main 函式外賦值
+
+```go
+var a int
+b := "Hello"
+
+func main (){
+	fmt.Println(a,b)
+}
+```
+
+```sh
+$ go run . 
+# github.com/880831ian/go/test
+./test.go:6:1: syntax error: non-declaration statement outside function body
+```
+我們可以在 main 函示外宣告變數，但無法在 main 函示外賦值
+
+<br>
+
+#### 沒有宣告變數就使用
+
+```go
+func main (){
+	a = 123
+	b = true
+	fmt.Println(a,b)
+}
+```
+
+```sh
+$ go run . 
+# github.com/880831ian/go/test
+./test.go:6:2: undefined: a
+./test.go:7:2: undefined: b
+./test.go:8:14: undefined: a
+./test.go:8:16: undefined: b
+```
+
+
+<br>
+
+## 指標
+
+指標是程式語言中的一類資料型態及其物件或變數，用來表示或儲存記憶體位址，這個位址的值直接指向存在該位址物件的值。 
+
+Go 支持指標，指標的聲明方式為 *T，可以藉由變數名稱前面加 `&` 來獲得變數的位址，由於 Go 支持 GC ，在 Go 語言中不支持指標的運算。
+
+表示法
+* 使用 `&` 來獲得指標位址
+* 使用 `*` 來獲得指標所指向的值
+
+```go
+func main (){
+	var a int = 2
+	fmt.Println("a 位址 = ",&a)
+	fmt.Printf("a 的值 = %v\n",a)
+ 	var pInt *int = &a
+	fmt.Printf("pInt = %v\n", pInt);
+	fmt.Printf("pInt 位址 = %v\n",&pInt);
+	fmt.Printf("pInt 指向的值 = %v\n",*pInt);
+	}
+```
+
+```sh
+$ go run . 
+a 位址 =  0xc0000b2008
+a 的值 = 2
+pInt = 0xc0000b2008
+pInt 位址 = 0xc0000ac020
+pInt 指向的值 = 2
+```
+
+<br>
+
+## 陣列
+
+我們已經學會要怎麼宣告變數，以及如何使用變數來儲存值。但當我們今天想要儲存多個數值，使用原本的方式，需要創建許多變數才能儲存，因此有了陣列可以來儲存大量資料。
+
+陣列 (Array) 是由同類型的元素集合所組成的資料結構，分配一塊連續的記憶體來儲存。利用元素的索引可以計算出該元素所對應的儲存位址。
+
+```go
+func main (){
+	var a [2] float32
+	a [0] = 1.4
+	a [1] = 3.14
+
+	// 也可以寫成這樣
+	var b = [] int{10,20,99,333}
+
+	fmt.Println(a,b)
+	fmt.Println(len(a),len(b))
+}
+```
+
+```sh
+$ go run . 
+[1.4 3.14] [10 20 99 333]
+2 4
+```
+
+<br>
+上面有提到他會分配連續記憶體來儲存，我們來看看他是怎麼存的！
+
+```go
+func main (){
+	a := [...]int{1, 2, 3}
+	fmt.Printf("a 的記憶體分配位置 %p \n", &a)
+	fmt.Printf("陣列 a 的索引 0 記憶體分配位置 %p \n", &a[0])
+	fmt.Printf("陣列 a 的索引 1 記憶體分配位置 %p \n", &a[1])
+	fmt.Printf("陣列 a 的索引 2 記憶體分配位置 %p \n", &a[2])
+}
+```
+
+```sh
+$ go run . 
+a 的記憶體分配位置 0xc0000180f0 
+陣列 a 的索引 0 記憶體分配位置 0xc0000180f0 
+陣列 a 的索引 1 記憶體分配位置 0xc0000180f8 
+陣列 a 的索引 2 記憶體分配位置 0xc000018100 
+```	
+
+<br>
+
+### 切片
+
+前面提到陣列的使用，陣列使用上是實值類型以及陣列長度不可變的情況下，間接限制了使用場景。
+
+切片 (slice) 是 Go 對陣列在進行一層的封裝，是一個擁有相同類型元素的可變長度序列，可以非常靈活運用，自動擴容，可以快速且方便的操作數據集合。
+
+```go
+func main (){
+	a := [5]int{55, 75, 58, 60, 66}
+	b := a[1:4] //基於 a 陣列創建切片，等於 b 包含 a[1],a[2],a[3]
+	fmt.Printf("%v(%T)\n",b,b)
+	fmt.Printf("len = %v\n",len(b))
+	fmt.Printf("cap = %v\n",cap(b))	
+}
+```
+
+```sh
+[75 58 60]([]int)
+len = 3
+cap = 4
+```
+len(b) 表示可見元素有幾個(直接打印元素看到的元素個數)，而 cap(b) 表示所有元素有幾個。
+[1:4] 代表從第二個元素開始 (0為第一個元素，1位第二的元素)，取到第4個元素 (下標為 4-1=3，下標3代表第四個元素)
+
+<br>
+
+使用 `make` 創建切片
+
+```go
+func main (){
+	a := make([]int,5,10) //創建長度 5,容量 10 的切片
+	fmt.Printf("a = %v, len(a) = %v, cap(a) = %v\n",a,len(a),cap(a))
+}
+```
+
+```sh
+a = [0 0 0 0 0], len(a) = 5, cap(a) = 10
+```
+使用 make 創建長度5 ,容量 10 的切片
+
+<br>
+
+使用 `append` 來達成新增元素
+
+```go
+func main (){
+	a := make([]int,2,2) //創建長度 5,容量 10 的切片
+	fmt.Printf("a = %v, len(a) = %v, cap(a) = %v\n",a,len(a),cap(a))
+	fmt.Printf("指標為 %p\n", a)
+	a = append(a, 10)
+	fmt.Printf("a = %v, len(a) = %v, cap(a) = %v\n",a,len(a),cap(a))
+	fmt.Printf("擴容後指標 = %p 改變\n", a)
+}
+```
+
+```sh
+a = [0 0], len(a) = 2, cap(a) = 2
+指標為 0xc000014080
+a = [0 0 10], len(a) = 3, cap(a) = 4
+擴容後指標 = 0xc000022080 改變
+```
+
+## Go 條件判斷
+
+### if 
+
+結構裡會有一個條件，這個條件是個布林值，如果為 true，則會執行括號裡的程式碼，相反的，如果為 false，則會直接跳過：
+
+```go
+func main (){
+	var x = 2
+	var y = 1
+
+	fmt.Println("x = ",x,",y = ",y)
+	
+	if x==y {
+		fmt.Printf("%v 等於 %v\n",x,y)
+	}
+	fmt.Printf("%v 不等於 %v\n",x,y)
+}
+```
+
+```sh
+$ go run .
+x =  2 ,y =  1
+2 不等於 1
+```
+
+<br>
+
+### switch
+
+switch 其目的是簡化 if 的條件，swtich 會檢查符合的條件，並且執行條件內的程式碼，如果都沒有符合，則會執行 default 內的程式碼：
+
+```go
+func main (){
+	x := 12
+	switch {
+	case x < 10:
+		fmt.Printf("%v 小於 10\n",x)
+	case x < 20:
+		fmt.Printf("%v 大於等於10, 小於 20\n",x)
+	default:
+		fmt.Printf("%v 大於 20\n",x)
+	}
+}
+```
+
+```sh
+$ go run .
+12 大於等於10, 小於 20
+```
+
+<br>
+
+## Go 迴圈
+
+迴圈是每個程式語言必備的函式，藉以迴圈來達成反覆或是循環的動作。而 Go 語言的迴圈只有使用 `for` 迴圈來表達三種不同的迴圈 (for、while、loop)：
+
+```go
+func main (){
+	for i := 0 ; i <= 10 ; i++ {
+		fmt.Println(i)
+	}
+}
+```
+
+```sh
+$ go run .
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+```
+
+<br>
+
+也可以使用 `break`，依條件需求讓迴圈提早跳出結束：
+
+```go
+func main (){
+	for i := 0 ; i <= 5 ; i++ {
+		if i > 3 {
+			break
+		}
+		fmt.Println(i)
+	}
+}
+```
+
+```sh
+$ go run .
+0
+1
+2
+3
+```
+
+<br>
+
+或是使用 `continue` 若符合條件，便會跳過到此迴圈，直接進入下個迭代：
+
+```go
+func main (){
+	for i := 1; i <= 10; i++ {
+		if i%2 == 0 {
+			continue
+		}
+		fmt.Println(i)
+	}
+}
+```
+
+```sh
+1
+3
+5
+7
+9
+```
+
+
+
+<br>
+
 ## 參考資料
 
 [Go 官網](https://go.dev/doc/tutorial/getting-started)
@@ -669,3 +1107,5 @@ $ go run .
 [Golang 基本型別、運算子和型別轉換](https://calvertyang.github.io/2019/11/05/golang-basic-types-operators-type-conversion/)
 
 [Go語言字符類型（byte和rune）](http://c.biancheng.net/view/18.html)
+
+[golang初探](https://ithelp.ithome.com.tw/users/20129671/ironman/3326)
