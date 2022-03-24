@@ -820,9 +820,11 @@ $ go run .
 
 <br>
 
-## 指標
+## 資料結構
 
-指標是程式語言中的一類資料型態及其物件或變數，用來表示或儲存記憶體位址，這個位址的值直接指向存在該位址物件的值。 
+### 指標
+
+指標是程式語言中的一類資料結構及其物件或變數，用來表示或儲存記憶體位址，這個位址的值直接指向存在該位址物件的值。 
 
 Go 支持指標，指標的聲明方式為 *T，可以藉由變數名稱前面加 `&` 來獲得變數的位址，由於 Go 支持 GC ，在 Go 語言中不支持指標的運算。
 
@@ -853,7 +855,7 @@ pInt 指向的值 = 2
 
 <br>
 
-## 陣列
+### 陣列
 
 我們已經學會要怎麼宣告變數，以及如何使用變數來儲存值。但當我們今天想要儲存多個數值，使用原本的方式，需要創建許多變數才能儲存，因此有了陣列可以來儲存大量資料。
 
@@ -964,7 +966,12 @@ a = [0 0 10], len(a) = 3, cap(a) = 4
 擴容後指標 = 0xc000022080 改變
 ```
 
-## Go 條件判斷
+### 結構
+
+我們介紹的變數都是儲存單一的值或是多個相同型態的值，那如果要用變數表示較複雜的概念，像是紀錄一個人的名字、年齡或是身高時，由於這些是不同的資料型態，所以要記錄下來時，就必須使用不同的容器，這裡會介紹 Go 語言中的結構 Struct
+
+
+## Go 控制流程
 
 ### if 
 
@@ -1046,6 +1053,8 @@ $ go run .
 
 <br>
 
+**break**
+
 也可以使用 `break`，依條件需求讓迴圈提早跳出結束：
 
 ```go
@@ -1069,6 +1078,8 @@ $ go run .
 
 <br>
 
+**Continue**
+
 或是使用 `continue` 若符合條件，便會跳過到此迴圈，直接進入下個迭代：
 
 ```go
@@ -1090,6 +1101,128 @@ func main (){
 9
 ```
 
+<br>
+
+**GoTo**
+
+使用 goto 可以無條件轉移到程式中指定的行
+
+```go
+func main (){
+	fmt.Println("1")
+	fmt.Println("2")
+	goto labele1
+	fmt.Println("3")
+labele1:
+	fmt.Println("4")
+	fmt.Println("5")
+	fmt.Println("6")
+}
+```
+
+```sh
+1
+2
+4
+5
+6
+```
+
+<br>
+
+## Goroutine
+
+Go 支持多併發，如何使用 goroutine 來執行多併發，只要使用 `go` 這個關鍵字來執行 func 就可以了 !
+
+```go
+func Hello() {
+	fmt.Println("Hello, world")
+}
+
+func main() {
+	go Hello()
+	fmt.Println("main")
+}
+```
+
+```sh
+main	
+```
+
+可以看到沒有顯示 Hello,world 字串，是因為要執行 Hello func 的時候 main func 已經結束了。
+
+<br>
+
+我們試著在 main func 中加入 time.sleep 來故意延遲 main func 執行時間：
+
+```go
+import (
+	"fmt"
+	"time"
+)
+
+func Hello() {
+	fmt.Println("Hello, world")
+}
+
+func main() {
+	go Hello()
+	time.Sleep(1 * time.Second)
+	fmt.Println("main")
+}
+```
+
+```sh
+$ go run .
+Hello, world
+main
+```
+我們這時就可以看到 Hello, world 字串有顯示出來。
+
+<br>
+
+使用 sync.waitgroup 讓主線程等待協程完成
+
+```go
+func Hello(str *sync.WaitGroup) {
+	for i := 0; i <= 5; i++ {
+		fmt.Println("Hello, world", i)
+	}
+	defer str.Done()
+}
+
+func main() {
+	var str sync.WaitGroup
+	str.Add(1)
+	go Hello(&str)
+	fmt.Println("main")
+	str.Wait()
+}
+```
+
+```sh
+$ go run .
+main
+Hello, world 0
+Hello, world 1
+Hello, world 2
+Hello, world 3
+Hello, world 4
+Hello, world 5
+```
+WaitGroup：它能夠阻擋主線程的執行，直到所有的 `goroutine` 執行完畢。
+
+WaitGroup 使用方法
+* Add(delta int)：計數器增加 delta
+* Done()：計數器-1，相等於ADD(-1)
+* Wait()：阻擋直到所有的 WaitGroup 數量變成零，即計數器變為0
+* defer：是用來宣告 function 結束前的動作。
+
+
+
+<br>
+
+## Channel
 
 
 <br>
