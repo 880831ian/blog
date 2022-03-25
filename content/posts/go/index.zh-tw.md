@@ -111,9 +111,9 @@ GOROOT="/usr/local/go"
 ```
 這邊簡單的列出來，比較重要的是
 
-* GOPATH：他是有關管理程式碼和套件執行檔到地方，網路上有人說一開始是空白，但我安裝後已經幫我帶入好。
+* GOPATH：他是有關管理程式碼和套件執行檔的地方，在 Go 1.8 版本以前，GOPATH 預設為空。從 1.8 以後，Go 安裝完後，都會直接給預設的路徑
 
-說一下這個路徑的內容，我在依照設定的路徑，像我是在 Users/使用者/go，在 go 底下新增三個資料夾：
+說一下這個路徑的內容，我在依照預設的路徑，像我是在 Users/使用者/go，在 go 底下新增三個資料夾：
 
 * src：主要放置專案的地方 
 * pkg：套件主要儲存的資料夾
@@ -185,7 +185,7 @@ touch greeting/greeting.go cli/say.go
 
 我們來修改一下 `greeting.go` 以及 `say.go` 程式碼吧。
 
-`greeting.go` 是一個簡單的 package，用以顯示所傳入的字串 ; 而 `say.go` 則是以呼叫 `greeting.go` package 所提供的函示來顯示資料。
+`greeting.go` 是一個簡單的 package，用以顯示所傳入的字串 ; 而 `say.go` 則是以呼叫 `greeting.go` package 所提供的函式來顯示資料。
 
 <br>
 
@@ -226,7 +226,7 @@ func main(){
 * Package：package 主要分成兩種，一個是可執行，另一個則是可重複使用的，而 `package main` 就是可執行的檔案，像我們上面這個有包含 package main 的檔案，在編譯時，就會產生一個 `say` 的執行檔，電腦就是依照此檔案執行的。
 
 
-* Import：當我們寫程式時，一定會引入其他人寫的套件。而 Go 語言的標準函式庫為開發團隊先寫好，提供一些常用的功能，當然也可以使用其他第三方套件，還滿足內建以及標準函式庫的不足。我們在 `greeting.go` 裡面引入的 `fmt` 就是開發團隊寫好的，然而在 `say.go` 裡面引入的就是`greeting.go` ，我們就可以使用其內容的函示來做使用。
+* Import：當我們寫程式時，一定會引入其他人寫的套件。而 Go 語言的標準函式庫為開發團隊先寫好，提供一些常用的功能，當然也可以使用其他第三方套件，還滿足內建以及標準函式庫的不足。我們在 `greeting.go` 裡面引入的 `fmt` 就是開發團隊寫好的，然而在 `say.go` 裡面引入的就是`greeting.go` ，我們就可以使用其內容的函式來做使用。
 
 
 * Main Function：每個 Go 語言的專案基本上都會有一個主程式，主程式裡的程式通常都為最核心的部分。
@@ -393,7 +393,7 @@ func main(){
 	greeting.SayWithYellow("Hello World")
 }
 ```
-我們將 `greeting` 三種顯示顏色的函示帶入。
+我們將 `greeting` 三種顯示顏色的函式帶入。
 
 <br>
 
@@ -411,276 +411,14 @@ Hello World //黃色
 
 <br>
 
-## Go 資料型態
-
-我們在學習 Go 語言之前，要先了解一下基本的資料型態，可以簡單分為 字串、字符、整數、浮點數、布林值、字典
-
-### 字串
-
-在 Go 語言中，字串必須用雙引號給匡起來，也可以使用反引號來宣告。用雙引號刮起來的字串不能包含換行，但可以包含跳脫字元，例如 `\n` 、`\t` 。由於反引號內包含的是原始字串，可以跨越多行，所以跳脫符號在原始字串中沒有任何含義。
-
-```go
-func main() {
-   var name = "ian"
-   fmt.Printf("資料型態 name : %v(%T)\n", name,name)
-   var address = `台中市太平區`
-   fmt.Printf("資料型態 address : %v(%T)\n", address,address)
-}
-```      
-
-```sh
-$ go run .
-資料型態 name : ian(string)
-資料型態 address : 台中市太平區(string)
-```
-
-<br>
-
-### 字符
-
-字串中的每一個元素叫做字符，字符會使用單引號匡起來，像是 `"abc"` 這個字串，其中 `'a'`、`'b'`、`'c'` 就是字符，可以從字串元素中來獲得字符。
-
-Go 語言的字符有以下兩種：
-* 一種叫 byte 類型，可以叫做 uint8 類型，代表 ASCll 碼的一個字符。
-* 另一種是 rune 類型，代表一個 UTF-8 字符，當需要處理中文、日文或是其他複合字符時，就會使用到 rune 類型。rune 類型等於 int32 類型。
-
-```go
-func main (){
-	var a byte = 'A'
-	var b rune = '嗨'
-	fmt.Printf("%c %c\n",a,b) //%c 所表示的字符
-	fmt.Printf("%d(%T) %d(%T)\n",a,a,b,b) //%d 十進制表示,%T 輸出型態
-	fmt.Printf("%x %x\n",a,b) //%x 十六進制表示
-	fmt.Printf("%U %U\n",a,b) //%U 輸出格式為 Unicode 格式:U+hhhh的字串
-}
-```
-
-```sh
-$ go run . 
-A 嗨
-65(uint8) 21992(int32)
-41 55e8
-U+0041 U+55E8
-```
-
-<br>
-
-### 整數
-
-整數用於儲存整數。 Go 具有多種大小不一的內建整數型別，用來儲存有號數和無號數。
-
-* 有號數
-
-| 型別 | 大小 | 範圍 | 
-| :---: | :---: | :---: |
-| int | 取決平台 | 取決平台 |
-| int 8 | 8 bits | -128 到 127 |
-| int 16 | 16 bits | -2^15 到 2^15-1 |
-| int 32 | 32 bits | -2^31 到 2^31-1 | 
-| int 64 | 64 bits | -2^63 到 -2^63-1 |
-
-* 無號數
-
-| 型別 | 大小 | 範圍 | 
-| :---: | :---: | :---: |
-| uint | 取決平台 | 取決平台 |
-| uint 8 | 8 bits | 0 到 255 |
-| uint 16 | 16 bits | 0 到 2^16-1 |
-| uint 32 | 32 bits | 0 到 2^32-1 | 
-| uint 64 | 64 bits | 0 到 -2^64-1 |
-
-`int` 、 `uint` 的型別大小取決於平台。在 32 位元系統上，它大小為 32 位元，64 位元系統上，它的大小為 64 位元。
-
-使用整數值時，除非確定會用到的大小跟範圍才使用有號數及無號數，否則應該都使用 `int` 資料型別。
-
-```go
-func main() {
-	var myInt8 int8 = 97
-	var myInt = 1200
-	var myUint uint = 500
-	var myOctalNumber = 034
-	var myHexNumber = 0xFF  
-	fmt.Printf("%d, %d, %d, %#o, %#x\n", myInt8, myInt, myUint, myOctalNumber, myHexNumber)
-}
-```
-
-```sh
-$ go run .
-97, 1200, 500, 034, 0xff
-```
-
-在 Go 中，也可以使用前綴 `0` 來宣告八進制數字，或是使用 `0x` 來宣告十六進制數字。
-
-<br>
-
-### 浮點數
-
-浮點數型別用於儲存袋小數部分的數字。Go 有兩種浮點數型別：
-
-* float32：在記憶體中佔用32位元，並以單精度浮點數格式儲存。
-* float64：在記憶體中佔用64位元，並以雙精度浮點數格式儲存。
-
-浮點數的預設是 `float64`，除非初始化有為浮點數變數指定型別，否則編譯器將判定為 `float64`。
-
-```go
-func main() {
-	var a = 245.4664
-	var b float32 = 1452.34
-	fmt.Printf("%f(%T)\n%f(%T)\n", a,a,b,b)
-}
-```
-
-```sh
-$ go run .
-245.466400(float64)
-1452.339966(float32)
-```
-
-<br>
-
-### 布林值
-
-Go 提供了一種稱為 `bool` 的資料型別來儲存布林值。它有兩個可能的值：`true` 和 `false`。
-
-```go
-func main() {
-	var a = true
-	var b bool = false
-	fmt.Printf("%v(%T)\n%v(%T)\n", a,a,b,b)
-}
-```
-
-```sh
-$ go run . 
-true(bool)
-false(bool)
-```
-
-<br>
-
-布林型別也可以使用運算子 `&&` (與,and)、`||` (和,or)、`!` (否定)
-
-```go
-func main() {
-	var a = 4 <= 7 
-	var b = 10 != 10
-	var c = 10 > 20 && 5 == 5 
-	var d = 2 * 2 == 4 || 10 / 3 == 3
-	fmt.Printf("%v\n%v\n%v\n%v\n", a,b,c,d)
-}
-```
-
-```sh
-$ go run . 
-true
-false
-false
-true
-```
-
-<br>
-
-### 字典
-
-字典 (Map) 是 Go 內建的類型，是一種無序列的鍵值(key-value)的集合，可以透過 key 快速查詢並找到數據。
-
-```go
-func main (){
-	var map3 = map[int]string{99 : "Go", 87 : "Python", 79 : "Java", 93: "Html"}
-	fmt.Println(map3)
-	fmt.Println("map3[99] =",map3[99],"map3[79] =",map3[79])
-	map3[79] = "PHP"
-	fmt.Println("修改數據後，map3[99] =",map3[99],"map3[79] =",map3[79])
-}
-```
-
-```sh
-map[79:Java 87:Python 93:Html 99:Go]
-map3[99] = Go map3[79] = Java
-修改數據後，map3[99] = Go map3[79] = PHP
-```
-
-<br>
-
-
-### 數字型別的運算
-
-Go 提供了多種用於數字、浮點數型別執行運算的運算子
-
-* 算術運算子：`+`、`-`、`*`、`/`、`%`
-* 比較運算子：`==`、`!=`、`<`、`>`、`<=`、`>=`
-* 位元運算子：`&`、 `|`、 `^`、 `<<`、`>>`
-* 遞增和遞減運算子：`++`、`--`
-* 賦值運算子：`+=`、`-=`、`*=`、`/=`、`%=`、`<<=`、`>>=`、`&=`、`|=`、`^=`
-
-```go
-import (
-	"fmt"
-	"math"
-)
- 
-func main() {
-	var a, b = 4, 5
-	var res1 = (a + b) * (a + b) / 2 
-	a++ 
-	b += 10 
-	var res2 = a ^ b 
-	var r = 3.5
-	var res3 = math.Pi * r * r 
-	fmt.Printf("res1 : %v, res2 : %v, res3 : %v\n", res1, res2, res3)
-}
-```
-
-```sh
-res1 : 40, res2 : 10, res3 : 38.48451000647496
-```
-
-<br>
-
-### 型別轉換
-
-Go 有一個強型別系統，它不允許混合型別。舉例來說，你不能把 `int` 變數加到 `float64` 變數中，也不能將 `int` 變數加到 `int64` 變數中。
-
-```go
-func main() {
-	var a int64 = 4
-	var b int = int(a)
-	var c int = 500
-	fmt.Println(a, b,a+c)
-}
-```
-
-```sh
-$ go run . 
-# command-line-arguments
-./.:11:19: invalid operation: a + c (mismatched types int64 and int)
-```
-就會跳出錯誤說明別不同，無法直接做運算，那要怎麼辦呢！？
-
-<br>
-
-使用型別轉換，將型別值轉成相同的
-
-```go
-func main() {
-	var a int64 = 4
-	var b int = int(a)
-	var c int = 500
-	fmt.Println(a, b,int(a)+c)
-}
-```
-
-```sh
-$ go run . 
-4 4 504
-```
-一般將值 `v` 轉換為型別 `T` 的語法是 `T(V)` 。
-
-<br>
 
 ## 變數
 
-在使用變數做宣告時，Go 有三種宣告的方式：
+在使用變數做宣告時，要注意以下幾個 Go 保留字，不能拿來當變數名稱，其 Go 有三種宣告的方式：
+
+<br>
+
+{{< image src="/images/go/variable.png"  width="700" caption="Go 保留字，不能拿來當變數名稱 " src_s="/images/go/variable.png" src_l="/images/go/variable.png" >}}
 
 <br>
 
@@ -794,7 +532,7 @@ $ go run .
 # github.com/880831ian/go/test
 ./test.go:6:1: syntax error: non-declaration statement outside function body
 ```
-我們可以在 main 函示外宣告變數，但無法在 main 函示外賦值
+我們可以在 main 函式外宣告變數，但無法在 main 函式外賦值
 
 <br>
 
@@ -817,12 +555,278 @@ $ go run .
 ./test.go:8:16: undefined: b
 ```
 
+<br>
+
+## Go 資料型態
+
+我們在學習 Go 語言之前，要先了解一下基本的資料型態，可以簡單分為 字串、字符、整數、浮點數、布林值、字典
+
+### 字串 String
+
+在 Go 語言中，字串必須用雙引號給匡起來，也可以使用反引號來宣告。用雙引號刮起來的字串不能包含換行，但可以包含跳脫字元，例如 `\n` 、`\t` 。由於反引號內包含的是原始字串，可以跨越多行，所以跳脫符號在原始字串中沒有任何含義。
+
+```go
+func main() {
+   var name = "ian"
+   fmt.Printf("資料型態 name : %v(%T)\n", name,name)
+   var address = `台中市太平區`
+   fmt.Printf("資料型態 address : %v(%T)\n", address,address)
+}
+```      
+
+```sh
+$ go run .
+資料型態 name : ian(string)
+資料型態 address : 台中市太平區(string)
+```
 
 <br>
 
-## 資料結構
+### 字符 Character
 
-### 指標
+字串中的每一個元素叫做字符，字符會使用單引號匡起來，像是 `"abc"` 這個字串，其中 `'a'`、`'b'`、`'c'` 就是字符，可以從字串元素中來獲得字符。
+
+Go 語言的字符有以下兩種：
+* 一種叫 byte 類型，可以叫做 uint8 類型，代表 ASCll 碼的一個字符。
+* 另一種是 rune 類型，代表一個 UTF-8 字符，當需要處理中文、日文或是其他複合字符時，就會使用到 rune 類型。rune 類型等於 int32 類型。
+
+```go
+func main (){
+	var a byte = 'A'
+	var b rune = '嗨'
+	fmt.Printf("%c %c\n",a,b) //%c 所表示的字符
+	fmt.Printf("%d(%T) %d(%T)\n",a,a,b,b) //%d 十進制表示,%T 輸出型態
+	fmt.Printf("%x %x\n",a,b) //%x 十六進制表示
+	fmt.Printf("%U %U\n",a,b) //%U 輸出格式為 Unicode 格式:U+hhhh的字串
+}
+```
+
+```sh
+$ go run . 
+A 嗨
+65(uint8) 21992(int32)
+41 55e8
+U+0041 U+55E8
+```
+
+<br>
+
+### 整數 Integer
+
+整數用於儲存整數。 Go 具有多種大小不一的內建整數型別，用來儲存有號數和無號數。
+
+* 有號數
+
+| 型別 | 大小 | 範圍 | 
+| :---: | :---: | :---: |
+| int | 取決平台 | 取決平台 |
+| int 8 | 8 bits | -128 到 127 |
+| int 16 | 16 bits | -2^15 到 2^15-1 |
+| int 32 | 32 bits | -2^31 到 2^31-1 | 
+| int 64 | 64 bits | -2^63 到 -2^63-1 |
+
+* 無號數
+
+| 型別 | 大小 | 範圍 | 
+| :---: | :---: | :---: |
+| uint | 取決平台 | 取決平台 |
+| uint 8 | 8 bits | 0 到 255 |
+| uint 16 | 16 bits | 0 到 2^16-1 |
+| uint 32 | 32 bits | 0 到 2^32-1 | 
+| uint 64 | 64 bits | 0 到 -2^64-1 |
+
+`int` 、 `uint` 的型別大小取決於平台。在 32 位元系統上，它大小為 32 位元，64 位元系統上，它的大小為 64 位元。
+
+使用整數值時，除非確定會用到的大小跟範圍才使用有號數及無號數，否則應該都使用 `int` 資料型別。
+
+```go
+func main() {
+	var myInt8 int8 = 97
+	var myInt = 1200
+	var myUint uint = 500
+	var myOctalNumber = 034
+	var myHexNumber = 0xFF  
+	fmt.Printf("%d, %d, %d, %#o, %#x\n", myInt8, myInt, myUint, myOctalNumber, myHexNumber)
+}
+```
+
+```sh
+$ go run .
+97, 1200, 500, 034, 0xff
+```
+
+在 Go 中，也可以使用前綴 `0` 來宣告八進制數字，或是使用 `0x` 來宣告十六進制數字。
+
+<br>
+
+### 浮點數 Float
+
+浮點數型別用於儲存袋小數部分的數字。Go 有兩種浮點數型別：
+
+* float32：在記憶體中佔用32位元，並以單精度浮點數格式儲存。
+* float64：在記憶體中佔用64位元，並以雙精度浮點數格式儲存。
+
+浮點數的預設是 `float64`，除非初始化有為浮點數變數指定型別，否則編譯器將判定為 `float64`。
+
+```go
+func main() {
+	var a = 245.4664
+	var b float32 = 1452.34
+	fmt.Printf("%f(%T)\n%f(%T)\n", a,a,b,b)
+}
+```
+
+```sh
+$ go run .
+245.466400(float64)
+1452.339966(float32)
+```
+
+<br>
+
+### 布林值 Bool
+
+Go 提供了一種稱為 `bool` 的資料型別來儲存布林值。它有兩個可能的值：`true` 和 `false`。
+
+```go
+func main() {
+	var a = true
+	var b bool = false
+	fmt.Printf("%v(%T)\n%v(%T)\n", a,a,b,b)
+}
+```
+
+```sh
+$ go run . 
+true(bool)
+false(bool)
+```
+
+<br>
+
+布林型別也可以使用運算子 `&&` (與,and)、`||` (和,or)、`!` (否定)
+
+```go
+func main() {
+	var a = 4 <= 7 
+	var b = 10 != 10
+	var c = 10 > 20 && 5 == 5 
+	var d = 2 * 2 == 4 || 10 / 3 == 3
+	fmt.Printf("%v\n%v\n%v\n%v\n", a,b,c,d)
+}
+```
+
+```sh
+$ go run . 
+true
+false
+false
+true
+```
+
+<br>
+
+### 字典 Map
+
+字典 (Map) 是 Go 內建的類型，是一種無序列的鍵值(key-value)的集合，可以透過 key 快速查詢並找到數據。
+
+```go
+func main (){
+	var map3 = map[int]string{99 : "Go", 87 : "Python", 79 : "Java", 93: "Html"}
+	fmt.Println(map3)
+	fmt.Println("map3[99] =",map3[99],"map3[79] =",map3[79])
+	map3[79] = "PHP"
+	fmt.Println("修改數據後，map3[99] =",map3[99],"map3[79] =",map3[79])
+}
+```
+
+```sh
+map[79:Java 87:Python 93:Html 99:Go]
+map3[99] = Go map3[79] = Java
+修改數據後，map3[99] = Go map3[79] = PHP
+```
+
+<br>
+
+
+### 數字型別的運算
+
+Go 提供了多種用於數字、浮點數型別執行運算的運算子
+
+* 算術運算子：`+`、`-`、`*`、`/`、`%`
+* 比較運算子：`==`、`!=`、`<`、`>`、`<=`、`>=`
+* 位元運算子：`&`、 `|`、 `^`、 `<<`、`>>`
+* 遞增和遞減運算子：`++`、`--`
+* 賦值運算子：`+=`、`-=`、`*=`、`/=`、`%=`、`<<=`、`>>=`、`&=`、`|=`、`^=`
+
+```go
+import (
+	"fmt"
+	"math"
+)
+ 
+func main() {
+	var a, b = 4, 5
+	var res1 = (a + b) * (a + b) / 2 
+	a++ 
+	b += 10 
+	var res2 = a ^ b 
+	var r = 3.5
+	var res3 = math.Pi * r * r 
+	fmt.Printf("res1 : %v, res2 : %v, res3 : %v\n", res1, res2, res3)
+}
+```
+
+```sh
+res1 : 40, res2 : 10, res3 : 38.48451000647496
+```
+
+<br>
+
+### 型別轉換
+
+Go 有一個強型別系統，它不允許混合型別。舉例來說，你不能把 `int` 變數加到 `float64` 變數中，也不能將 `int` 變數加到 `int64` 變數中。
+
+```go
+func main() {
+	var a int64 = 4
+	var b int = int(a)
+	var c int = 500
+	fmt.Println(a, b,a+c)
+}
+```
+
+```sh
+$ go run . 
+# command-line-arguments
+./.:11:19: invalid operation: a + c (mismatched types int64 and int)
+```
+就會跳出錯誤說明別不同，無法直接做運算，那要怎麼辦呢！？
+
+<br>
+
+使用型別轉換，將型別值轉成相同的
+
+```go
+func main() {
+	var a int64 = 4
+	var b int = int(a)
+	var c int = 500
+	fmt.Println(a, b,int(a)+c)
+}
+```
+
+```sh
+$ go run . 
+4 4 504
+```
+一般將值 `v` 轉換為型別 `T` 的語法是 `T(V)` 。
+
+<br>
+
+## Go 資料結構
+
+### 指標 Pointer
 
 指標是程式語言中的一類資料結構及其物件或變數，用來表示或儲存記憶體位址，這個位址的值直接指向存在該位址物件的值。 
 
@@ -855,7 +859,7 @@ pInt 指向的值 = 2
 
 <br>
 
-### 陣列
+### 陣列 Array
 
 我們已經學會要怎麼宣告變數，以及如何使用變數來儲存值。但當我們今天想要儲存多個數值，使用原本的方式，需要創建許多變數才能儲存，因此有了陣列可以來儲存大量資料。
 
@@ -904,7 +908,7 @@ a 的記憶體分配位置 0xc0000180f0
 
 <br>
 
-### 切片
+### 切片 Slice
 
 前面提到陣列的使用，陣列使用上是實值類型以及陣列長度不可變的情況下，間接限制了使用場景。
 
@@ -966,10 +970,42 @@ a = [0 0 10], len(a) = 3, cap(a) = 4
 擴容後指標 = 0xc000022080 改變
 ```
 
-### 結構
+<br>
 
-我們介紹的變數都是儲存單一的值或是多個相同型態的值，那如果要用變數表示較複雜的概念，像是紀錄一個人的名字、年齡或是身高時，由於這些是不同的資料型態，所以要記錄下來時，就必須使用不同的容器，這裡會介紹 Go 語言中的結構 Struct
+### 結構 Struct
 
+我們介紹的變數都是儲存單一的值或是多個相同型態的值，那如果要用變數表示較複雜的概念，像是紀錄一個人的名字、年齡或是身高時，由於這些是不同的資料型態，所以要記錄下來時，就必須使用不同的容器，這裡會介紹 Go 語言中的結構 Struct：
+
+
+**建立結構**
+
+```go
+type Rectangle struct {
+	length float64
+	width float64
+}
+
+func main() {
+	x := Rectangle {
+		length: 3.5,
+		width: 4.4,
+	}
+
+	if x.length == x.width {
+		fmt.Println("這個圖形是正方形，其面積是 : ", x.length * x.width)
+	}
+	fmt.Println("這個圖形是長方形，其面積是 : ", x.length * x.width)
+}
+```
+
+```sh
+$ go run .
+這個圖形是長方形，其面積是 :  15.400000000000002
+```
+
+我們先宣告一個名為 Rectangle 的 `struct` 結構，裡面屬性有 length 和 width，再以此結構宣告一個變數 x 並填入屬性，依照屬性來判斷是否為正方形，並計算其面積。
+
+<br>
 
 ## Go 控制流程
 
@@ -1094,6 +1130,7 @@ func main (){
 ```
 
 ```sh
+$ go run .
 1
 3
 5
@@ -1121,11 +1158,136 @@ labele1:
 ```
 
 ```sh
+$ go run .
 1
 2
 4
 5
 6
+```
+
+<br>
+
+## Go 方法 Method
+
+Go 語言不像 Python 有 class ，但還是有提供可以在某種型態上定義方法(method)，method 其實是作用在接收器 (receiver) 上的一種函式，接收器要是某一種型別的變數，所以其實 method 也算是一種特殊型別的函式。
+
+```go
+type Vertex struct {
+	x,y float64
+}
+
+func (v Vertex) Abs() float64 {
+	return math.Sqrt(v.x * v.x + v.y * v.y)
+}
+
+func main() {
+	v := Vertex{5,12}
+	fmt.Println(v.Abs())
+} 
+```
+
+```sh
+$ go run .
+13
+```
+一開始先宣告一個名為 Vertex 結構型態，裡面的屬性包含 ｘ、y (float64)，接著就是撰寫一個 method 了，這個 method 是以 Vertex 作為接收器， method 名稱是 Abs，最後回傳浮點數，接著 method 裡頭，即為對接收器的運算並回傳值。
+
+<br>
+
+我們來看看如果使用 function 要怎麼來達成 
+
+**方法 (Method) vs 函式 (Function)**
+
+```go
+type Vertex struct {
+	x, y float64
+}
+
+func Abs(v Vertex) float64{
+	return math.Sqrt(v.x * v.x + v.y * v.y)
+}
+
+func main () {
+	v := Vertex{5,12}
+	fmt.Println(Abs(v))
+}
+```
+
+```sh
+$ go run .
+13
+```
+
+<br>
+
+## Go 介面 Interface
+
+Interface 的概念有點像是藍圖，先定義某個方法的名稱 (function name)、會接收到的參數以及型別 (list of argument types)、會回傳的值與型別 (list of return types)。定義好藍圖之後，並不用去管實作的細節，實作的細節會由每個型別自行定義實作。
+
+**empty interface**
+
+沒有定義任何方法的 interface 稱作 empty interface，由於所有的 types 都能夠實作 empty interface，因此它的值會是 any type：(因為目前沒有被賦值，所以都會回傳 `nil`)
+
+```go
+type value interface{}
+
+func main() {
+    var v value
+    describe(v) // (<nil>, <nil>)
+
+    v = 42
+    describe(v) //(42, int)
+
+    v = "hello"
+    describe(v) // (hello, string)
+
+}
+
+func describe(v value) {
+    fmt.Printf("(%v, %T)\n", v, v)
+}
+```
+
+```sh
+$ go run .
+value is <nil>
+type is <nil>
+```
+
+<br>
+
+
+
+```go
+type Person interface {
+    getFullName() string
+    getSalary() int
+}
+
+type Employee struct {
+    firstName string
+    lastName  string
+    salary    int
+}
+
+func (e Employee) getFullName() string {
+    return e.firstName + " " + e.lastName
+}
+
+func (e Employee) getSalary() int {
+    return e.salary
+}
+
+func main() {
+    var p Person = Employee{"ian", "Zhuang", 2000}
+    fmt.Printf("full name : %v ,Salary : %v\n", p.getFullName(),p.getSalary())
+}
+```
+
+```sh
+$ go run .
+full name : ian Zhuang ,Salary : 2000
 ```
 
 <br>
@@ -1146,6 +1308,7 @@ func main() {
 ```
 
 ```sh
+$ go run .
 main	
 ```
 
