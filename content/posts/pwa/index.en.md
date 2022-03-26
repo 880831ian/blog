@@ -48,7 +48,7 @@ For details, please refer to [Official Website](https://developer.mozilla.org/zh
 ## Actual installation
 
 {{< admonition tip "Interviewers should prepare the following frequently asked questions before going to the company for an interview" ture >}}
-First download https://nas.pin-yi.com/sharing/nElXqbqyt (Place it on the NAS cloud)
+First download https://nas.pin-yi.me/sharing/nElXqbqyt (Place it on the NAS cloud)
 There are two files in it, manifest.json and service-worker.js, which are introduced below.
 {{</admonition >}}
 
