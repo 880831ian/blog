@@ -33,7 +33,7 @@ Go 是由 Google 開發並維護的編譯程式語言，支援垃圾回收與併
 * 編譯速度：因為 Go 語言先天優勢是架構設計非常單純，並不像物件導向語言龐大，取在編譯時不用相依其他的 library，因此讓他有更好的執行效率。
 * 語法簡潔：Go 關鍵字不多，不到30幾個，因為其關鍵字不少也與 C 的關鍵字重複，學習更容易上手。
 *  垃圾回收：Go 有自動內存回收機制，不需要由開發人員來管理。垃圾回收是一種記憶體管理機制。當程式所佔用記憶體不再被該程式給存取時，會借助垃圾回收演算法，將記憶體空間歸還給作業系統。
-* 原生支援併發：Go 語言支持併發，只需要透過 `go` 關鍵字來開啟 `goroutine` 將可。`goroutine` 是輕量級的線程，`goroutine` 的調度是由 Go 運行時進行管理的。 
+* 原生支援併發：Go 語言支持併發，只需要透過 `go` 關鍵字來開啟 `goroutine` 將可。`goroutine` 是 Go 語言實現併發的一種方式，在執行的過程需要少量的記憶體，來暫存自己的上下文，就可在不同的時間點來分段執行程式。並且有 `channel` 可以跟 `goroutine` 進行資料溝通。
 <br>
 
 {{< admonition tip "靜態型別/動態型別" ture >}}
@@ -144,8 +144,8 @@ cd helloworld
 接著下指令來新增 Go module：
 
 ```
-$ go mod init github.com/880831ian/go/helloworld
-go: creating new go.mod: module github.com/880831ian/go/helloworld
+$ go mod init helloworld
+go: creating new go.mod: module helloworld
 ```
 
 <br>
@@ -154,7 +154,7 @@ go: creating new go.mod: module github.com/880831ian/go/helloworld
 
 ```
 $ cat go.mod
-module github.com/880831ian/go/helloworld
+module helloworld
 
 go 1.18
 ```
@@ -209,7 +209,7 @@ func Say(s string) {
 package main
 
 import (
-	"github.com/880831ian/go/helloworld/greeting"
+	"helloworld/greeting"
 )
 
 func main(){
@@ -728,7 +728,7 @@ true
 
 ### 映射 Map
 
-映射 (Map) 是 Go 內建的類型，是一種無序列的鍵值(key-value)的集合，可以透過 key 快速查詢並找到數據。
+映射 (Map) 是 Go 內建的類型，是一種鍵值(key-value)的集合，可以透過 key 快速查詢並找到數據。
 
 ```go
 func main (){
@@ -785,7 +785,7 @@ res1 : 40, res2 : 10, res3 : 38.48451000647496
 
 ### 型別轉換
 
-Go 有一個強型別系統，它不允許混合型別。舉例來說，你不能把 `int` 變數加到 `float64` 變數中，也不能將 `int` 變數加到 `int64` 變數中。
+Go 有一個強型別系統，它不允許混合型別。舉例來說：不能把 `int` 變數加到 `float64` 變數中，也不能將 `int` 變數加到 `int64` 變數中。
 
 ```go
 func main() {
@@ -828,7 +828,7 @@ $ go run .
 
 ### 指標 Pointer
 
-指標是程式語言中的一類資料結構及其物件或變數，用來表示或儲存記憶體位址，這個位址的值直接指向存在該位址物件的值。 
+指標是程式語言中的資料結構及其物件或變數，用來表示或儲存記憶體位址，這個位址的值直接指向存在該位址物件的值。 
 
 Go 支持指標，指標的聲明方式為 *T，可以藉由變數名稱前面加 `&` 來獲得變數的位址，由於 Go 支持 GC ，在 Go 語言中不支持指標的運算。
 
@@ -974,36 +974,31 @@ a = [0 0 10], len(a) = 3, cap(a) = 4
 
 ### 結構 Struct
 
-我們介紹的變數都是儲存單一的值或是多個相同型態的值，那如果要用變數表示較複雜的概念，像是紀錄一個人的名字、年齡或是身高時，由於這些是不同的資料型態，所以要記錄下來時，就必須使用不同的容器，這裡會介紹 Go 語言中的結構 Struct：
+我們介紹的變數都是儲存單一的值或是多個相同型態的值，那如果要用變數表示較複雜的概念，像是紀錄一個人的名字、年齡或是身高時，由於這些是不同的**資料型態**，所以要記錄下來時，就必須使用不同的容器，這裡會介紹 Go 語言中的結構 Struct：
 
 
 **建立結構**
 
 ```go
-type Rectangle struct {
-	length float64
-	width float64
+type Student struct {
+    Id int
+    Name string
+    Score float64
 }
 
 func main() {
-	x := Rectangle {
-		length: 3.5,
-		width: 4.4,
-	}
-
-	if x.length == x.width {
-		fmt.Println("這個圖形是正方形，其面積是 : ", x.length * x.width)
-	}
-	fmt.Println("這個圖形是長方形，其面積是 : ", x.length * x.width)
+    student := Student{1, "ian", 89.4} 
+    fmt.Println(student) 
 }
+
 ```
 
 ```sh
 $ go run .
-這個圖形是長方形，其面積是 :  15.400000000000002
+{1 ian 89.4}
 ```
 
-我們先宣告一個名為 Rectangle 的 `struct` 結構，裡面屬性有 length 和 width，再以此結構宣告一個變數 x 並填入屬性，依照屬性來判斷是否為正方形，並計算其面積。
+我們先宣告一個名為 Student 的 `struct` 結構，裡面屬性有 Id 和 Name 以及 Score，再以此結構宣告一個變數 student 並填入屬性，以顯示不同資料型態的值。
 
 <br>
 
@@ -1297,89 +1292,83 @@ full name : ian Zhuang ,Salary : 2000
 Go 支持多併發，如何使用 goroutine 來執行多併發，只要使用 `go` 這個關鍵字來執行 func 就可以了 !
 
 ```go
-func Hello() {
-	fmt.Println("Hello, world")
+func say(s string) {
+   for i := 0; i < 2; i++ {
+       fmt.Println(s)
+   }
 }
-
+ 
 func main() {
-	go Hello()
-	fmt.Println("main")
+   go say("world")
+   say("hello")
 }
 ```
 
 ```sh
 $ go run .
-main	
+hello
+hello	
 ```
 
-可以看到沒有顯示 Hello,world 字串，是因為要執行 Hello func 的時候 main func 已經結束了。
+可以看到沒有顯示 world 字串，是因為要執行 world 的時候程式已經結束了。
 
 <br>
 
-我們試著在 main func 中加入 time.sleep 來故意延遲 main func 執行時間：
+我們試著加入 time.sleep 來故意延遲程式執行時間：
 
 ```go
-import (
-	"fmt"
-	"time"
-)
-
-func Hello() {
-	fmt.Println("Hello, world")
+func say(s string) {
+   for i := 0; i < 2; i++ {
+       fmt.Println(s)
+   }
 }
-
+ 
 func main() {
-	go Hello()
-	time.Sleep(1 * time.Second)
-	fmt.Println("main")
+   go say("world")
+   time.Sleep(100 * time.Millisecond)
+   say("hello")
 }
 ```
 
 ```sh
 $ go run .
-Hello, world
-main
+world
+world
+hello
+hello
 ```
-我們這時就可以看到 Hello, world 字串有顯示出來。
+我們這時就可以看到 world 字串有顯示出來。
 
 <br>
 
-使用 sync.waitgroup 讓主線程等待協程完成
+但在實務上，比較少直接使用上面這個方法，來讓併發得以實現，而是使用 sync 套件裡的方法 WaitGroup，來實現併發。
 
 ```go
-func Hello(str *sync.WaitGroup) {
-	for i := 0; i <= 5; i++ {
-		fmt.Println("Hello, world", i)
-	}
-	defer str.Done()
+var wg sync.WaitGroup
+ 
+func count(s string) {
+   fmt.Println(s)
+   wg.Done()
 }
-
+ 
 func main() {
-	var str sync.WaitGroup
-	str.Add(1)
-	go Hello(&str)
-	fmt.Println("main")
-	str.Wait()
+   wg.Add(3)
+   go count("1")
+   go count("2")
+   go count("3")
+   wg.Wait()
 }
 ```
 
 ```sh
 $ go run .
-main
-Hello, world 0
-Hello, world 1
-Hello, world 2
-Hello, world 3
-Hello, world 4
-Hello, world 5
+3
+2
+1
 ```
-WaitGroup：它能夠阻擋主線程的執行，直到所有的 `goroutine` 執行完畢。
+我們來說明以下上面的程式碼，在程式碼尾端加上 `wg.Wait()`，需要讓他達成一些條件，才可以往後執行，而這個條件，就是收到 `wg.Done()` 的呼叫次數。而這個次數，即是 `wg.Add(3)` 裡的數字3。
 
-WaitGroup 使用方法
-* Add(delta int)：計數器增加 delta
-* Done()：計數器-1，相等於ADD(-1)
-* Wait()：阻擋直到所有的 WaitGroup 數量變成零，即計數器變為0
-* defer：是用來宣告 function 結束前的動作。
+
 
 
 
