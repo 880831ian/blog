@@ -1289,44 +1289,29 @@ full name : ian Zhuang ,Salary : 2000
 
 ## Goroutine
 
-Go 支持多併發，如何使用 goroutine 來執行多併發，只要使用 `go` 這個關鍵字來執行 func 就可以了 !
+有人把 Go 比作 21 世紀的 C 語言，第一是因為 Go 語言設計簡單，第二，21 世紀最重要的就是並行程式設計，而 Go 從語言層面就支援了併發。
 
-```go
-func say(s string) {
-   for i := 0; i < 2; i++ {
-       fmt.Println(s)
-   }
-}
- 
-func main() {
-   go say("world")
-   say("hello")
-}
-```
+Goroutine 是 Go 語言實現併發的一種方式。
 
-```sh
-$ go run .
-hello
-hello	
-```
-
-可以看到沒有顯示 world 字串，是因為要執行 world 的時候程式已經結束了。
+Goroutine 是一種非常輕量級的協程，它是Go語言併發設計的核心。執行 Goroutine 只需極少的記憶體，可同時執行成千上萬個併發的任務。
 
 <br>
 
-我們試著加入 time.sleep 來故意延遲程式執行時間：
+### 單執行緒
+
+我們先來看看一般的單執行緒
 
 ```go
 func say(s string) {
-   for i := 0; i < 2; i++ {
-       fmt.Println(s)
-   }
+    for i := 0; i < 2; i++ {
+        time.Sleep(100 * time.Millisecond)
+        fmt.Println(s)
+    }
 }
- 
+
 func main() {
-   go say("world")
-   time.Sleep(100 * time.Millisecond)
-   say("hello")
+    say("world")
+    say("hello")
 }
 ```
 
@@ -1337,44 +1322,266 @@ world
 hello
 hello
 ```
-我們這時就可以看到 world 字串有顯示出來。
+在單執行緒下，每行程式碼都會依照順序執行。
 
 <br>
 
-但在實務上，比較少直接使用上面這個方法，來讓併發得以實現，而是使用 sync 套件裡的方法 WaitGroup，來實現併發。
+{{< image src="/images/go/single-thread.png"  width="400" caption="單執行緒 ([Go 的並發：Goroutine 與 Channel 介紹](https://peterhpchen.github.io/2020/03/08/goroutine-and-channel.html))" src_s="/images/go/single-thread.png" src_l="/images/go/single-thread.png" >}}
+
+<br>
+
+### 多執行緒
+
+在多執行緒下，最多可以同時執行與 CPU 數相等的 Goroutine。要如何使用多執行緒，使用 goroutine 來執行多併發，只要使用 `go` 這個關鍵字來執行 func 就可以了 !
 
 ```go
-var wg sync.WaitGroup
- 
-func count(s string) {
-   fmt.Println(s)
-   wg.Done()
+func say(s string) {
+    for i := 0; i < 2; i++ {
+        time.Sleep(100 * time.Millisecond)
+        fmt.Println(s)
+    }
 }
- 
+
 func main() {
-   wg.Add(3)
-   go count("1")
-   go count("2")
-   go count("3")
-   wg.Wait()
+    go say("world")
+    say("hello")
 }
 ```
 
 ```sh
 $ go run .
-3
-2
-1
+hello
+world
+world
+hello
 ```
-我們來說明以下上面的程式碼，在程式碼尾端加上 `wg.Wait()`，需要讓他達成一些條件，才可以往後執行，而這個條件，就是收到 `wg.Done()` 的呼叫次數。而這個次數，即是 `wg.Add(3)` 裡的數字3。
+如此一來, `say("world")` 會跑在另一個執行緒(Goroutine)上，使其並行執行。
 
+<br>
 
+{{< image src="/images/go/multi-thread.png"  width="300" caption="多執行緒 ([Go 的並發：Goroutine 與 Channel 介紹](https://peterhpchen.github.io/2020/03/08/goroutine-and-channel.html))" src_s="/images/go/multi-thread.png" src_l="/images/go/multi-thread.png" >}}
 
+<br>
 
+### 等待
+
+多執行緒下，經常需要處理的是執行緒之間的狀態管理，其中一個經常發生的事情是等待。
+
+例如A執行緒需要等B執行緒計算並取得資料後才能繼續往下執行，在這情況下等待就變得十分重要。我們會介紹三個等待的方式，並說明其缺點。
+
+* time.sleep：休眠指定時間
+* sync.WaitGroup：等待直到指定數量的 Done() 呼叫
+* Channel 阻塞： Channel 阻塞機制，使用接收時等待的特性避免執行緒繼續執行
+
+#### time.sleep
+
+使 Goroutine 休眠，讓其他的 Goroutine 在 main 結束前有時間執行完成。
+
+```go
+func say(s string) {
+    for i := 0; i < 2; i++ {
+        fmt.Println(s)
+    }
+}
+
+func main() {
+    go say("world")
+    go say("hello")
+
+    time.Sleep(5 * time.Second)
+}
+```
+
+```sh
+$ go run .
+world
+world
+hello
+hello
+```
+缺點：休息指定時間可能會比 Goroutine 需要執行的時間長或短，太長會耗費多餘的時間，太短會使其他 Goroutine 無法完成。
+
+<br>
+
+{{< image src="/images/go/timesleep.png"  width="300" caption="time.sleep ([Go 的並發：Goroutine 與 Channel 介紹](https://peterhpchen.github.io/2020/03/08/goroutine-and-channel.html))" src_s="/images/go/timesleep.png" src_l="/images/go/timesleep.png" >}}
+
+<br>
+
+#### sync.WaitGroup
+
+```go
+func say(s string, wg *sync.WaitGroup) {
+    defer wg.Done()
+
+    for i := 0; i < 2; i++ {
+        time.Sleep(100 * time.Millisecond)
+        fmt.Println(s)
+    }
+}
+
+func main() {
+    wg := new(sync.WaitGroup)
+    wg.Add(2)
+
+    go say("world", wg)
+    go say("hello", wg)
+
+    wg.Wait()
+}
+```
+
+```sh
+$ go run .
+hello
+world
+world
+hello
+```
+在程式碼尾端加上 wg.Wait()，需要讓他達成一些條件，才可以往後執行，而這個條件，就是收到 wg.Done() 的呼叫次數。而這個次數，即是 wg.Add(2) 裡的數字2。
+
+* 優點：避免時間預估的錯誤
+* 缺點：需要手動配置對應的數量
+
+<br>
+
+{{< image src="/images/go/wait-group.png"  width="400" caption="sync.WaitGroup ([Go 的並發：Goroutine 與 Channel 介紹](https://peterhpchen.github.io/2020/03/08/goroutine-and-channel.html))" src_s="/images/go/wait-group.png" src_l="/images/go/wait-group.png" >}}
+
+<br>
+
+#### Channel 阻塞
+
+Channel 原為 Goroutine 溝通時使用的，但因其阻塞的特性，使其可以當作等待 Goroutine 的方法。
+
+```go
+func say(s string, c chan string) {
+    for i := 0; i < 2; i++ {
+        time.Sleep(100 * time.Millisecond)
+        fmt.Println(s)
+    }
+    c <- "FINISH"
+}
+
+func main() {
+    ch := make(chan string)
+
+    go say("world", ch)
+    go say("hello", ch)
+
+    <-ch
+    <-ch
+}
+```
+
+```sh
+$ go run .
+hello
+world
+hello
+world
+```
+兩個 Goroutine ( `say("world", ch)` 、 `say("hello", ch)` ) ，因此需要等待兩個 FINISH 推入 Channel 中才能結束 Main Goroutine。
+
+* 優點：避免時間預估的錯誤、語法簡潔
+
+<br>
+
+{{< image src="/images/go/channel-wait.png"  width="400" caption="Channel 阻塞 ([Go 的並發：Goroutine 與 Channel 介紹](https://peterhpchen.github.io/2020/03/08/goroutine-and-channel.html))" src_s="/images/go/channel-wait.png" src_l="/images/go/channel-wait.png" >}}
 
 <br>
 
 ## Channel
+
+Channel 有兩個強大的處理能力，等待以及變數共享。Channel 可以想成一條管線，這條管線可以推入數值，並且也可以將數值拉取出來。
+
+因為 Channel 會等待至另一端完成推入/拉出的動作後才會繼續往下處理，這樣的特性使其可以在 Goroutines 間可以同步的處理資料或是剛剛提到的等待
+
+<br>
+
+* Channel 基本操作
+
+```go
+	ch := make(chan int)    //創建一個Channel ch
+	ch <- u                 //將值u傳送到 Channel ch裡
+	v := <- ch              //從Channel ch中接收數據 ，並且將其賦值給變數v
+	close(ch)               //關閉channel
+```
+
+<br>
+
+**多執行緒下的共享變數**
+
+在執行緒間使用同樣的變數時，最重要的是確保變數在當前的正確性，在沒有控制的情況下極有可能發生問題。
+
+```go
+func main() {
+    total := 0
+    for i := 0; i < 1000; i++ {
+        go func() {
+            total++
+        }()
+    }
+    time.Sleep(time.Second)
+    fmt.Println(total)
+}
+```
+
+```sh
+$ go run .
+986
+```
+
+為什麼會明明是用for 跑 1000 累加，但最後只有 900 多呢？我們來看一下下面的例子
+
+<br>
+
+{{< image src="/images/go/total-error.png"  width="500" caption="多執行緒下的共享變數 - 錯誤 ([Go 的並發：Goroutine 與 Channel 介紹](https://peterhpchen.github.io/2020/03/08/goroutine-and-channel.html))" src_s="/images/go/total-error.png" src_l="/images/go/total-error.png" >}}
+
+<br>
+
+假設目前加到28，在多執行緒的情況下：
+
+goroutine1 取值 28 做運算
+
+goroutine2 有可能在 goroutine1 做 total++ 前就取 total 的值，因此有可能取到 28
+
+這樣的情況下做兩次加法的結果會是 29 而非 30
+
+在多個 goroutine 裡對同一個變數total做加法運算，在賦值時無法確保其為安全的而導致運算錯誤，此問題稱為 競爭危害 (Race condition)。
+
+<br>
+
+**使用 Channel 來保證變數的正確性**
+
+```go
+func main() {
+    total := 0
+    ch := make(chan int, 1)
+    ch <- total
+    for i := 0; i < 1000; i++ {
+        go func() {
+            ch <- <-ch + 1
+        }()
+    }
+    time.Sleep(time.Second)
+    fmt.Println(<-ch)
+}
+```
+
+```go
+$ go run .
+1000
+```
+goroutine1 拉出 total 後，Channel 中沒有資料了
+
+因為 Channel 中沒有資料，因此造成 goroutine2 等待
+
+goroutine1 計算完成後，將 total 推入 Channel
+
+goroutine2 等到 Channel 中有資料，拉出後結束等待，繼續做運算
+
+<br>
+
+{{< image src="/images/go/total-channel.png"  width="500" caption="多執行緒下的共享變數 - Channel ([Go 的並發：Goroutine 與 Channel 介紹](https://peterhpchen.github.io/2020/03/08/goroutine-and-channel.html))" src_s="/images/go/total-channel.png" src_l="/images/go/total-channel.png" >}}
 
 
 <br>
@@ -1394,3 +1601,5 @@ $ go run .
 [Go語言字符類型（byte和rune）](http://c.biancheng.net/view/18.html)
 
 [golang初探](https://ithelp.ithome.com.tw/users/20129671/ironman/3326)
+
+[Go 的並發：Goroutine 與 Channel 介紹](https://peterhpchen.github.io/2020/03/08/goroutine-and-channel.html)
