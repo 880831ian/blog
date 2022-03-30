@@ -591,7 +591,7 @@ Middleware created successfully.
 
 <br>
 
-##### Route
+#### Route
 
 接下來，我們要把我們設定好的 `ApiAuth` 設定在 `route\api.php` 的路由中，
 ```php
@@ -606,7 +606,7 @@ Route::delete('message/{id}', 'MessageController@delete')->middleware('api.auth'
 
 <br>
 
-##### Model
+#### Model
 
 因為我們在取得資料時，不希望顯示 `deleted_at` 給使用者，所以在 `app\Models\Message.php` 這個 model 裡面用 `hidden` 來做設定。
 
@@ -659,7 +659,7 @@ class Like extends Model
 
 <br>
 
-##### Repository
+#### Repository
 
 還記得我們上次把 RESTful API 要處理的邏輯都寫在 Controller 裡面嗎，我們光是一個小功能就讓整個 Controller 變得肥大，在後續維護時或是新增功能時，會導致十分不便利，因此我們要將 Repository 設計模式 給導入，那要怎麼實作呢～
 
@@ -788,7 +788,7 @@ use App\Models\Like;
 <br>
 
 
-##### Controller
+#### Controller
 
 到這裡我們講完 `MessageRepository.php` 的內容了，那原本的 Controller 剩下什麼呢 !?
 
