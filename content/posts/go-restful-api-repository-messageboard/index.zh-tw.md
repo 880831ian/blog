@@ -282,7 +282,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 ```
-引入套件
+import 會使用到的套件。
+
+<br>
+
+**查詢留言功能**
 
 ```go
 func GetAll(c *gin.Context) {
@@ -305,7 +309,207 @@ func Get(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": message})
 }
 ```
+`GetAll()` 會使用到 repository.GetAllMessage()` 查詢並回傳顯示查詢的資料。
 
+`c.Param("id")` 是網址讀入後的 id，網址是`http://127.0.0.1:8081/api/v1/message/{id}` ，將輸入的 id 透過 `repository.GetMessage()` 查詢並回傳顯示查詢的資料。
+
+
+<br>
+
+**新增留言功能**
+
+```go
+func Create(c *gin.Context) {
+	var message model.Message
+	c.Bind(&message)
+	
+	if err := repository.CreateMessage(&message); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "錯誤請求"})
+		return
+	}
+	c.JSON(http.StatusCreated, gin.H{"message": message})
+}
+```
+
+使用 Gin 框架中的 `Bind 函數`，可以將 url 的查詢參數 query parameter，http 的 Header、body 中提交的數據給取出，透過 `repository.CreateMessage()` 將要新增的資料帶入，如果失敗就顯示 `http.StatusBadRequest` 以及 錯誤請求，如果成功就顯示 `http.StatusCreated` 以及新增的資料。
+
+<br>
+
+**修改留言功能**
+
+```go
+func Update(c *gin.Context) {
+	var message model.Message
+	
+	if err := repository.GetMessage(&message, c.Param("id")); err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "找不到留言"})
+		return
+	}
+	if err := repository.UpdateMessage(&message, c.PostForm("Content"), c.Param("id"));err!=nil{
+		c.JSON(http.StatusBadRequest, gin.H{"error": "錯誤請求"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": message})
+}
+```
+
+先使用 `repository.GetMessage()` 以及 `c.Param("id")` 來查詢此 id 是否存在，再帶入要修改的 `Content` ，透過 `repository.UpdateMessage()` 將資料修改，，如果失敗就顯示 `http.StatusBadRequest` 以及 錯誤請求，如果成功就顯示 `http.StatusOK` 以及修改的資料。
+
+<br>
+
+**刪除留言功能**
+
+```go
+func Delete(c *gin.Context) {
+	var message model.Message
+
+	if err := repository.DeleteMessage(&message, c.Param("id")); err!=nil{
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusNoContent, gin.H{"message": "刪除留言成功"})	
+}
+```
+
+透過 `repository.DeleteMessage()` 將資料刪除，如果失敗就顯示 `http.StatusBadRequest` 以及 錯誤請求，如果成功就顯示 `http.StatusNoContent`。
+
+<br>
+
+### Repository.go
+
+**(下面為一個檔案，但長度有點長，分開說明)**
+
+```go
+package repository
+
+import (
+	"message/config"
+	"message/model"
+)
+```
+import 會使用到的套件。
+
+<br>
+
+**查詢留言資料讀取**
+
+```go
+//查詢全部留言
+func GetAllMessage() (message []*model.Message,err error) {
+	if err := config.Sql.Find(&message).Error; err != nil {
+		return nil,err
+	}
+	return
+}
+
+//查詢 {id} 留言
+func GetMessage(message *model.Message, id string) (err error) {
+	if err := config.Sql.Where("id=?", id).First(&message).Error; err != nil {
+		return err
+	}
+	return nil
+}
+```
+
+<br>
+
+**新增留言資料讀取**
+
+```go
+//新增留言
+func CreateMessage(message *model.Message) (err error) {
+	if err = config.Sql.Create(&message).Error; err != nil {
+		return err
+	}
+	return nil
+}
+```
+
+<br>
+
+**修改留言資料讀取**
+
+```go
+//更新 {id} 留言
+func UpdateMessage(message *model.Message, content, id string) (err error) {
+	if err = config.Sql.Model(&message).Where("id=?", id).Update("content" ,content).Error; err != nil {
+		return err
+	}
+	return nil
+}
+```
+
+<br>
+
+**刪除留言資料讀取**
+
+```go
+//刪除 {id} 留言
+func DeleteMessage(message *model.Message, id string) (err error) {
+	if err = config.Sql.Where("id=?", id).Delete(&message).Error; err != nil {
+		return err
+	}
+	return nil
+}
+```
+
+<br>
+
+## Postman 測試
+
+### 查詢全部留言 - 成功(無資料)
+
+{{< image src="/images/go-restful-api-repository-messageboard/get-success-1.png"  width="700" caption="查詢留言 成功(無資料)" src_s="/images/go-restful-api-repository-messageboard/get-success-1.png" src_l="/images/go-restful-api-repository-messageboard/get-success-1.png" >}}
+
+<br>
+
+### 查詢全部留言 - 成功(有資料)
+
+{{< image src="/images/go-restful-api-repository-messageboard/get-success-2.png"  width="700" caption="查詢留言 成功(有資料)" src_s="/images/go-restful-api-repository-messageboard/get-success-2.png" src_l="/images/go-restful-api-repository-messageboard/get-success-2.png" >}}
+
+<br>
+
+### 查詢{id}留言 - 成功
+
+{{< image src="/images/go-restful-api-repository-messageboard/get-id-succes.png"  width="700" caption="查詢{id}留言 成功" src_s="/images/go-restful-api-repository-messageboard/get-id-succes.png" src_l="/images/go-restful-api-repository-messageboard/get-id-succes.png" >}}
+
+<br>
+
+### 查詢{id}留言 - 失敗
+
+{{< image src="/images/go-restful-api-repository-messageboard/get-error.png"  width="700" caption="查詢{id}留言 失敗" src_s="/images/go-restful-api-repository-messageboard/get-error.png" src_l="/images/go-restful-api-repository-messageboard/get-error.png" >}}
+
+<br>
+
+### 新增留言 - 成功
+
+{{< image src="/images/go-restful-api-repository-messageboard/create.png"  width="700" caption="新增留言 成功" src_s="/images/go-restful-api-repository-messageboard/create.png" src_l="/images/go-restful-api-repository-messageboard/create.png" >}}
+
+<br>
+
+### 修改{id}留言 - 成功
+
+{{< image src="/images/go-restful-api-repository-messageboard/patch-success.png"  width="700" caption="修改 {id}留言 成功" src_s="/images/go-restful-api-repository-messageboard/patch-success.png" src_l="/images/go-restful-api-repository-messageboard/patch-success.png" >}}
+
+<br>
+
+### 修改{id}留言 - 失敗
+
+{{< image src="/images/go-restful-api-repository-messageboard/patch-error.png"  width="700" caption="修改 {id}留言 失敗" src_s="/images/go-restful-api-repository-messageboard/patch-error.png" src_l="/images/go-restful-api-repository-messageboard/patch-error.png" >}}
+
+
+<br>
+
+### 刪除{id}留言 - 成功
+
+{{< image src="/images/go-restful-api-repository-messageboard/delete.png"  width="700" caption="刪除 {id}留言 成功" src_s="/images/go-restful-api-repository-messageboard/delete.png" src_l="/images/go-restful-api-repository-messageboard/delete.png" >}}
+
+<br>
+
+
+### 執行結果
+
+{{< image src="/images/go-restful-api-repository-messageboard/gin-cli.png"  width="700" caption="執行結果" src_s="/images/go-restful-api-repository-messageboard/gin-cli.png" src_l="/images/go-restful-api-repository-messageboard/gin-cli.png" >}}
 
 <br>
 
