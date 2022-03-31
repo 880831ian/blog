@@ -386,7 +386,7 @@ undefined
 
 <br>
 
-Node REPL 也支持輸入多行表達式，我們試著寫一個 do-while 迴圈：
+Node REPL 也支持輸入多行程式，我們試著寫一個 do-while 迴圈：
 
 ```sh
 Welcome to Node.js v16.14.2.
@@ -406,6 +406,29 @@ undefined
 >
 ```
 
+<br>
+
+也可以使下底線(_)來獲得上一個程式的運算結果：
+
+```sh
+$ node
+
+Welcome to Node.js v16.14.2.
+Type ".help" for more information.
+> var x = 10
+undefined
+> var y = 20
+undefined
+> x + y
+30
+> var sum = _
+undefined
+> console.log(sum)
+30
+undefined
+>
+```
+
 
 <br>
 
@@ -417,3 +440,9 @@ undefined
 
 [An Intro to Node.js That You May Have Missed
 ](https://itnext.io/an-intro-to-node-js-that-you-may-have-missed-b175ef4277f7)
+
+[Sequelize
+](https://sequelize.org/v6/index.html)
+
+[透過 sequelize 來達成 DB Schema Migration
+](https://hackmd.io/@TSMI_E7ORNeP8YBbWm-lFA/ryCtaVW_M?print-pdf#%E4%BD%BF%E7%94%A8sequelize%E5%BB%BA%E7%AB%8B%E4%B8%80%E5%BC%B5user-table)
