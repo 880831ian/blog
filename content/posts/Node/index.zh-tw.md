@@ -26,7 +26,10 @@ toc:
 
 Node.js 是能夠在伺服器端運行 JavaScript 的開放原始碼、跨平台執行環境。
 
+Node.js 的出現，讓前端網站開發人員可以使用 JaveScript 來做後端或是系統層面的工作。讓前端開發網站開發人員使用已懂的 JavaScript 語言就可以自行設定網站伺服器。
+
 Node.js 採用 Google 開發的 Chrome V8 JavaScript 引擎和 libuv，可以用指令去執行 JavaScript，使用非阻塞輸入輸出、非同步、事件驅動等技術來提高效能，可最佳化應用程式的傳輸量和規模。這些技術通常用於資料密集的即時應用程式。
+
 
 <br>
 
@@ -34,11 +37,21 @@ Node.js 採用 Google 開發的 Chrome V8 JavaScript 引擎和 libuv，可以用
 
 <br>
 
+Node.js 能快速的原因是因為他對資源的調校不同，當程式收到一筆連線，相較於 PHP 的每次連線都會新生成一個執行緒，當連線數量暴增時很快就會消耗掉系統的資源，並且容易產生阻塞 (block)，而 Node.js 則是會通知作業系統透過 epoll、kqueue、/dev/poll、select 等將連線保留，並放入 heap 中配置，先讓連線進入休眠 (Sleep) 狀態，等系統通知才觸發連線的 callback。這種處理方式只會佔用記憶體，並不會使用到 CPU 資源。另外因為 JavaScript 語言的特性，每一個 request 都會有一個 callback，可以避免發生阻塞的狀況發生。
+
+<br>
+
+{{< admonition type=tap title="什麼是 callback" open=true >}}
+
+{{< /admonition >}}
+
+<br>
+
 以下會先從非阻塞輸入輸出、非同步，再談到事件驅動。
 
 <br>
 
-### 非阻塞
+### 非阻塞 (non-blocking)
 
 輸入輸出(I/O) 是程式跟系統記憶體或網路的互動，例如發送 HTTP 請求、對資料庫CRUD 操作等等。
 
@@ -75,7 +88,7 @@ Node.js 使用非阻塞設計，那要怎麼去操作資料庫或是 HTTP 請求
 
 <br>
 
-###  非同步
+###  非同步 (asynchronous)
 
 非同步也可以稱為異步，它的作用就是讓程式不要被阻擋等 I/O 處理完，才可以跑下一行程式碼，函式中的 callback 被呼叫的時候再執行後續要做的事情。
 
@@ -139,7 +152,7 @@ Libuv 是非同步處理的函式庫（以 C 語言為主)，在面對非同步�
 
 <br>
 
-### 事件驅動
+### 事件驅動 (event-driven)
 
 #### 事件 (event)
 
@@ -155,7 +168,7 @@ Libuv 是非同步處理的函式庫（以 C 語言為主)，在面對非同步�
 
 <br>
 
-#### 事件迴圈
+#### 事件迴圈 (event loop)
 
 因為 Node.js 只有一個執行緒，所以當 Libuv 把非同步事件處理完後，callback 要被丟回應用程式中排隊，等待主執行緒的 stack 為空的時候，才會開始執行。這個排隊的地方就是事件佇列 (event queue)。
 
@@ -429,6 +442,65 @@ undefined
 >
 ```
 
+<br>
+
+## Express
+
+Node.js 在實作上不會單獨使用，通常會搭配框架去使用，像是 [Express JS 後端框架](https://expressjs.com/)，可以讓開發人員在寫同一個功能時，少寫很多程式的工具。
+
+Express 是 Node.js 環境下提供的輕量後端架構，自由度極高，透過豐富的 HTTP 工具，能快速發開後端應用程式，它提供：
+
+* 替不同 HTTP Method、不同 URL 路徑的 requests 編寫不同的處理方法。
+* 透過整合「畫面」的渲染引擎來達到插入資料到樣板產生 response。
+* 設定常見的 web 應用程式，例如：連線用的 Port 和產生 response 樣板的位置。
+* 在 request 的處理流程中增加而外的中間層 (Middleware) 進行處理。
+
+<br>
+
+第一個 Express Hello world 程式：
+
+```js
+const express = require('express')
+const app = express()
+const port = 3000
+
+app.get('/', (req, res) => {
+  res.send('Hello World!')
+})
+
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}`)
+})
+```
+應用程式會啟動伺服器，並使用 Port 3000 來連線。應用程式指向 URL (/) 的路由，以 "Hello World!" 回應如果是其他路徑，res 就會回應 404 找不到。
+
+<br>
+
+### 畫面 (view)
+
+剛剛有提到說它可以使用整合「畫面」的渲染引擎來顯示到樣板，我們可以透過 `--view` 指令來產生樣板以及應用程式的目錄：
+
+```sh
+$ express --view=pub
+   create : public/
+   create : public/javascripts/
+   create : public/images/
+   create : public/stylesheets/
+   create : public/stylesheets/style.css
+   create : routes/
+   create : routes/index.js
+   create : routes/users.js
+   create : views/
+   create : app.js
+   create : package.json
+   create : bin/
+   create : bin/www
+```
+
+<br>
+
+
+#### 
 
 <br>
 
@@ -446,3 +518,7 @@ undefined
 
 [透過 sequelize 來達成 DB Schema Migration
 ](https://hackmd.io/@TSMI_E7ORNeP8YBbWm-lFA/ryCtaVW_M?print-pdf#%E4%BD%BF%E7%94%A8sequelize%E5%BB%BA%E7%AB%8B%E4%B8%80%E5%BC%B5user-table)
+
+[認識同步與非同步 — Callback + Promise + Async/Await
+](https://medium.com/%E9%BA%A5%E5%85%8B%E7%9A%84%E5%8D%8A%E8%B7%AF%E5%87%BA%E5%AE%B6%E7%AD%86%E8%A8%98/%E5%BF%83%E5%BE%97-%E8%AA%8D%E8%AD%98%E5%90%8C%E6%AD%A5%E8%88%87%E9%9D%9E%E5%90%8C%E6%AD%A5-callback-promise-async-await-640ea491ea64)
+[你懂 JavaScript 嗎？#23 Callback](https://ithelp.ithome.com.tw/articles/10206555)
