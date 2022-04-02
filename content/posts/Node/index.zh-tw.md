@@ -42,7 +42,7 @@ Node.js 能快速的原因是因為他對資源的調校不同，當程式收到
 <br>
 
 {{< admonition type=tap title="什麼是 callback" open=true >}}
-
+Callback function 是一個被作為參數帶入另一個函式中的「函式」，這個被作為參數帶入的函式將在「未來某個時間點」被呼叫和執行 — 這是處理非同步事件的一種方式。
 {{< /admonition >}}
 
 <br>
