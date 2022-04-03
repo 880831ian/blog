@@ -39,27 +39,27 @@ toc:
 
 ```
 .
-├── config
-│   ├── config.go
+├── sql
+│   ├── sql
 │   └── connect.yaml
 ├── controller
-│   └── Controller.go
+│   └── controller.go
 ├── go.mod
 ├── go.sum
 ├── main.go
 ├── model
-│   └── Model.go
+│   └── model.go
 ├── repository
-│   └── Repository.go
+│   └── repository.go
 └── routes
-    └── Routers.go
+    └── routers.go
 ```
 
 <br>
 
 我們來說明一下上面的資料夾個別功能與作用
 
-* config：放置設定檔案，並讀取設定檔與連線資料庫。
+* sql：放置連線資料庫檔案。
 * controller：商用邏輯控制。
 * model：定義資料表資料型態。
 * repository：處理與資料庫進行交握。
@@ -99,7 +99,7 @@ $ go get -u gopkg.in/yaml.v2
 package main
 
 import (
-	"message/config"
+	"message/sql"
 	"message/model"
 	"message/routes"
 	"fmt"
