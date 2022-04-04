@@ -26,6 +26,9 @@ toc:
 
 建議可以先觀看 [Go 介紹](https://pin-yi.me/go/) 文章來簡單學習 Go 語言。
 
+[範例程式連結 點我 😘
+](https://github.com/880831ian/go-restful-api-repository-messageboard)
+
 版本資訊
 
 * macOS：11.6
@@ -39,9 +42,6 @@ toc:
 
 ```
 .
-├── sql
-│   ├── sql
-│   └── connect.yaml
 ├── controller
 │   └── controller.go
 ├── go.mod
@@ -51,8 +51,11 @@ toc:
 │   └── model.go
 ├── repository
 │   └── repository.go
-└── routes
-    └── routers.go
+├── router
+│   └── router.go
+└── sql
+    ├── connect.yaml
+    └── sql.go
 ```
 
 <br>
@@ -63,7 +66,7 @@ toc:
 * controller：商用邏輯控制。
 * model：定義資料表資料型態。
 * repository：處理與資料庫進行交握。
-* routes：設定網站網址路由。
+* router：設定網站網址路由。
 
 ### go.mod
 
@@ -99,31 +102,35 @@ $ go get -u gopkg.in/yaml.v2
 package main
 
 import (
-	"message/sql"
-	"message/model"
-	"message/routes"
 	"fmt"
+	"message/model"
+	"message/router"
+	"message/sql"
 )
 
 func main() {
 	//連線資料庫
-	if err := config.InitMySql() ;err != nil {
+	if err := sql.InitMySql(); err != nil {
 		panic(err)
 	}
+	
 	//連結模型
-	config.Sql.AutoMigrate(&model.Message{})
+	sql.Connect.AutoMigrate(&model.Message{})
+	//sql.Connect.Table("message") //也可以使用連線已有資料表方式
+	
 	//註冊路由
-	r := routes.SetRouter()
+	r := router.SetRouter()
+	
 	//啟動埠為8081的專案
 	fmt.Println("開啟127.0.0.0.1:8081...")
 	r.Run("127.0.0.1:8081")
 }
 ```
-引入我們 Repository 架構，將 config、model、routes 導入，先測試是否可以連線資料庫，使用 `AutoMigrate` 來新增資料表(如果沒有才新增)，註冊網址路由，最後啟動專案，我們將 Port 設定成 8081。
+引入我們 Repository 架構，將 config、model、router 導入，先測試是否可以連線資料庫，使用 `AutoMigrate` 來新增資料表(如果沒有才新增)，或是使用 Table 來連線已有資料表，註冊網址路由，最後啟動專案，我們將 Port 設定成 8081。
 
 <br>
 
-### config
+### sql
 
 我們剛剛有引入 `yaml` 套件，因為我們設定檔案會使用 yaml 來編輯
 
@@ -139,10 +146,10 @@ port: 3306
 
 <br>
 
-* config.go (下面為一個檔案，但長度有點長，分開說明)
+* sql.go (下面為一個檔案，但長度有點長，分開說明)
 
 ```go
-package config
+package sql
 
 import (
 	"io/ioutil"
@@ -157,7 +164,7 @@ import 會使用到的套件。
 <br>
 
 ```go
-var Sql *gorm.DB
+var Connect *gorm.DB
 
 type conf struct {
 	Host     string `yaml:"host"`
@@ -169,11 +176,13 @@ type conf struct {
 
 func (c *conf) getConf() *conf {
 	//讀取config/connect.yaml檔案
-	yamlFile, err := ioutil.ReadFile("config/connect.yaml")
+	yamlFile, err := ioutil.ReadFile("sql/connect.yaml")
+	
 	//若出現錯誤，列印錯誤訊息
 	if err != nil {
 		fmt.Println(err.Error())
 	}
+	
 	//將讀取的字串轉換成結構體conf
 	err = yaml.Unmarshal(yamlFile, c)
 	if err != nil {
@@ -182,7 +191,7 @@ func (c *conf) getConf() *conf {
 	return c
 }
 ```
-設定資料庫連線的 conf ，設定連線的 config 讀取 yaml 檔案。
+設定資料庫連線的 conf 來讀取 yaml 檔案。
 
 <br>
 
@@ -190,8 +199,10 @@ func (c *conf) getConf() *conf {
 //初始化連線資料庫
 func InitMySql() (err error) {
 	var c conf
+	
 	//獲取yaml配置引數
 	conf := c.getConf()
+	
 	//將yaml配置引數拼接成連線資料庫的url
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		conf.UserName,
@@ -200,8 +211,9 @@ func InitMySql() (err error) {
 		conf.Port,
 		conf.DbName,
 	)
+	
 	//連線資料庫
-	Sql, err = gorm.Open(mysql.New(mysql.Config{DSN: dsn}), &gorm.Config{})
+	Connect, err = gorm.Open(mysql.New(mysql.Config{DSN: dsn}), &gorm.Config{})
 	return
 }
 ```
@@ -209,10 +221,10 @@ func InitMySql() (err error) {
 
 <br>
 
-### Routers.go
+### router.go
 
 ```go
-package routes
+package router
 
 import (
 	"message/controller"
@@ -244,7 +256,7 @@ func SetRouter() *gin.Engine {
 
 <br>
 
-### Model.go
+### model.go
 
 ```go
 package model
@@ -268,7 +280,7 @@ type Message struct {
 
 <br>
 
-### Controller.go 
+### controller.go 
 
 **(下面為一個檔案，但長度有點長，分開說明)**
 
@@ -276,9 +288,11 @@ type Message struct {
 package controller
 
 import (
-	"net/http"
 	"message/model"
 	"message/repository"
+	"net/http"
+	"unicode/utf8"
+
 	"github.com/gin-gonic/gin"
 )
 ```
@@ -290,10 +304,10 @@ import 會使用到的套件。
 
 ```go
 func GetAll(c *gin.Context) {
-	message,err := repository.GetAllMessage()
+	message, err := repository.GetAllMessage()
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": message})
@@ -303,13 +317,13 @@ func Get(c *gin.Context) {
 	var message model.Message
 
 	if err := repository.GetMessage(&message, c.Param("id")); err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "找不到留言"})
+		c.JSON(http.StatusNotFound, gin.H{"message": "找不到留言"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": message})
 }
 ```
-`GetAll()` 會使用到 repository.GetAllMessage()` 查詢並回傳顯示查詢的資料。
+`GetAll()` 會使用到 `repository.GetAllMessage()` 查詢並回傳顯示查詢的資料。
 
 `c.Param("id")` 是網址讀入後的 id，網址是`http://127.0.0.1:8081/api/v1/message/{id}` ，將輸入的 id 透過 `repository.GetMessage()` 查詢並回傳顯示查詢的資料。
 
@@ -321,17 +335,19 @@ func Get(c *gin.Context) {
 ```go
 func Create(c *gin.Context) {
 	var message model.Message
-	c.Bind(&message)
-	
-	if err := repository.CreateMessage(&message); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "錯誤請求"})
+
+	if c.PostForm("Content") == "" || utf8.RuneCountInString(c.PostForm("Content")) >= 20 {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "沒有輸入內容或長度超過20個字元"})
 		return
 	}
+
+	c.Bind(&message)
+	repository.CreateMessage(&message)
 	c.JSON(http.StatusCreated, gin.H{"message": message})
 }
 ```
 
-使用 Gin 框架中的 `Bind 函數`，可以將 url 的查詢參數 query parameter，http 的 Header、body 中提交的數據給取出，透過 `repository.CreateMessage()` 將要新增的資料帶入，如果失敗就顯示 `http.StatusBadRequest` 以及 錯誤請求，如果成功就顯示 `http.StatusCreated` 以及新增的資料。
+使用 Gin 框架中的 `Bind 函數`，可以將 url 的查詢參數 query parameter，http 的 Header、body 中提交的數據給取出，透過 `repository.CreateMessage()` 將要新增的資料帶入，如果失敗就顯示 `http.StatusBadRequest`，如果成功就顯示 `http.StatusCreated` 以及新增的資料。
 
 <br>
 
@@ -340,20 +356,21 @@ func Create(c *gin.Context) {
 ```go
 func Update(c *gin.Context) {
 	var message model.Message
-	
-	if err := repository.GetMessage(&message, c.Param("id")); err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "找不到留言"})
+
+	if c.PostForm("Content") == "" || utf8.RuneCountInString(c.PostForm("Content")) >= 20 {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "沒有輸入內容或長度超過20個字元"})
 		return
 	}
-	if err := repository.UpdateMessage(&message, c.PostForm("Content"), c.Param("id"));err!=nil{
-		c.JSON(http.StatusBadRequest, gin.H{"error": "錯誤請求"})
+
+	if err := repository.UpdateMessage(&message, c.PostForm("Content"), c.Param("id")); err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"message": "找不到留言"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": message})
 }
 ```
 
-先使用 `repository.GetMessage()` 以及 `c.Param("id")` 來查詢此 id 是否存在，再帶入要修改的 `Content` ，透過 `repository.UpdateMessage()` 將資料修改，，如果失敗就顯示 `http.StatusBadRequest` 以及 錯誤請求，如果成功就顯示 `http.StatusOK` 以及修改的資料。
+先使用 `repository.GetMessage()` 以及 `c.Param("id")` 來查詢此 id 是否存在，再帶入要修改的 `Content` ，透過 `repository.UpdateMessage()` 將資料修改，，如果失敗就顯示 `http.StatusNotFound` 以及找不到留言，如果成功就顯示 `http.StatusOK` 以及修改的資料。
 
 <br>
 
@@ -363,28 +380,30 @@ func Update(c *gin.Context) {
 func Delete(c *gin.Context) {
 	var message model.Message
 
-	if err := repository.DeleteMessage(&message, c.Param("id")); err!=nil{
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if err := repository.DeleteMessage(&message, c.Param("id")); err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"message": "找不到留言"})
 		return
 	}
-	c.JSON(http.StatusNoContent, gin.H{"message": "刪除留言成功"})	
+	c.JSON(http.StatusNoContent, gin.H{"message": "刪除留言成功"})
 }
 ```
 
-透過 `repository.DeleteMessage()` 將資料刪除，如果失敗就顯示 `http.StatusBadRequest` 以及 錯誤請求，如果成功就顯示 `http.StatusNoContent`。
+透過 `repository.DeleteMessage()` 將資料刪除，如果失敗就顯示 `http.StatusNotFound ` 以及找不到留言，如果成功就顯示 `http.StatusNoContent`。
 
 <br>
 
-### Repository.go
+### repository.go
 
 **(下面為一個檔案，但長度有點長，分開說明)**
+
+所有的邏輯判斷都要在 controller 處理，所以 repository.go 就單純對資料庫就 CRUD：
 
 ```go
 package repository
 
 import (
-	"message/config"
 	"message/model"
+	"message/sql"
 )
 ```
 import 會使用到的套件。
@@ -395,19 +414,15 @@ import 會使用到的套件。
 
 ```go
 //查詢全部留言
-func GetAllMessage() (message []*model.Message,err error) {
-	if err := config.Sql.Find(&message).Error; err != nil {
-		return nil,err
-	}
+func GetAllMessage() (message []*model.Message, err error) {
+	err = sql.Connect.Find(&message).Error
 	return
 }
 
 //查詢 {id} 留言
 func GetMessage(message *model.Message, id string) (err error) {
-	if err := config.Sql.Where("id=?", id).First(&message).Error; err != nil {
-		return err
-	}
-	return nil
+	err = sql.Connect.Where("id=?", id).First(&message).Error
+	return
 }
 ```
 
@@ -418,10 +433,8 @@ func GetMessage(message *model.Message, id string) (err error) {
 ```go
 //新增留言
 func CreateMessage(message *model.Message) (err error) {
-	if err = config.Sql.Create(&message).Error; err != nil {
-		return err
-	}
-	return nil
+	err = sql.Connect.Create(&message).Error
+	return
 }
 ```
 
@@ -432,10 +445,8 @@ func CreateMessage(message *model.Message) (err error) {
 ```go
 //更新 {id} 留言
 func UpdateMessage(message *model.Message, content, id string) (err error) {
-	if err = config.Sql.Model(&message).Where("id=?", id).Update("content" ,content).Error; err != nil {
-		return err
-	}
-	return nil
+	err = sql.Connect.Where("id=?", id).First(&message).Update("content", content).Error
+	return
 }
 ```
 
@@ -446,10 +457,8 @@ func UpdateMessage(message *model.Message, content, id string) (err error) {
 ```go
 //刪除 {id} 留言
 func DeleteMessage(message *model.Message, id string) (err error) {
-	if err = config.Sql.Where("id=?", id).Delete(&message).Error; err != nil {
-		return err
-	}
-	return nil
+	err = sql.Connect.Where("id=?", id).First(&message).Delete(&message).Error
+	return
 }
 ```
 
