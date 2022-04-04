@@ -715,7 +715,7 @@ use App\Models\Like;
             ->groupBy('id')
             ->get()
             ->where('id', $id)
-            ->toArray();
+            ->first();
     }
 ```
 回傳全部的留言資料 `getAllMessage()`，由於我們想要顯示留言者 id，只能一個一個把我們想要的 select 出來，不能透過 model 來顯示，使用 leftjoin 來查詢，最後多一個來顯示各個文章的總數。
@@ -839,10 +839,10 @@ use Illuminate\Support\Facades\Validator;
     {
         $user = Auth::user();
 
-        $rules = ['content' => 'max:20'];
+        $rules = ['content' => 'required|max:20'];
         $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
-            return response()->json(["message" => "內容長度超過20個字元"], 400);
+            return response()->json(["message" => "沒有輸入內容或長度超過20個字元"], 400);
         }
 
         MessageRepository::createMessage($user->id, $request->content);
@@ -866,22 +866,15 @@ use Illuminate\Support\Facades\Validator;
             return response()->json(["message" => "找不到留言"], 404);
         }
 
-        $rules = ['content' => 'max:20'];
+        $rules = ['content' => 'required|max:20'];
         $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
-            return response()->json(["message" => "內容長度超過20個字元"], 400);
+            return response()->json(["message" => "沒有輸入內容或長度超過20個字元"], 400);
         }
 
-        foreach ($message as $key => $value) {
-            $user_id = $value['user_id'];
-            $version = $value['version'];
+        if (!MessageRepository::updateMessage($id, $user->id, $request->content, $message['version'])) {
+            return response()->json(["message" => "更新留言失敗"], 400);
         }
-
-        if ($user_id != $user->id) {
-            return response()->json(["message" => "權限不正確"], 403);
-        }
-
-        MessageRepository::updateMessage($id, $user->id, $request->content, $version);
         return response()->json(["message" => "修改成功"], 200);
     }
 ```
@@ -918,19 +911,9 @@ use Illuminate\Support\Facades\Validator;
     {
         $user = Auth::user();
 
-        if (!$message = MessageRepository::getMessage($id)) {
+        if (!MessageRepository::deleteMessage($id, $user->id)) {
             return response()->json(["message" => "找不到留言"], 404);
         }
-
-        foreach ($message as $key => $value) {
-            $user_id = $value['user_id'];
-        }
-
-        if ($user_id != $user->id) {
-            return response()->json(["message" => "權限不正確"], 403);
-        }
-
-        MessageRepository::deleteMessage($id, $user->id);
         return response()->json(["message" => "刪除成功,沒有返回任何內容"], 204);
     }
 ```
