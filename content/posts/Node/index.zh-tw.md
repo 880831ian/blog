@@ -42,6 +42,11 @@ Node.js 能快速的原因是因為他對資源的調校不同，當程式收到
 <br>
 
 {{< admonition type=tap title="什麼是 callback" open=true >}}
+假設有 A、B、C 三件工作，其中 B 必須等待 C 做完才能執行。大部份的人幾乎都是做 A，再做 C，等待 C 做完以後最後做 B。但對於可多工的人來說，卻可能是同時做 A 與 C（多工），等待 C 完成後做 B。
+
+
+
+
 Callback function 是一個被作為參數帶入另一個函式中的「函式」，這個被作為參數帶入的函式將在「未來某個時間點」被呼叫和執行 — 這是處理非同步事件的一種方式。
 {{< /admonition >}}
 
@@ -76,7 +81,7 @@ Callback function 是一個被作為參數帶入另一個函式中的「函式�
 
 像是 **Python、Ruby 等語言是使用多執行緒 (multi-threaded)，使用阻塞 I/O** ：
 
-程式會等網路或是記憶體得作業結束後才會繼續往下，等待時間這個作業中的執行緒不會去做其他事情。
+程式會等網路或是記憶體的作業結束後才會繼續往下，等待時間這個作業中的執行緒不會去做其他事情。
 
 如果想要達到『等待 I/O 期間不要卡住其他程式碼』，的做法就是新開一個執行緒，直到任務完成，再告訴主執行緒說( 我完成囉！) 即可。
 
@@ -135,7 +140,7 @@ readFileSync 測試
 
 **為什麼 Node.js 有了非阻塞 I/O 跟 非同步函式，就可以實現單執行緒設定呢?** 
 
-雖然 Google V8 JavaScript 引擎是單執行緒設定，但它的底層 C ++ API 並不是。這代表我們可以呼叫一些非同步的程式碼像是 File System 時，Node 會請它底層的 `Libuv` 去跑這些程式碼，跑完後再執行 callback 或拋出錯誤。
+雖然 Google V8 JavaScript 引擎是單執行緒設定，但它的底層 C ++ API 並不是。這代表我們可以呼叫一些非同步的程式碼像是 File System 時，Node 會請它底層的 `libuv` 去跑這些程式碼，跑完後再執行 callback 或拋出錯誤。
 
 <br>
 
@@ -143,12 +148,12 @@ readFileSync 測試
 
 <br>
 
-Libuv 是非同步處理的函式庫（以 C 語言為主)，在面對非同步作業時，會開啟執行緒池 (thread pool / worker pool) ，預設共有四個執行緒 (也就是 worker threads)，運算這些 I/O 用的方式是事件迴圈 (event loop)。
+libuv 是非同步處理的函式庫（以 C 語言為主)，在面對非同步作業時，會開啟執行緒池 (thread pool / worker pool) ，預設共有四個執行緒 (也就是 worker threads)，運算這些 I/O 用的方式是事件迴圈 (event loop)。
 
-所以就算 V8 處理程式碼是單執行緒，一但進入到 Libuv 手上，它還是會幫你把會阻塞的 I/O 分工到執行緒池中交給不同的執行緒去處理，直到 callback 發生才會丟回應讓程式知道。
+所以就算 V8 處理程式碼是單執行緒，一但進入到 libuv 手上，它還是會幫你把會阻塞的 I/O 分工到執行緒池中交給不同的執行緒去處理，直到 callback 發生才會丟回應讓程式知道。
 
 
-那我們來看看 Libuv 如何透過事件迴圈有效的處理非同步 I/O。
+那我們來看看 libuv 如何透過事件迴圈有效的處理非同步 I/O。
 
 <br>
 
@@ -164,15 +169,15 @@ Libuv 是非同步處理的函式庫（以 C 語言為主)，在面對非同步�
 
 事件驅動是一種程式執行模型，表示程式的進行是依據事件的發生而定，監聽到事件就處理、處理完就執行 callback ，透過不斷的監聽跟回應事件執行程式。
 
-而事件驅動在不同的地方有不同的實現。瀏覽器 (前端) 和 Node.js (後端) 基於不同的技術實現了各自的事件迴圈。就 Ndoe.js 來說，事件就是交給 Libuv 去處理 ; 至於瀏覽器的事件迴圈在 HTML 5 的規範中有定義。
+而事件驅動在不同的地方有不同的實現。瀏覽器 (前端) 和 Node.js (後端) 基於不同的技術實現了各自的事件迴圈。就 Ndoe.js 來說，事件就是交給 libuv 去處理 ; 至於瀏覽器的事件迴圈在 HTML 5 的規範中有定義。
 
 <br>
 
 #### 事件迴圈 (event loop)
 
-因為 Node.js 只有一個執行緒，所以當 Libuv 把非同步事件處理完後，callback 要被丟回應用程式中排隊，等待主執行緒的 stack 為空的時候，才會開始執行。這個排隊的地方就是事件佇列 (event queue)。
+因為 Node.js 只有一個執行緒，所以當 libuv 把非同步事件處理完後，callback 要被丟回應用程式中排隊，等待主執行緒的 stack 為空的時候，才會開始執行。這個排隊的地方就是事件佇列 (event queue)。
 
-Libuv 會不斷檢查有沒有 callback 需要被執行，有的話分配到主執行緒結束手邊的程式後處理，因此這個過程稱為 『事件迴圈』。
+libuv 會不斷檢查有沒有 callback 需要被執行，有的話分配到主執行緒結束手邊的程式後處理，因此這個過程稱為 『事件迴圈』。
 
 <br>
 
@@ -180,19 +185,23 @@ Libuv 會不斷檢查有沒有 callback 需要被執行，有的話分配到主�
 
 <br>
 
-Libuv 事件迴圈有哪些階段呢？
+libuv 事件迴圈有哪些階段呢？
 
 {{< image src="/images/node/libuv.png"  width="700" caption="libuv 事件迴圈 ([nexocode](https://nexocode.com/blog/posts/behind-nodejs-event-loop/))" src_s="/images/node/libuv.png" src_l="/images/node/libuv.png" >}}
 
 <br>
 
-Libuv 的事件迴圈共有六個階段，每個階段的作用如下：
+libuv 的事件迴圈共有六個階段，每個階段的作用如下：
 
-1. Timers：執行 setTimeout() 和 setInterval() 中到期的 callback，函式裡的時間值是個門檻 (也就是如果設定 1000，最快可以一秒後馬上執行，但可能超過一秒才會執行)，這還要看 OS 如何排序所有的 callback。
-2. Pending callbacks：上一輪迴圈中有少數的 I/O callback 會被延遲到這一輪的這一階段執行。
-3. Idle, prepare：Idle handle callback 會被執行、prepare handles 會在迴圈被 I/O 阻塞前執行 callback。
-4. Poll：最重要的一個階段，它會尋找新的 I/O 事件，可能的話會馬上執行 I/O callback，如果沒辦法馬上執行，它會延遲執行並把它註冊為一個 pending callback 在下一輪執行。這個階段有兩個主要任務：計算要阻塞多久、還有找遍所有在 polling 佇列中事件並執行 callback，直到佇列清空或是執行的 callback 數量達到系統上限。這個階段會阻塞執行緒。
-5. Check：跟 prepare 相反，會在迴圈被 I/O 阻塞後執行 callback，還有執行 setImmediate() 的 callback。
+1. Timers：等計時器 (setTimeout、setInterval) 的時間一到，會把他們的 callback 放到這裡等待執行。
+2. Pending callbacks：作業系統層級使用 (TCP errors、sockets 連線被拒絕)。
+3. Idle, prepare：內部使用
+4. Poll：最重要的一個階段。
+	1. 如果 Queue 不為空，依次取出 callback 函數執行，直到 Queue 為空或是抵達系統最大限制。
+	2. 如果 Queue 為空但有設置 「setImmediate」，就進入 check 階段。
+	3. 如果 Queue 為空但沒有設置 「setImmediate」，就會在 Poll 階段等到直到 Queue 有東西或是 Timers 時間抵達。 
+
+5. Check：處理 setImmediate 的 callback。
 6. Close callbacks：執行 close 事件的 callback，利如 socket.destroy()。
 
 <br>
@@ -472,7 +481,13 @@ app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
 ```
-應用程式會啟動伺服器，並使用 Port 3000 來連線。應用程式指向 URL (/) 的路由，以 "Hello World!" 回應如果是其他路徑，res 就會回應 404 找不到。
+```sh
+$ node app.js
+
+Example app listening on port 3000
+```
+
+使用 `node` 來啟動伺服器，並使用 Port 3000 來連線。應用程式指向 URL (/) 的路由，以 "Hello World!" 回應如果是其他路徑，res 就會回應 404 找不到。
 
 <br>
 
@@ -500,7 +515,57 @@ $ express --view=pub
 <br>
 
 
-#### 
+### 路由 (router)
+
+路由是判斷應用程式如何回應用戶端對特定端點的要求，而特定端點是一個 URL 或是路徑，與一個特定的 HTTP 要求方法 (GET、POST) 等，路由定義的結構如下：
+
+```js
+app.METHOD(PATH, HANDLER)
+```
+其中
+* app 是 express 的實力。
+* METHOD 是 HTTP 要求的方法。
+* PATH 是伺服器上的路徑。
+* HANDLER 是當路由相符時要執行的函數。
+
+<br>
+
+以下範例簡單說明不同 HTTP 要求的方法：
+
+首頁中以 Hello World! 回應。
+```js
+app.get('/', function (req, res) {
+  res.send('Hello World!');
+});
+```
+
+<br>
+
+對根路由 (/)（應用程式的首頁）發出 POST 要求時的回應：
+```js
+app.post('/', function (req, res) {
+  res.send('Got a POST request');
+});
+```
+
+<br>
+
+對 /user 路由發出 PUT 要求時的回應：
+
+```js
+app.put('/user', function (req, res) {
+  res.send('Got a PUT request at /user');
+});
+```
+<br>
+
+對 /user 路由發出 DELETE 要求時的回應：
+
+```js
+app.delete('/user', function (req, res) {
+  res.send('Got a DELETE request at /user');
+});
+```
 
 <br>
 
