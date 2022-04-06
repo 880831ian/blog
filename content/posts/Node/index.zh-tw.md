@@ -37,18 +37,21 @@ Node.js 採用 Google 開發的 Chrome V8 JavaScript 引擎和 libuv，可以用
 
 <br>
 
-Node.js 能快速的原因是因為他對資源的調校不同，當程式收到一筆連線，相較於 PHP 的每次連線都會新生成一個執行緒，當連線數量暴增時很快就會消耗掉系統的資源，並且容易產生阻塞 (block)，而 Node.js 則是會通知作業系統透過 epoll、kqueue、/dev/poll、select 等將連線保留，並放入 heap 中配置，先讓連線進入休眠 (Sleep) 狀態，等系統通知才觸發連線的 callback。這種處理方式只會佔用記憶體，並不會使用到 CPU 資源。另外因為 JavaScript 語言的特性，每一個 request 都會有一個 callback，可以避免發生阻塞的狀況發生。
+其他開源、低級組件，主要用 C/C++ 編寫：
+* c-ares : 用於非同步 DNS 請求的 C 函式庫，用於 Node.js 中的一些 DNS 請求。
+* http-parser：一個輕量級的 HTTP 請求/回應解析器。
+* OpenSSL：一個著名的通用密碼庫。用於 `tls` 和 `cryto` 模組。
+* zlib：無損數據壓縮庫。
 
 <br>
 
-{{< admonition type=tap title="什麼是 callback" open=true >}}
-假設有 A、B、C 三件工作，其中 B 必須等待 C 做完才能執行。大部份的人幾乎都是做 A，再做 C，等待 C 做完以後最後做 B。但對於可多工的人來說，卻可能是同時做 A 與 C（多工），等待 C 完成後做 B。
+Node.js 能快速的原因是因為他對資源的調校不同，當程式收到一筆連線，
 
+相較於 PHP 的每次連線都會新生成一個執行緒，當連線數量暴增時很快就會消耗掉系統的資源，並且容易產生阻塞 (block)，
 
+而 Node.js 則是會通知作業系統透過 epoll、kqueue、/dev/poll、select 等將連線保留，並放入 heap 中配置，先讓連線進入休眠 (Sleep) 狀態，等系統通知才觸發連線的 callback。
 
-
-Callback function 是一個被作為參數帶入另一個函式中的「函式」，這個被作為參數帶入的函式將在「未來某個時間點」被呼叫和執行 — 這是處理非同步事件的一種方式。
-{{< /admonition >}}
+這種處理方式只會佔用記憶體，並不會使用到 CPU 資源。另外因為 JavaScript 語言的特性，每一個 request 都會有一個 callback，可以避免發生阻塞的狀況發生。
 
 <br>
 
@@ -97,8 +100,6 @@ Node.js 使用非阻塞設計，那要怎麼去操作資料庫或是 HTTP 請求
 
 非同步也可以稱為異步，它的作用就是讓程式不要被阻擋等 I/O 處理完，才可以跑下一行程式碼，函式中的 callback 被呼叫的時候再執行後續要做的事情。
 
-JaveScript 實現非同步的方法不斷演進著：從 callback、promises 到最新的 asymc-await 函式。
-
 <br>
 
 同步 vs. 非同步
@@ -135,6 +136,166 @@ function doSomething(data) {
 $ node index.js
 readFileSync 測試
 ```
+
+<br>
+
+JaveScript 實現非同步的方法不斷演進著：從 callback、promises 到最新的 asymc-await 函式。
+
+<br>
+
+#### Callback
+
+##### 什麼是 callback
+
+假設有 A、B、C 三件工作，其中 B 必須等待 C 做完才能執行。大部份的人幾乎都是做 A，再做 C，等待 C 做完以後最後做 B。但對於可多工的人來說，卻可能是同時做 A 與 C（多工），等待 C 完成後做 B。
+
+Callback function 是一個被作為參數帶入另一個函式中的「函式」，這個被作為參數帶入的函式將在「未來某個時間點」被呼叫和執行 — 這是處理非同步事件的一種方式。
+
+再次舉 A、B、C 三件工作的例子，其中 B 必須等待 C 做完才能執行，於是我們將 B 放到 C 的 callback 中，讓宿主環境在收到 C 完成的回應時後 B 放到佇列中準備執行。
+
+<br>
+
+```js
+doA();
+
+doC(function() {
+	doB();
+});
+```
+
+<br>
+
+常見的例子：
+
+* 使用瀏覽器所提供的 `setTimeout()`或是 `setInterval()`
+
+```js
+setTimeout(() => {
+ console.log('這個訊息將在三秒後被印出來')
+}, 3000)
+```
+提供一個匿名函式作為參數帶入 setTimeout() 函式中，目的就是請 setTimeout() 在未來某個時間點（三秒後）呼叫和執行這個匿名函式。
+
+<br>
+
+* DOM 的事件監聽
+
+```js
+const btn = document.querySelector('button')
+btn.addEventListener('click', callbackFunctionName)
+```
+callbackFunctionName 做為參數被帶入 addEventListener() 中，callbackFunctionName 不會立即被執行，而是未來按鈕被點擊時才會執行。
+
+<br>
+
+callback 主要有一個缺點：`回呼地獄`
+
+<br>
+
+##### 回呼地獄 (Callback Hell)
+
+回呼地獄 (Callback Hell) 又稱為「毀滅金字塔」，指的是層次太深的巢狀 callback，讓程式變的更複雜且難以預測或是追蹤。
+
+向遠端伺服器發出請求並獲得資訊後，執行 callback，再發出請求，獲得資訊後執行 callback，再發出請求，獲得資訊後執行 callback，就會不小心一層包一層，變成所謂的 callback hell。
+
+
+```js
+doA(function() {
+  doB();
+
+  doC(function() {
+    doD();
+  });
+
+  doE();
+});
+
+doF();
+```
+
+缺點：
+1. 可讀性低：如果程式碼出錯，要回頭慢慢找錯誤的地方
+2. 可維護性低：如果要修改其中一組函式，牽一髮而動全身
+
+<br>
+
+那在同步執行情況下，可以使用 ```try...catch``` 來捕捉錯誤訊息，但如果是在非同步情況下，要怎麼處理錯誤或是例外訊息呢！？ 主要有兩種方式：
+
+<br>
+
+##### 分別回呼 (split Callback)
+
+分別的回呼要設定兩個 callback，一個用於成功通知，另一個則用於錯誤通知。如下，第一個參數是用於成功的 callback，第二個參數是用於失敗的 callback：
+
+```js
+function success(data) {
+  console.log(data);
+}
+
+function failure(err) {
+  console.error(error);
+}
+
+ajax('http://sample.url', success, failure);
+```
+
+<br>
+
+那如果在 callback 中發生錯誤，要怎麼辦呢!?
+
+<br>
+
+```js
+function success(data) {
+  console.log(x);
+}
+
+function failure(err) {
+  console.error(error);
+}
+
+ajax('http://sample.url', success, failure);
+
+// Uncaught (in promise) ReferenceError: x is not defined
+```
+
+會直接報錯，並不會進入到 failure 這個 callback 裡面，也就是說，如果是在 callback 內發生錯誤，是不會被捕捉到的。
+
+<br>
+
+##### 錯誤優先處理 (Error-First Style)
+
+Node.js 的 API 常見這樣的設計方式，第一個參數是 error ，第二個參數是回應的資料 (data)。檢查 error 是否有值或是 true，否則就接續處理 data。
+
+```js
+function response(err, data) {
+  if(err) {
+    console.error(err);
+  } else {
+    console.log(data);
+  }
+}
+
+ajax('http://sample.url', response);
+```
+
+接下來我們來看 promise，可以解決難以預測的 callback hell 問題。
+
+#### Promise
+
+Promise：Callback 以外的另一種方式來處理非同步事件，且可讀性與可維護性比 Callback 好很多。
+Promise 是一個物件，代表著一個尚未完成，但最終會完成的一個動作 - 在一個非同步處理流程中，它只是一個暫存的值。
+
+我們一樣來說剛剛咖啡店的例子：
+當我們點完拿鐵跟黑咖啡後，店員會給你一張印有號碼的收據，然後告訴你等等聽到號碼，就可以來領咖啡了，而這張收據就是 Promise，代表這個任務完成後，就可以接著執行接下來的動作了。
+
+在等待過程中，其實無法百分百確定最後一定會拿到咖啡 (Promise) ; 店員可能順利做完咖啡交到你手上 (Resolved) ; 可能牛奶或是咖啡豆沒了，所以店員告訴你今天做不出來咖啡 (Rejected)。
+
+Promise 就像上面的例子中，會處在三個任意階段中：
+
+* Pedning：等待事情完成中，但不確定最終會順利完成或失敗
+* Resolved（或稱 Fulfilled）：代表順利完成了，並轉交結果
+* Rejectesd：代表失敗了，並告知失敗原因
 
 <br>
 
@@ -587,3 +748,6 @@ app.delete('/user', function (req, res) {
 [認識同步與非同步 — Callback + Promise + Async/Await
 ](https://medium.com/%E9%BA%A5%E5%85%8B%E7%9A%84%E5%8D%8A%E8%B7%AF%E5%87%BA%E5%AE%B6%E7%AD%86%E8%A8%98/%E5%BF%83%E5%BE%97-%E8%AA%8D%E8%AD%98%E5%90%8C%E6%AD%A5%E8%88%87%E9%9D%9E%E5%90%8C%E6%AD%A5-callback-promise-async-await-640ea491ea64)
 [你懂 JavaScript 嗎？#23 Callback](https://ithelp.ithome.com.tw/articles/10206555)
+
+[How to create JOIN queries with Sequelize
+](https://sebhastian.com/sequelize-join/)
