@@ -96,6 +96,7 @@ Node.js 使用非阻塞設計，那要怎麼去操作資料庫或是 HTTP 請求
 
 <br>
 
+
 ###  非同步 (asynchronous)
 
 非同步也可以稱為異步，它的作用就是讓程式不要被阻擋等 I/O 處理完，才可以跑下一行程式碼，函式中的 callback 被呼叫的時候再執行後續要做的事情。
@@ -104,38 +105,49 @@ Node.js 使用非阻塞設計，那要怎麼去操作資料庫或是 HTTP 請求
 
 同步 vs. 非同步
 
-我們使用 Node.js 的 File System (文件系統)模組作為簡單的例子，以下是 **同步的寫法** (程式會停止前進，直到跑完 `readFileSync`)：
-
-```js
-const fs = require("fs");
-const data = fs.readFileSync("file.md", { encoding: "utf8" }); // blocks here until file is read
-console.log(data);
-```
-
-```sh
-$ node index.js
-readFileSync 測試
-```
 
 <br>
 
-以下是非同步的寫法 (程式會繼續從下處裡後續程式碼，等 `readFile` 跑完再回來對資料 `doSomething`)：
+* 非同步 (asynchronous)
 
-```js
-const fs = require("fs");
-fs.readFile("file.md", { encoding: "utf8", flag: "r" }, (err, data) => {
-  if (err) throw err;
-  doSomething(data);
-});
-function doSomething(data) {
-  console.log(data);
-}
-```
+可以想像一下你去咖啡廳買拿鐵跟黑咖啡，可能會發生的情況是：
+1. 你點了拿貼跟黑咖啡
+2. 店員在收銀機上輸入點餐內容
+3. 店員請同事 A 準備拿鐵、請同事 B 準備黑咖啡，並告知做完後，要提醒店員
+4. 黑咖啡製作的比較快，B 同事會先完成，而剛好店員剛幫你結帳完沒事，所以把黑咖啡拿給你
+5. 拿鐵製作包含較多步驟，花費時間較久，等 A 同事完成後，店員剛好沒事，所以把拿鐵拿給你
 
-```sh
-$ node index.js
-readFileSync 測試
-```
+<br>
+
+可以看到，櫃檯店員一次只能做一件事情，但為了節省時間，店員將工作分配給其他同事，在下完指令後，店員會繼續幫你結帳，等同事們各自完成後會告知店員，店員在依序把飲料交給你 - 最終等待時間減少，也不會浪費閒置的資源，這就是現實生活中非同步的情況。
+
+<br>
+
+* 同步 (synchronous)
+
+一樣我們點了拿鐵跟黑咖啡，換成同步的話：
+
+1. 店員在收銀機上輸入點餐內容
+2.  店員請同事 A 開始準備拿鐵
+3.  A 同事準備完拿鐵，店員轉交給你
+4.  店員請同事 B 開始準備黑咖啡
+5.  B 同事準備完黑咖啡，店員交給你
+6.  店員幫你刷載具、打統編、找錢等等
+
+<br>
+
+同樣的餐點內容，如果是同步處理，代表要等每一件事情做完，才可以做下一步。也就是說同事 A 完成拿鐵後，店員才請 B 同事準備黑咖啡。相對於非同步來說，會花費不少時間以及浪費不少閒置資源。
+
+
+<br>
+
+從咖啡店的例子中可以發現：
+
+1. 櫃檯店員手上一次能做的事情只有一件 (Single thread 單執行緒)，只是在非同步的例子中，將製作咖啡的事情委派給其他同事處理，讓自己可以繼續幫你結帳，來提高效率 — JavaScript 是 Single thread，一次只能做一件事情。
+2. 在非同步的例子中，櫃檯店員將製作咖啡的事情委派出去，其實店員也不知道哪一個任務會先被完成，但店員還是可以繼續完成結帳的任務，不會因為同事 A、B 還在製作咖啡，就不能接下去動作 (non-blocking) — JavaScript 一次只能做一件事，但藉由 Node 提供的 API 協助，在背後處理這些事件 (同事在背後製作咖啡)，得以等待製作同時，不會被阻塞 (blocking) 到下一件事情的執行。
+3. 非同步的例子中，店員委派事情的流程很簡單：就是請同事完成製作咖啡 (event) + 在收到同事通知完成後接手咖啡，並轉交給你 (callback function) — 若是採用非同步處理，會有 callback function 來指定事件完成後要接續做什麼：它不會立即被執行，而是等待委託的事情被完成後才處發。
+4. 當同事 A、B 分別通知完成後，就會依序把咖啡放在店員的旁邊排成一排 (event queue)。想向店員有一個小助手 (event loop) ，他的工作內容是確認店員結帳完了沒有：如果結帳完了，就會把隊伍中第一杯咖啡叫給店員，讓店員交給你 (觸發 callback function) ; 如果店員還在結帳，就會讓隊伍中的咖啡擺在旁邊繼續等待。
+
 
 <br>
 
@@ -281,6 +293,8 @@ ajax('http://sample.url', response);
 
 接下來我們來看 promise，可以解決難以預測的 callback hell 問題。
 
+<br>
+
 #### Promise
 
 Promise：Callback 以外的另一種方式來處理非同步事件，且可讀性與可維護性比 Callback 好很多。
@@ -299,9 +313,246 @@ Promise 就像上面的例子中，會處在三個任意階段中：
 
 <br>
 
-**為什麼 Node.js 有了非阻塞 I/O 跟 非同步函式，就可以實現單執行緒設定呢?** 
 
-雖然 Google V8 JavaScript 引擎是單執行緒設定，但它的底層 C ++ API 並不是。這代表我們可以呼叫一些非同步的程式碼像是 File System 時，Node 會請它底層的 `libuv` 去跑這些程式碼，跑完後再執行 callback 或拋出錯誤。
+```js
+const getData = new Promise((resolve, reject) => {
+  // 非同步的作業...code...
+  
+  // 作業完成，並回傳錯誤訊息時
+  if (error) { return reject('錯誤訊息')} 
+  
+  // 作業成功完成
+  resolve({
+    data1: 'abc',
+    data2: '123'
+  })
+})
+```
+* resolve 函式：當非同步作業成功完成時，將結果做為參數帶入執行。
+*  reject 函式：當非同步作業失敗時，將錯誤訊息作為參數帶入執行。
+
+<br>
+
+創建出來的 Promise 物件在實例上有兩個重要的方法：
+
+##### .then() 方法
+
+當成功從 `resolve()` 獲得結果時 - 狀態會由 Pending 轉為 Resolved - `then()` 方法就會被調用。
+
+```js
+getData
+  // 使用 then 方法，並將成功訊息印出來
+  .then(data => {console.log('成功資料', data)})
+```  
+以剛剛咖啡店的例子來看， `then()` 方法就像你會去聽咖啡人員是否叫號，並確認咖啡是否成功準備好了，就領取咖啡來喝。
+
+
+<br>
+
+##### catch() 方法
+
+當從 `reject()` 獲得錯誤訊息時 - 狀態由 Pending 轉為 Rejected - `catch()` 方法就會被調用來處理錯誤。
+
+```js
+getData
+  // 使用 then 方法，並將成功訊息印出來
+  .then(data => {console.log('成功資料', data)})
+  // 使用 catch 方法，並將錯誤訊息印出來
+  .catch(error => console.log('錯誤訊息', error))
+```
+一樣以剛剛咖啡店的例子來看， `catch()` 方法就像你會去聽咖啡店店員是否有告知咖啡做不出來的訊息，如果有，你就會去櫃檯退錢或是改其他產品代替。
+
+<br>
+
+##### 串接 then() 方法
+
+還記得上面我們示範的 callback hell ，因為我們依序要向不同的伺服器或資料庫取得資料，也要依序處理多個非同步的作業，所以會有一層一層的 callback 去達成。
+
+從上面 `then()` 和 `catch()` 方法例子中可以發現，非同步作業執行完成後的處理步驟被獨立開來，這樣程式碼的可讀性就會高很多 - 在依序處理多個非同步作業時會更為明顯，我們可以看到下面我們用 `then()` 方法做串接：
+
+<br>
+
+```js
+getData
+  // 使用 then 方法，並將成功訊息印出來
+  .then(data => {
+    console.log(data.data1) // abc
+    return data.data1 + 'def'
+  })
+  // 獲得前一個 then() 回傳的結果
+  .then(data => {
+    console.log(data) // abcdef
+    return data + 'ghi'
+  })
+  // 獲得前一個 then() 回傳的結果
+  .then(data => {
+    console.log(data) // abcdefghi
+  })
+  // 使用 catch 方法，並將錯誤訊息印出來
+  .catch(error => console.log('錯誤訊息', error))
+```
+
+<br>
+
+##### Promise.all([....]) 方法
+
+當在處理「多個非同步事件」時，Promise.all() 方法會等所有 Promise 都被順利完成 (Resolved) 後，才會執行接下去的動作 ; 一旦收到某一個 Promise 回傳錯誤 (Rejected)，就會立即執行後續的錯誤處理流程。
+
+我們以剛剛咖啡店的例子來說，我們點完咖啡後，又因為嘴饞，多買了一個麵包來吃，這時我們手上就有兩個領餐號碼，那 `Promise.all([...])` 就是當你等到兩個號碼都被叫到後，才會去領餐。
+
+<br>
+
+那 `Promise.all([....])` 的好處什麼呢!? 它可以縮短等待時間：
+
+```js
+const oneSecond = new Promise((resolve, reject) => {
+  setTimeout(() => {
+    // 一秒後回傳資料
+    resolve('one second')
+  }, 1000);
+})
+
+const twoSecond = new Promise((resolve, reject) => {
+  setTimeout(() => {
+    // 兩秒後回傳資料
+    resolve('two second')
+  }, 2000);
+})
+
+const threeSecond = new Promise((resolve, reject) => {
+  setTimeout(() => {
+    // 三秒後回傳資料
+    resolve('three second')
+  }, 3000);
+})
+
+// 等到三個 Promise 都成功回傳後，才執行接下去的流程
+Promise.all([oneSecond, twoSecond, threeSecond])
+  .then(([oneSecond, twoSecond, threeSecond]) => {
+    console.log(oneSecond, twoSecond, threeSecond)
+  })
+```
+
+我們模擬一下我們要分別向三個資料庫請求資料 (我們以 `setTimeout()` 示意非同步處理事件)，可以看到我們要先等第一個資料庫成功回傳資料後，才展開第二次請求，等到成功收到回傳後才開始第三次請求。而使用 `Promise.all()` 方法，我們能先依序向資料庫發出請求，並在成功獲得全部回傳資料後，才會做後續的動作。 
+
+<br>
+
+#### Aysnc/Await
+
+那我們剛剛透過 Promise 包裝和使用，的確避免了 callback hell 讓整個流程變得很清楚，提升了程式碼的易讀性與可維護性。
+
+Aysnc/Await 是所謂的語法糖衣，是一種新的語法撰寫方式，來處理「非同步事件」，讓非同步的程式碼讀起來更像在寫「同步程式碼」。
+
+Aysnc/Await 是用來簡單化和清楚化 Promise 串連 then 這種相對複雜的結構，他回傳的一樣也是 Promise 物件，只是針對 promise-based 寫法進行包裝。
+
+<br>
+
+Async 關鍵字
+
+`async` 關鍵字可以放在任意函式前面，它代表「我們正宣告一個非同步的函式，且這個函式會回傳一個 Promise 物件」：
+
+```js
+// 一般函式
+function getGroupInfo() {
+  return data
+}
+
+// 使用 async 函式
+async function getGroupInfo() {
+  return  data
+}
+```
+
+<br>
+
+Await 關鍵字
+
+在 `async` 函式中使用 `await` 關鍵字，代表「我們請 JavaScript 等待這個非同步的作業完成後，才展開後續的動作」，換句話說：await 讓 async 函式的執行動作暫停，等到它獲得回傳的 Promise 物件後 - 無論執行成功 (resolve) 或是失敗 (rejected) -才會恢復執行 async 函式。
+
+* 優點：可以直接使用 await 後獲得的回傳值存於一個變數中做後續使用，而不是在呼叫 `then()` 方法一個一個串，讓程式碼看起來像是在處裡一般的同步程式碼，提升了易讀性與可維護性。
+
+<br>
+
+##### Aysnc/Await 範例
+
+我們在後續的範例，一樣使用 `setTimeout()` 來模擬資料庫請求和等待資料的非同步：
+
+```js
+function getFirstInfo() {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      resolve('first data')
+    }, 1000);
+  })
+}
+
+function getSecondInfo() {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      resolve('second data')
+    }, 2000);
+  })
+}
+
+async function getGroupInfo() {
+  // 代表等到第一筆資料回傳後，才印出結果和請求第二筆資料
+  const firstInfo = await getFirstInfo()
+  console.log(firstInfo)
+  // 代表等到第二筆資料回傳後，才印出結果
+  const secondInfo = await getSecondInfo()
+  console.log(secondInfo)
+}
+
+getGroupInfo()
+```
+在 `getGroupInfo()`  函式前加上 `async` 關鍵字，來告知值這是一個非同步函示， `getFirstInfo()` 跟 `getSecondInfo()` 是兩個要處理非同步的地方，因此分別在兩個呼叫函式前加上 `await` 關鍵字。
+
+
+<br>
+
+##### await 搭配 Promise.all([...]) 方法
+
+```js
+
+function getFirstInfo() {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      // 1秒後回傳結果
+      resolve('first data')
+    }, 1000);
+  })
+}
+
+function getSecondInfo() {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      // 2秒後回傳結果
+      resolve('second data')
+    }, 2000);
+  })
+}
+
+async function getGroupInfo() {
+  try {
+    const firstInfo = getFirstInfo()
+    const secondInfo = getSecondInfo()
+    // 同步發出非同步請求，並等到兩秒後（非三秒）成功獲得兩筆回傳後，才印出結果
+    const [firstData, secondData] = await Promise.all([firstInfo, secondInfo])
+    console.log(firstData, secondData)
+  } catch (error) {
+    // 處理錯誤回傳
+    console.log(error)
+  }
+}
+
+getGroupInfo()
+```
+
+透過 `await` 關鍵字搭配 `Promise.all()` 方法，同步向兩個資料庫獲取資料，並等到兩筆資料都成功回傳後，才印出結果 - 省時效率提高！
+
+<br>
+
+我們可以看到下面這張圖，他是 Node.js 運行時的縮圖，一旦你的 Node.js 應用程序啟動，它會先開始一個初始化階段，運行啟動腳本，包括請求模組和註冊事件 callback。然後應用程序進入事件循環（也稱為主線程、事件線程等），從概念上講，它是為通過執行適當的 JS callback 來響應傳入的客戶端請求而構建的。
 
 <br>
 
@@ -319,6 +570,10 @@ libuv 是非同步處理的函式庫（以 C 語言為主)，在面對非同步�
 <br>
 
 ### 事件驅動 (event-driven)
+
+在講事件驅動前，我們先來了解一下什麼是事件：
+
+<br>
 
 #### 事件 (event)
 
