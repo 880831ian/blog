@@ -28,7 +28,7 @@ Node.js 是能夠在伺服器端運行 JavaScript 的開放原始碼、跨平台
 
 Node.js 的出現，讓前端網站開發人員可以使用 JaveScript 來做後端或是系統層面的工作。讓前端開發網站開發人員使用已懂的 JavaScript 語言就可以自行設定網站伺服器。
 
-Node.js 採用 Google 開發的 Chrome V8 JavaScript 引擎和 libuv，可以用指令去執行 JavaScript，使用非阻塞輸入輸出、非同步、事件驅動等技術來提高效能，可最佳化應用程式的傳輸量和規模。這些技術通常用於資料密集的即時應用程式。
+Node.js 採用 Google 開發的 Chrome V8 JavaScript 引擎和 libuv 函式庫，可以用指令去執行 JavaScript，使用非阻塞輸入輸出、非同步、事件驅動等技術來提高效能，可最佳化應用程式的傳輸量和規模。這些技術通常用於資料密集的即時應用程式。
 
 
 <br>
@@ -111,10 +111,10 @@ Node.js 使用非阻塞設計，那要怎麼去操作資料庫或是 HTTP 請求
 * 非同步 (asynchronous)
 
 可以想像一下你去咖啡廳買拿鐵跟黑咖啡，可能會發生的情況是：
-1. 你點了拿貼跟黑咖啡
+1. 你點了拿鐵跟黑咖啡
 2. 店員在收銀機上輸入點餐內容
 3. 店員請同事 A 準備拿鐵、請同事 B 準備黑咖啡，並告知做完後，要提醒店員
-4. 黑咖啡製作的比較快，B 同事會先完成，而剛好店員剛幫你結帳完沒事，所以把黑咖啡拿給你
+4. 黑咖啡製作會比較快，B 同事會先完成，而剛好店員剛幫你結帳完沒事，所以把黑咖啡拿給你
 5. 拿鐵製作包含較多步驟，花費時間較久，等 A 同事完成後，店員剛好沒事，所以把拿鐵拿給你
 
 <br>
@@ -144,20 +144,20 @@ Node.js 使用非阻塞設計，那要怎麼去操作資料庫或是 HTTP 請求
 從咖啡店的例子中可以發現：
 
 1. 櫃檯店員手上一次能做的事情只有一件 (Single thread 單執行緒)，只是在非同步的例子中，將製作咖啡的事情委派給其他同事處理，讓自己可以繼續幫你結帳，來提高效率 — JavaScript 是 Single thread，一次只能做一件事情。
-2. 在非同步的例子中，櫃檯店員將製作咖啡的事情委派出去，其實店員也不知道哪一個任務會先被完成，但店員還是可以繼續完成結帳的任務，不會因為同事 A、B 還在製作咖啡，就不能接下去動作 (non-blocking) — JavaScript 一次只能做一件事，但藉由 Node 提供的 API 協助，在背後處理這些事件 (同事在背後製作咖啡)，得以等待製作同時，不會被阻塞 (blocking) 到下一件事情的執行。
+2. 在非同步的例子中，櫃檯店員將製作咖啡的事情委派出去，其實店員也不知道哪一個任務會先被完成，但店員還是可以繼續完成結帳的任務，不會因為同事 A、B 還在製作咖啡，就不能接下去動作 (non-blocking) — JavaScript 一次只能做一件事，但藉由 Node 提供的 API 協助，在背後處理這些事件 (同事在背後製作咖啡)，可以等待製作同時，不會被阻塞 (blocking) 到下一件事情的執行。
 3. 非同步的例子中，店員委派事情的流程很簡單：就是請同事完成製作咖啡 (event) + 在收到同事通知完成後接手咖啡，並轉交給你 (callback function) — 若是採用非同步處理，會有 callback function 來指定事件完成後要接續做什麼：它不會立即被執行，而是等待委託的事情被完成後才處發。
 4. 當同事 A、B 分別通知完成後，就會依序把咖啡放在店員的旁邊排成一排 (event queue)。想向店員有一個小助手 (event loop) ，他的工作內容是確認店員結帳完了沒有：如果結帳完了，就會把隊伍中第一杯咖啡叫給店員，讓店員交給你 (觸發 callback function) ; 如果店員還在結帳，就會讓隊伍中的咖啡擺在旁邊繼續等待。
 
 
 <br>
 
-JaveScript 實現非同步的方法不斷演進著：從 callback、promises 到最新的 asymc-await 函式。
+JaveScript 實現非同步的方法不斷演進著：從 callback、promises 到最新的 async-await 函式。
 
 <br>
 
 #### Callback
 
-##### 什麼是 callback
+##### 什麼是 Callback
 
 假設有 A、B、C 三件工作，其中 B 必須等待 C 做完才能執行。大部份的人幾乎都是做 A，再做 C，等待 C 做完以後最後做 B。但對於可多工的人來說，卻可能是同時做 A 與 C（多工），等待 C 完成後做 B。
 
@@ -200,15 +200,15 @@ callbackFunctionName 做為參數被帶入 addEventListener() 中，callbackFunc
 
 <br>
 
-callback 主要有一個缺點：`回呼地獄`
+Callback 主要有一個缺點：`回呼地獄`
 
 <br>
 
 ##### 回呼地獄 (Callback Hell)
 
-回呼地獄 (Callback Hell) 又稱為「毀滅金字塔」，指的是層次太深的巢狀 callback，讓程式變的更複雜且難以預測或是追蹤。
+回呼地獄 (Callback Hell) 又稱為「毀滅金字塔」，指的是層次太深的巢狀 Callback，讓程式變的更複雜且難以預測或是追蹤。
 
-向遠端伺服器發出請求並獲得資訊後，執行 callback，再發出請求，獲得資訊後執行 callback，再發出請求，獲得資訊後執行 callback，就會不小心一層包一層，變成所謂的 callback hell。
+向遠端伺服器發出請求並獲得資訊後，執行 Callback，再發出請求，獲得資訊後執行 Callback，再發出請求，獲得資訊後執行 Callback，就會不小心一層包一層，變成所謂的 Callback Hell。
 
 
 ```js
@@ -235,9 +235,9 @@ doF();
 
 <br>
 
-##### 分別回呼 (split Callback)
+##### 分別回呼 (Split Callback)
 
-分別的回呼要設定兩個 callback，一個用於成功通知，另一個則用於錯誤通知。如下，第一個參數是用於成功的 callback，第二個參數是用於失敗的 callback：
+分別的回呼要設定兩個 Callback，一個用於成功通知，另一個則用於錯誤通知。如下，第一個參數是用於成功的 Callback，第二個參數是用於失敗的 Callback：
 
 ```js
 function success(data) {
@@ -253,7 +253,7 @@ ajax('http://sample.url', success, failure);
 
 <br>
 
-那如果在 callback 中發生錯誤，要怎麼辦呢!?
+那如果在 Callback 中發生錯誤，要怎麼辦呢!?
 
 <br>
 
@@ -271,7 +271,7 @@ ajax('http://sample.url', success, failure);
 // Uncaught (in promise) ReferenceError: x is not defined
 ```
 
-會直接報錯，並不會進入到 failure 這個 callback 裡面，也就是說，如果是在 callback 內發生錯誤，是不會被捕捉到的。
+會直接報錯，並不會進入到 failure 這個 Callback 裡面，也就是說，如果是在 Callback 內發生錯誤，是不會被捕捉到的。
 
 <br>
 
@@ -291,7 +291,7 @@ function response(err, data) {
 ajax('http://sample.url', response);
 ```
 
-接下來我們來看 promise，可以解決難以預測的 callback hell 問題。
+接下來我們來看 Promise，可以解決 callback 可讀性低的 Callback Hell 問題。
 
 <br>
 
@@ -316,16 +316,16 @@ Promise 就像上面的例子中，會處在三個任意階段中：
 
 ```js
 const getData = new Promise((resolve, reject) => {
-  // 非同步的作業...code...
-  
-  // 作業完成，並回傳錯誤訊息時
-  if (error) { return reject('錯誤訊息')} 
-  
-  // 作業成功完成
-  resolve({
-    data1: 'abc',
-    data2: '123'
-  })
+    // 製作咖啡.....
+    
+    // 作業完成，並回傳錯誤訊息時
+    if (error) { 
+        return reject('牛奶或是咖啡豆沒了')
+    } 
+    // 作業成功完成
+    resolve({
+        data: '咖啡交到你手上',
+    })
 })
 ```
 * resolve 函式：當非同步作業成功完成時，將結果做為參數帶入執行。
@@ -349,7 +349,7 @@ getData
 
 <br>
 
-##### catch() 方法
+##### .catch() 方法
 
 當從 `reject()` 獲得錯誤訊息時 - 狀態由 Pending 轉為 Rejected - `catch()` 方法就會被調用來處理錯誤。
 
@@ -437,13 +437,13 @@ Promise.all([oneSecond, twoSecond, threeSecond])
 
 <br>
 
-#### Aysnc/Await
+#### Async/Await
 
 那我們剛剛透過 Promise 包裝和使用，的確避免了 callback hell 讓整個流程變得很清楚，提升了程式碼的易讀性與可維護性。
 
-Aysnc/Await 是所謂的語法糖衣，是一種新的語法撰寫方式，來處理「非同步事件」，讓非同步的程式碼讀起來更像在寫「同步程式碼」。
+Async/Await 是所謂的語法糖衣，是一種新的語法撰寫方式，來處理「非同步事件」，讓非同步的程式碼讀起來更像在寫「同步程式碼」。
 
-Aysnc/Await 是用來簡單化和清楚化 Promise 串連 then 這種相對複雜的結構，他回傳的一樣也是 Promise 物件，只是針對 promise-based 寫法進行包裝。
+Async/Await 是用來簡單化和清楚化 Promise 串連 then 這種相對複雜的結構，他回傳的一樣也是 Promise 物件，只是針對 promise-based 寫法進行包裝。
 
 <br>
 
@@ -473,7 +473,7 @@ Await 關鍵字
 
 <br>
 
-##### Aysnc/Await 範例
+##### Async/Await 範例
 
 我們在後續的範例，一樣使用 `setTimeout()` 來模擬資料庫請求和等待資料的非同步：
 
