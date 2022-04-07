@@ -869,7 +869,7 @@ undefined
 
 <br>
 
-## Express
+## Express 框架
 
 Node.js 在實作上不會單獨使用，通常會搭配框架去使用，像是 [Express JS 後端框架](https://expressjs.com/)，可以讓開發人員在寫同一個功能時，少寫很多程式的工具。
 
@@ -939,7 +939,7 @@ $ express --view=pub
 app.METHOD(PATH, HANDLER)
 ```
 其中
-* app 是 express 的實力。
+* app 是 express 的實例。
 * METHOD 是 HTTP 要求的方法。
 * PATH 是伺服器上的路徑。
 * HANDLER 是當路由相符時要執行的函數。
