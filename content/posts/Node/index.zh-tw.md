@@ -99,7 +99,7 @@ Node.js 使用非阻塞設計，那要怎麼去操作資料庫或是 HTTP 請求
 
 ###  非同步 (asynchronous)
 
-非同步也可以稱為異步，它的作用就是讓程式不要被阻擋等 I/O 處理完，才可以跑下一行程式碼，函式中的 callback 被呼叫的時候再執行後續要做的事情。
+非同步也可以稱為異步，它的作用就是讓程式不要被阻擋等 I/O 處理完，才可以跑下一行程式碼，是直到函式中的 callback 被呼叫的時候再執行後續要做的事情。
 
 <br>
 
@@ -145,13 +145,13 @@ Node.js 使用非阻塞設計，那要怎麼去操作資料庫或是 HTTP 請求
 
 1. 櫃檯店員手上一次能做的事情只有一件 (Single thread 單執行緒)，只是在非同步的例子中，將製作咖啡的事情委派給其他同事處理，讓自己可以繼續幫你結帳，來提高效率 — JavaScript 是 Single thread，一次只能做一件事情。
 2. 在非同步的例子中，櫃檯店員將製作咖啡的事情委派出去，其實店員也不知道哪一個任務會先被完成，但店員還是可以繼續完成結帳的任務，不會因為同事 A、B 還在製作咖啡，就不能接下去動作 (non-blocking) — JavaScript 一次只能做一件事，但藉由 Node 提供的 API 協助，在背後處理這些事件 (同事在背後製作咖啡)，可以等待製作同時，不會被阻塞 (blocking) 到下一件事情的執行。
-3. 非同步的例子中，店員委派事情的流程很簡單：就是請同事完成製作咖啡 (event) + 在收到同事通知完成後接手咖啡，並轉交給你 (callback function) — 若是採用非同步處理，會有 callback function 來指定事件完成後要接續做什麼：它不會立即被執行，而是等待委託的事情被完成後才處發。
+3. 非同步的例子中，店員委派事情的流程很簡單：就是請同事完成製作咖啡 (event) + 在收到同事通知完成後接手咖啡，並轉交給你 (callback function) — 若是採用非同步處理，會有 callback function 來指定事件完成後要接續做什麼：它不會立即被執行，而是等待委託的事情被完成後才觸發。
 4. 當同事 A、B 分別通知完成後，就會依序把咖啡放在店員的旁邊排成一排 (event queue)。想向店員有一個小助手 (event loop) ，他的工作內容是確認店員結帳完了沒有：如果結帳完了，就會把隊伍中第一杯咖啡叫給店員，讓店員交給你 (觸發 callback function) ; 如果店員還在結帳，就會讓隊伍中的咖啡擺在旁邊繼續等待。
 
 
 <br>
 
-JaveScript 實現非同步的方法不斷演進著：從 callback、promises 到最新的 async-await 函式。
+JaveScript 實現非同步的方法不斷演進著：從 callback、promise 到最新的 async-await 函式。
 
 <br>
 
@@ -610,8 +610,8 @@ libuv 事件迴圈有哪些階段呢？
 libuv 的事件迴圈共有六個階段，每個階段的作用如下：
 
 1. Timers：等計時器 (setTimeout、setInterval) 的時間一到，會把他們的 callback 放到這裡等待執行。
-2. Pending callbacks：作業系統層級使用 (TCP errors、sockets 連線被拒絕)。
-3. Idle, prepare：內部使用
+2. Pending callbacks：會把作業系統層級的錯誤給callback (TCP errors、sockets 連線被拒絕)。
+3. Idle, prepare：內部使用。
 4. Poll：最重要的一個階段。
 	1. 如果 Queue 不為空，依次取出 callback 函數執行，直到 Queue 為空或是抵達系統最大限制。
 	2. 如果 Queue 為空但有設置 「setImmediate」，就進入 check 階段。
@@ -846,7 +846,7 @@ undefined
 
 <br>
 
-也可以使下底線(_)來獲得上一個程式的運算結果：
+也可以使用下底線(_)來獲得上一個程式的運算結果：
 
 ```sh
 $ node
