@@ -166,9 +166,11 @@ services:
     image: redis
     container_name: redis-master
     volumes:
-      - ./docker-volume/redis-master/:/data
+      - ./docker-volume/redis-master/:/data 
     ports:
       - 6379:6379
+    command: redis-server --appendonly yes
+
 
   redis-slave1:
     image: redis
@@ -177,7 +179,7 @@ services:
       - ./docker-volume/redis-slave1/:/data
     ports:
       - 6380:6379
-    command: redis-server --slaveof redis-master 6379
+    command: redis-server --slaveof redis-master 6379  --appendonly yes
     depends_on:
       - redis-master
 
@@ -188,7 +190,7 @@ services:
       - ./docker-volume/redis-slave2/:/data
     ports:
       - 6381:6379
-    command: redis-server --slaveof redis-master 6379
+    command: redis-server --slaveof redis-master 6379  --appendonly yes
     depends_on:
       - redis-master
       - redis-slave1
@@ -530,6 +532,18 @@ $ docker stop redis-master
 {{< image src="/images/redis-sentinel-docker/php-3.png"  width="700" caption="連線 master " src_s="/images/redis-sentinel-docker/php-3.png" src_l="/images/redis-sentinel-docker/php-3.png" >}}
 
 會發現因為該啟動 master，所以他還認為他是 master，但過一下下，在查看就正常顯示 slave1 為 master，舊的 master 就變成 slave。
+
+<br>
+
+{{< admonition bug "Redis 常見錯誤問題">}}
+在學習的時候，有發現啟動 sentinel 的時候，會跳出 `WARNING: Sentinel was not able to save the new configuration on disk!!!: Permission denied` 錯誤訊息，後來再去翻 redis github 的 issus 才發現作者也有發現這個問題，且已經修復了，主要是權限的問題，以及要掛載目錄而非 conf 檔案。
+
+<br>
+
+{{< image src="/images/redis-sentinel-docker/bug.png"  width="700" caption="redis WARNING 錯誤訊息 [github issus](https://github.com/redis/redis/issues/8172)" src_s="/images/redis-sentinel-docker/bug.png" src_l="/images/redis-sentinel-docker/bug.png" >}}
+
+{{< /admonition >}}
+
 
 <br>
 
