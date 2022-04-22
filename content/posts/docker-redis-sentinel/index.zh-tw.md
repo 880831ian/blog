@@ -39,7 +39,7 @@ Redis 提供非常實用的功能來讓我們實現多機的 in-memory 資料庫
 
 <br>
 
-{{< image src="/images/redis-sentinel-docker/sentinal.png"  width="500" caption="哨兵模式 (Sentinel)" src_s="/images/redis-sentinel-docker/sentinal.png" src_l="/images/redis-sentinel-docker/sentinal.png" >}}
+{{< image src="/images/docker-redis-sentinel/sentinal.png"  width="500" caption="哨兵模式 (Sentinel)" src_s="/images/docker-redis-sentinel/sentinal.png" src_l="/images/docker-redis-sentinel/sentinal.png" >}}
 
 <br>
 
@@ -86,7 +86,7 @@ Redis 提供非常實用的功能來讓我們實現多機的 in-memory 資料庫
 
 ## 用 Docker 實作 Redis 哨兵模式
 
-那接下來會使用 Docker 來實作 Redis 的哨兵模式，[範例程式連結 點我](https://github.com/880831ian/redis-sentinel-docker) 😘
+那接下來會使用 Docker 來實作 Redis 的哨兵模式，[範例程式連結 點我](https://github.com/880831ian/docker-redis-sentinel) 😘
 
 版本資訊
 * macOS：11.6
@@ -199,7 +199,7 @@ services:
 
  redis-(master、slave1、slave2)
  * volumes：將 redis 的資料掛載到 docker-volume/redis-(master、slave1、slave2)。
- * command：使用 redis-server 啟動，並且將該服務器轉變成指定服務器的從屬服務器 (slave server)。
+ * command：使用 redis-server 啟動，並且將該服務器轉變成指定服務器的從屬服務器 (slave server)。(如果想要保存 redis 的資料，要記得在 後面加上 --appendonly yes)
 
 <br>
 
@@ -391,11 +391,11 @@ docker exec -it redis-slave2 redis-cli info Replication | grep role
 
 <br>
 
-{{< image src="/images/redis-sentinel-docker/docker-compose-up-1.png"  width="700" caption="啟動 Docker-compose.yaml" src_s="/images/redis-sentinel-docker/docker-compose-up-1.png" src_l="/images/redis-sentinel-docker/docker-compose-up-1.png" >}}
+{{< image src="/images/docker-redis-sentinel/docker-compose-up-1.png"  width="700" caption="啟動 Docker-compose.yaml" src_s="/images/docker-redis-sentinel/docker-compose-up-1.png" src_l="/images/docker-redis-sentinel/docker-compose-up-1.png" >}}
 
 <br>
 
-{{< image src="/images/redis-sentinel-docker/redis-sh-1.png"  width="700" caption="使用 redis.sh 檢查目前 IP 及角色" src_s="/images/redis-sentinel-docker/redis-sh-1.png" src_l="/images/redis-sentinel-docker/redis-sh-1.png" >}}
+{{< image src="/images/docker-redis-sentinel/redis-sh-1.png"  width="700" caption="使用 redis.sh 檢查目前 IP 及角色" src_s="/images/docker-redis-sentinel/redis-sh-1.png" src_l="/images/docker-redis-sentinel/redis-sh-1.png" >}}
 
 <br>
 
@@ -429,7 +429,7 @@ $sentinel = array(
 
 <br>
 
-{{< image src="/images/redis-sentinel-docker/php-1.png"  width="700" caption="test.com:8888 測試網站" src_s="/images/redis-sentinel-docker/php-1.png" src_l="/images/redis-sentinel-docker/php-1.png" >}}
+{{< image src="/images/docker-redis-sentinel/php-1.png"  width="700" caption="test.com:8888 測試網站" src_s="/images/docker-redis-sentinel/php-1.png" src_l="/images/docker-redis-sentinel/php-1.png" >}}
 
 <br>
 
@@ -455,7 +455,7 @@ sentinel failover-timeout mymaster 180000
 
 <br>
 
-{{< image src="/images/redis-sentinel-docker/docker-compose-up-2.png"  width="700" caption="啟動 Docker-compose.yaml" src_s="/images/redis-sentinel-docker/docker-compose-up-2.png" src_l="/images/redis-sentinel-docker/docker-compose-up-2.png" >}}
+{{< image src="/images/docker-redis-sentinel/docker-compose-up-2.png"  width="700" caption="啟動 Docker-compose.yaml" src_s="/images/docker-redis-sentinel/docker-compose-up-2.png" src_l="/images/docker-redis-sentinel/docker-compose-up-2.png" >}}
 
 <br>
 
@@ -471,7 +471,7 @@ $ docker stop redis-master
 
 <br>
 
-{{< image src="/images/redis-sentinel-docker/redis-sh-2.png"  width="700" caption="使用 redis.sh 檢查目前 IP 及角色" src_s="/images/redis-sentinel-docker/redis-sh-2.png" src_l="/images/redis-sentinel-docker/redis-sh-2.png" >}}
+{{< image src="/images/docker-redis-sentinel/redis-sh-2.png"  width="700" caption="使用 redis.sh 檢查目前 IP 及角色" src_s="/images/docker-redis-sentinel/redis-sh-2.png" src_l="/images/docker-redis-sentinel/redis-sh-2.png" >}}
 
 發現已經抓不到 master IP 以及他的角色。
 
@@ -481,7 +481,7 @@ $ docker stop redis-master
 
 <br>
 
-{{< image src="/images/redis-sentinel-docker/redis-sh-3.png"  width="700" caption="使用 redis.sh 檢查目前 IP 及角色" src_s="/images/redis-sentinel-docker/redis-sh-3.png" src_l="/images/redis-sentinel-docker/redis-sh-3.png" >}}
+{{< image src="/images/docker-redis-sentinel/redis-sh-3.png"  width="700" caption="使用 redis.sh 檢查目前 IP 及角色" src_s="/images/docker-redis-sentinel/redis-sh-3.png" src_l="/images/docker-redis-sentinel/redis-sh-3.png" >}}
 
 就會發現已經將 master 轉移到原 slave1。
 
@@ -491,25 +491,25 @@ $ docker stop redis-master
 
 <br>
 
-{{< image src="/images/redis-sentinel-docker/sentinal-1.png"  width="1200" caption="判斷是否主觀下線及客觀下線，並發起投票" src_s="/images/redis-sentinel-docker/sentinal-1.png" src_l="/images/redis-sentinel-docker/sentinal-1.png" >}}
+{{< image src="/images/docker-redis-sentinel/sentinal-1.png"  width="1200" caption="判斷是否主觀下線及客觀下線，並發起投票" src_s="/images/docker-redis-sentinel/sentinal-1.png" src_l="/images/docker-redis-sentinel/sentinal-1.png" >}}
 
 可以看到三個哨兵都認為 master 為 主觀下線 (sdown)，這時 sentinel-2 就認定為 客觀下線 (odown)，並發起投票要求成為領頭哨兵。
 
 <br>
 
-{{< image src="/images/redis-sentinel-docker/sentinal-2.png"  width="1200" caption="進行透票，確認誰當選" src_s="/images/redis-sentinel-docker/sentinal-2.png" src_l="/images/redis-sentinel-docker/sentinal-2.png" >}}
+{{< image src="/images/docker-redis-sentinel/sentinal-2.png"  width="1200" caption="進行透票，確認誰當選" src_s="/images/docker-redis-sentinel/sentinal-2.png" src_l="/images/docker-redis-sentinel/sentinal-2.png" >}}
 
 我們可以看到 Sentinel2 和 Sentinel3 都投給 Sentinel2，所以最後 Sentinel2 當選。
 
 <br>
 
-{{< image src="/images/redis-sentinel-docker/sentinal-3.png"  width="1200" caption="領頭哨兵選定新 master" src_s="/images/redis-sentinel-docker/sentinal-3.png" src_l="/images/redis-sentinel-docker/sentinal-3.png" >}}
+{{< image src="/images/docker-redis-sentinel/sentinal-3.png"  width="1200" caption="領頭哨兵選定新 master" src_s="/images/docker-redis-sentinel/sentinal-3.png" src_l="/images/docker-redis-sentinel/sentinal-3.png" >}}
 
 接著 sentinel2 選出 redis-slave1 (192.168.208.5:6379) 作為 Master ，並且使用 `failover-state-send-slaveof-noone` 來將 redis-slave1 解除 Slave 狀態變成獨立的 master，隨後將 redis-slave1 升成 master。
 
 <br>
 
-{{< image src="/images/redis-sentinel-docker/sentinal-4.png"  width="1200" caption="設定 master 並修改原 master 變成 slave" src_s="/images/redis-sentinel-docker/sentinal-4.png" src_l="/images/redis-sentinel-docker/sentinal-4.png" >}}
+{{< image src="/images/docker-redis-sentinel/sentinal-4.png"  width="1200" caption="設定 master 並修改原 master 變成 slave" src_s="/images/docker-redis-sentinel/sentinal-4.png" src_l="/images/docker-redis-sentinel/sentinal-4.png" >}}
 
 設定完新的 Master 後，Sentinel2 讓原本的 Master 轉為 Slave，並且讓 redis-slave2(192.168.208.6:6379) 指向新的 Master。最後 Sentinel1 和 Sentinel3 開始從 Sentinel2 取得設定然後更新自己的設定，至此整個故障轉移就完成了。
 
@@ -519,7 +519,7 @@ $ docker stop redis-master
 
 <br>
 
-{{< image src="/images/redis-sentinel-docker/php-2.png"  width="700" caption="連線 master " src_s="/images/redis-sentinel-docker/php-2.png" src_l="/images/redis-sentinel-docker/php-2.png" >}}
+{{< image src="/images/docker-redis-sentinel/php-2.png"  width="700" caption="連線 master " src_s="/images/docker-redis-sentinel/php-2.png" src_l="/images/docker-redis-sentinel/php-2.png" >}}
 
 就會發現，已經 slave1 變成現在的 master。
 
@@ -529,7 +529,7 @@ $ docker stop redis-master
 
 <br>
 
-{{< image src="/images/redis-sentinel-docker/php-3.png"  width="700" caption="連線 master " src_s="/images/redis-sentinel-docker/php-3.png" src_l="/images/redis-sentinel-docker/php-3.png" >}}
+{{< image src="/images/docker-redis-sentinel/php-3.png"  width="700" caption="連線 master " src_s="/images/docker-redis-sentinel/php-3.png" src_l="/images/docker-redis-sentinel/php-3.png" >}}
 
 會發現因為該啟動 master，所以他還認為他是 master，但過一下下，在查看就正常顯示 slave1 為 master，舊的 master 就變成 slave。
 
@@ -540,7 +540,7 @@ $ docker stop redis-master
 
 <br>
 
-{{< image src="/images/redis-sentinel-docker/bug.png"  width="700" caption="redis WARNING 錯誤訊息 [github issus](https://github.com/redis/redis/issues/8172)" src_s="/images/redis-sentinel-docker/bug.png" src_l="/images/redis-sentinel-docker/bug.png" >}}
+{{< image src="/images/docker-redis-sentinel/bug.png"  width="700" caption="redis WARNING 錯誤訊息 [github issus](https://github.com/redis/redis/issues/8172)" src_s="/images/docker-redis-sentinel/bug.png" src_l="/images/docker-redis-sentinel/bug.png" >}}
 
 {{< /admonition >}}
 
