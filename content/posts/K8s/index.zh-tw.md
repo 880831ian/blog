@@ -1,6 +1,6 @@
 ---
 weight: 4
-title: "Kubernetes (K8s) 介紹"
+title: "Kubernetes (K8s) 介紹 - 基本"
 date: 2022-04-28T18:17:00+08:00
 lastmod: 2022-04-28T18:17:00+08:00
 draft: false
@@ -36,11 +36,11 @@ Kubernetes 是一種開源可用來自動化部屬、擴展以及管理多個容
 
 我們之前在 [Docker 介紹](https://pin-yi.me/docker) 文章中，已經有介紹以往傳統虛擬機以及容器化的 Docker 差異以及優點，那當我們在管理容器時，其中一個容器出現故障，則需要啟動另一個容器，如果要用手動，會十分麻煩，所以這時就是 Kubernetes 的厲害的地方了，Kubernetes 提供：
 
-* 服務發現和負載平衡：K8s 可以使用 DNS 名稱或是自己的 IP 位址來公開容器。如果容器流量過高，Kubernetes 能夠使用負載平衡和分配網路流量，使部署能夠更穩定。
+* 服務發現和負載平衡：K8s 可以使用 DNS 名稱或是自己的 IP 位址來公開容器。如果容器流量過高，Kubernetes 能夠使用負載平衡和分配網路流量，能使部署更穩定。
 * 編排儲存：Kubernetes 允許使用自動掛載來選擇儲存系統，例如使用本地儲存，或是公共雲等。
 * 自動部署、刪除：可以使用 Kubernetes 來幫我們自動化部屬新的容器、刪除現有的容器並將其資源用於新容器。
-* 自動打包：當我們為 Kubernetes 提供一個節點集群，它可以用來運行容器化的任務，告訴 Kubernetes 每個容器需要多少 CPU 和 RAM。Kubernetes 可以將容器安裝到節點上，充分利用資源。
-* 自動修復：Kubernetes 會重新啟動失敗的容器、替換容器、刪除不回應用戶的不健康容器，並且在容器準備好服務之前不會將它通知客戶端。
+* 自動打包：當我們為 Kubernetes 提供一個節點叢集，它可以用來運行容器化的任務，告訴 Kubernetes 每個容器需要多少 CPU 和 RAM。Kubernetes 可以將容器安裝到節點上，充分利用資源。
+* 自動修復：Kubernetes 會重新啟動失敗的容器、替換容器、刪除不回應用戶的不健康容器，並且在容器準備好服務之前不會通知客戶端。
 * 機密和配置管理：Kubernetes 允許儲存和管理敏感訊息，例如密碼、OAuth token 和 SSH 金鑰。可以部署和更新機密的應用程序配置。
 
 <br>
@@ -49,8 +49,22 @@ Kubernetes 是一種開源可用來自動化部屬、擴展以及管理多個容
 
 <br>
 
-Kubernetes 很常被拿來與 Docker Swarm 做比較，兩者不同得是，Docker Swarm 必須建構在 Docker 的架構下，功能侷限、無法挑拖。Kubernetes 則因為功能廣泛，而逐漸取代 Docker Swarm 在市場上的地位。
+{{< admonition tip "常見誤解">}}
+很多人認為 Kubernetes 是 `docker container` 的管理工具，包含我也是，但其實 Kubernetes 是用來管理 `containerized applications` **並不是專屬於 `docker`** 獨享，作為一個 `container orchestrator` 的角色，Kubernetes 希望**能夠管理所有容器化**的應用程式
+{{< /admonition >}}
 
+<br>
+
+Kubernetes 很常被拿來與 Docker Swarm 做比較，兩者不同的是，Docker Swarm 必須建構在 Docker 的架構下，功能侷限、無法跳脫。
+
+Kubernetes 則因為功能較為廣泛，而逐漸取代 Docker Swarm 在市場上的地位。
+
+| 比較 | Kubernetes | Docker Swarm | 
+| :---: | :---: | :---: |
+| 說明 | Kubernetes 是一個開源容器的編排平台，Kubernetes 的叢集結構比 Docker Swarm 更為複雜。<br> Kubernetes 通常有建構器和工作節點，還可進一步分為 Pod、命名空間、配置映射等。 | Docker Swarm 是一個由 Docker 構建和維護的開源容器編排平台。<br>一個 Docker Swarm 叢集通常包含三個項目：Nodes、Services and tasks、Load balancers。 |
+| 優點 | 它有龐大的開源社群，由 Google 支持。<br>它可以維持和管理大型架構和複雜的工作負載。<br>它是自動化，並支持自動化擴展的自我修護能力。<br>它有內建監控和廣泛的可用集成。 | Docker Swarm 安裝簡單，它輕量化且容易學習使用。<br>Docker Swarm 與 Docker CLI 一起運作，因此不需要多運行或是安裝新的 CLI |
+| 缺點 | 它複雜的安裝過程以及較難學習<br>它需要安裝單獨的 CLI 工具並且學習每一個工具 | 它是輕量級且與 Docker API 相關聯，與 Kubernetes 相比，Docker Swarm 被限制很多功能，且自動化也沒有 Kubernetes 強大。 |
+ 
 <br>
 
 ## Kubernetes 元件介紹與說明
@@ -63,7 +77,7 @@ Kubernetes 是如何幫我們管理以及部署 Container ? 要了解 Kubernetes
 
 Kubernetes 運作中最小的單位，一個 Pod 會對應到一個應用服務 (Application)，舉例來說一個 Pod 可能會對應到一個 API Server。
 
-* 每個 Pod 都有一個身分證，也就是屬於這個 Pod 的 `yaml` 檔。
+* 每個 Pod 都有一個定義文件，也就是屬於這個 Pod 的 `yaml` 檔。
 *  一個 Pod 裡面可以有一個或多個 Container，但一般情況一個 Pod 最好只有一個 Container。
 *  同一個 Pod 中的 Containers 共享相同的資源以及網路，彼此透過 local port number 溝通。
 
@@ -88,7 +102,12 @@ Kubernetes 運作的最小硬體單位，一個 Worker Node (簡稱 Node) 對應
 
 #### Container Runtime
 
-該 Node 真正負責容器執行的程式，以 Dokcer 容器為例其對應的 Container Runtime 就是 Dokcer Engine。
+該 Node 真正負責容器執行的程式，K8s 預設是 `Docker`，但也支援其他 Runtime Engine，例如 rkt、CRI-O、containerd
+
+
+{{< admonition tip "常見誤解">}}
+很多人認為 Kubernetes 是 `docker container` 的管理工具，包含我也是，但其實 Kubernetes 是用來管理 `containerized applications` **並不是專屬於 `docker`** 獨享，作為一個 `container orchestrator` 的角色，Kubernetes 希望**能夠管理所有容器化**的應用程式
+{{< /admonition >}}
 
 <br>
 
@@ -108,7 +127,7 @@ Kubernetes 運作的指揮中心，可以簡化看成一個特殊化的 Node 來
 
 #### etcd
 
-* 用來存放 Kubernetes Cluster 的資料做為備份，當 Master 因為某些原因而故障時，可以透過 etcd 幫我們還原 Kubernetes 的狀態。
+* etcd 是兼具一制性和高可用性的分散式鍵值數據庫，可以保存 Kubernetes 所有 Cluster 的後台數據庫。
 
 <br>
 
@@ -126,13 +145,18 @@ Kubernetes 運作的指揮中心，可以簡化看成一個特殊化的 Node 來
 
 <br>
 
+### Cluster
+Kubernetes 中多個 Node 與 Master 的集合。基本上可以想成在同一個環境裡所有 Node 集合在一起的單位。
+
+<br>
+
 ## 基本運作
 
 {{< image src="/images/K8s/k8s.jpg"  width="600" caption="kubernetes 組件 [Kubernetes 基礎教學（一）原理介紹](https://cwhu.medium.com/kubernetes-basic-concept-tutorial-e033e3504ec0)" src_s="/images/K8s/k8s.jpg" src_l="/images/K8s/k8s.jpg" >}}
 
 接下來我們用 「Kuberntes 是如何建立一個 Pod ？」來複習一下整個 Kubernetes 的架構。
 
-(上圖是一個簡易的 Kuubernetes Cluster ，通常 Cluster 中會有多個 Master 作為備援，但為了簡化我們只顯示一個。)
+(上圖是一個簡易的 Kubernetes Cluster ，通常 Cluster 中會有多個 Master 作為備援，但為了簡化我們只顯示一個。)
 
 1. 當使用者要部署一個新的 Pod 到 Kubernetes Cluster 時，使用者要先透過 User Command (kubectl) 輸入建立 Pod 對應的指令 (後面會說明要如何實際的動手建立一個 Pod)。此時指令會經過一層確認使用者身份後，傳遞到 Master Node 中的 API Server，API Server 會把指令備份到 etcd。
 2. controller-manager 會從 API Server 收到需要創建一個新的 Pod 的訊息，並檢查如果資源許可，就會建立一個新的 Pod。最後 Scheduler 在定期訪問 API Server 時，會詢問 controller-manager 是否有建置新的 Pod，如果發現新建立的 Pod 時，Scheduler 就會負責把 Pod 配送到最適合的 Node 上面。
@@ -145,7 +169,7 @@ Kubernetes 運作的指揮中心，可以簡化看成一個特殊化的 Node 來
 
 * [Minikube](https://minikube.sigs.k8s.io/docs/start/)
 
-一個 Google 發佈的輕量級工具，讓開發者可以輕鬆體驗一個 Kubernetes Cluster。
+一個 Google 發佈的輕量級工具，讓開發者可以輕鬆體驗一個 Kubernetes Cluster。<font color='red'>(僅限開發測試環境)</font>
 
 <br>
 
@@ -186,13 +210,13 @@ ssh 進入 minikube 中 `minikube ssh`
 
 我們啟動 minikube 後，我們要打做一個可以在 Pod 運行的小程式。這個小程式是一個 Node.js 的 Web 程式，他會建立一個 Server 來監聽 3000 Port，收到 request 進來後會渲染 `index.html` 這個檔案，這個檔案裡面會有一隻可愛的小柴犬。
 
-因為本章是在介紹 K8s 所以我把程式碼放在 [Github](https://github.com/880831ian/kubernetes-demo)，以及附上 [Dockerhub 的 Repository](https://hub.docker.com/repository/docker/880831ian/kubernetes-demo) 可以直接使用包好的 image 來做測試！
+因為本文章是在介紹 kubernetes 所以在程式部分就不多做說明，我把程式碼放在 [Github](https://github.com/880831ian/kubernetes-demo)，以及附上 [Dockerhub 的 Repository](https://hub.docker.com/repository/docker/880831ian/kubernetes-demo) 可以直接使用包好的 image 來做測試！
 
 <br>
 
 ### Pod yaml 檔案說明
 
-接下來我們要先撰寫一個 Pod 的身份證 (.yaml) 檔，這個 `.yaml` 檔就可以建立出 Pod 了！
+接下來我們要先撰寫一個 Pod 的定義文件 (.yaml) 檔，這個 `.yaml` 檔就可以建立出 Pod 了！
 
 * kubernetes-demo.yaml (程式縮排要正確，不然會無法執行歐！)
 ```yml
@@ -229,7 +253,7 @@ spec
 
 ### 使用 kubectl 建立 Pod
 
-當我們有了身份證後，我們就可以使用 kubectl 的指令來建立 Pod
+當我們有了定義文件後，我們就可以使用 kubectl 的指令來建立 Pod
 
 ```sh
 kubectl create -f kubernetes-demo.yaml
@@ -271,7 +295,7 @@ http://127.0.0.1:55991/api/v1/namespaces/kubernetes-dashboard/services/http:kube
 
 ### 連線到 Pod 的服務
 
-當我們建立好 Pod 之後，打開瀏覽器 `localhost:3000` 會發現，什麼都沒有，是因為我們剛剛在 `.yaml` 裡面設定的是 Pod 的 Port ，它與本機的 Port 是不相通的，因此我們需要使用 `kubectl port-forward` ，來將 Pod 與本機端做 mapping。
+當我們建立好 Pod 之後，打開瀏覽器 `localhost:3000` 會發現，什麼都沒有，是因為我們剛剛在 `.yaml` 裡面設定的是 Pod 的 Port ，它與本機的 Port 是不相通的，因此我們需要使用 `kubectl port-forward <pod> <external-port>:<pod-port>` ，來將 Pod 與本機端做 mapping。
 
 ```sh
 kubectl port-forward kubernetes-demo-pod 3000:3000
@@ -286,7 +310,7 @@ Handling connection for 3000
 
 <br>
 
-{{< image src="/images/K8s/Shiba-Inu.png"  width="900" caption="成功用 kubernetes 顯示" src_s="/images/K8s/Shiba-Inu.png" src_l="/images/K8s/Shiba-Inu.png" >}}
+{{< image src="/images/K8s/Shiba-Inu.png"  width="900" caption="成功顯示柴犬" src_s="/images/K8s/Shiba-Inu.png" src_l="/images/K8s/Shiba-Inu.png" >}}
 
 
 <br>
@@ -297,6 +321,6 @@ Handling connection for 3000
 
 [Kubernetes（K8s）是什麼？基礎介紹+3大優點解析](https://www.sysage.com.tw/news/technology/293)
 
-[Kubernetes 基礎教學（一）原理介紹](https://cwhu.medium.com/kubernetes-basic-concept-tutorial-e033e3504ec0)
+[Docker Swarm vs Kubernetes: how to choose a container orchestration tool](https://circleci.com/blog/docker-swarm-vs-kubernetes/)
 
-[Kubernetes 基礎教學（二）實作範例：Pod、Service、Deployment、Ingress](https://cwhu.medium.com/kubernetes-implement-ingress-deployment-tutorial-7431c5f96c3e)
+[Kubernetes 基礎教學（一）原理介紹](https://cwhu.medium.com/kubernetes-basic-concept-tutorial-e033e3504ec0)
