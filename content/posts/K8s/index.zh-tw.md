@@ -5,8 +5,8 @@ date: 2022-04-28T18:17:00+08:00
 lastmod: 2022-04-28T18:17:00+08:00
 draft: false
 author: "PinYi"
-authorLink: ""
-description: ""
+authorLink: "https://pin-yi.me"
+description: "此文章是介紹 Kubernetes 以及如何建立第一個 Pod，文章內容大多參考其他網路大神，並加入自己了解的思路與語氣，文章純屬個人筆記性質，無營利之用途，參考資料也附在文章最後，有興趣的朋友也可以先去了解看看歐 😎"
 resources:
 - name: "featured-image"
   src: "featured-image.webp"
@@ -24,7 +24,7 @@ toc:
 
 ## 什麼是 Kubernetes (K8s)?
 
-K8s 全名是 Kubernetes，這麼名稱來源希臘語，意思是舵手或是飛行員，所以我們可以看到它的 logo 是一個船舵的標誌，之所以被叫 K8s 是因為 Kubernetes 的 k 到 s 中間有 8 的英文字母，所以為了方便，大家都改成這個名稱要叫他！
+Kubernetes 也可以叫 K8s，這個名稱來源希臘語，意思是舵手或是飛行員，所以我們可以看到它的 logo 是一個船舵的標誌，之所以叫 K8s 是因為 Kubernetes 的 k 到 s 中間有 8 的英文字母，為了方便，大家常以這個名稱來稱呼他！
 
 <br>
 
@@ -34,7 +34,7 @@ K8s 全名是 Kubernetes，這麼名稱來源希臘語，意思是舵手或是�
 
 Kubernetes 是一種開源可用來自動化部屬、擴展以及管理多個容器的系統，適用於當容器數量增加，需要穩定容器環境，以及管理資源或權限分配的狀況。
 
-我們之前在 [Docker 介紹](https://pin-yi.me/docker) 文章中，已經有介紹以往傳統虛擬機以及容器化的 Docker 差異以及優點，那當我們在管理容器時，如果其中一個容器出現故障，則需要啟動另一個容器，如果要用手動，會十分麻煩，所以這時就是 Kubernetes 的厲害的地方了，Kubernetes 提供：
+我們之前在 [Docker 介紹](https://pin-yi.me/docker) 文章中，已經有介紹以往傳統虛擬機以及容器化的 Docker 差異以及優點，那當我們在管理容器時，其中一個容器出現故障，則需要啟動另一個容器，如果要用手動，會十分麻煩，所以這時就是 Kubernetes 的厲害的地方了，Kubernetes 提供：
 
 * 服務發現和負載平衡：K8s 可以使用 DNS 名稱或是自己的 IP 位址來公開容器。如果容器流量過高，Kubernetes 能夠使用負載平衡和分配網路流量，使部署能夠更穩定。
 * 編排儲存：Kubernetes 允許使用自動掛載來選擇儲存系統，例如使用本地儲存，或是公共雲等。
