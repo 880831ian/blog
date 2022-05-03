@@ -50,14 +50,14 @@ Kubernetes 是一種開源可用來自動化部屬、擴展以及管理多個容
 <br>
 
 {{< admonition tip "常見誤解">}}
-很多人認為 Kubernetes 是 `docker container` 的管理工具，包含我也是，但其實 Kubernetes 是用來管理 `containerized applications` **並不是專屬於 `docker`** 獨享，作為一個 `container orchestrator` 的角色，Kubernetes 希望**能夠管理所有容器化**的應用程式
+很多人認為 Kubernetes 是 `docker container` 的管理工具，包含我也是，但其實 Kubernetes 是用來管理容器化 (`containerized applications`) **並不是專屬於 `docker`** 獨享，作為一個 `container orchestrator` 的角色，Kubernetes 希望**能夠管理所有容器化**的應用程式
 {{< /admonition >}}
 
 <br>
 
 Kubernetes 很常被拿來與 Docker Swarm 做比較，兩者不同的是，Docker Swarm 必須建構在 Docker 的架構下，功能侷限、無法跳脫。
 
-Kubernetes 則因為功能較為廣泛，而逐漸取代 Docker Swarm 在市場上的地位。
+Kubernetes 則因為功能較為廣泛，而逐漸取代 Docker Swarm 在市場上的地位。下方有簡易的比較表格：
 
 | 比較 | Kubernetes | Docker Swarm | 
 | :---: | :---: | :---: |
@@ -206,6 +206,7 @@ ssh 進入 minikube 中 `minikube ssh`
 查詢 minikube 對外的 ip  `minikube ip`
 
 使用 minikube 所提供的瀏覽器 GUI  `minikube dashboard ` (可以加 - - url 看網址歐)
+
  {{< /admonition >}}
 
 我們啟動 minikube 後，我們要打做一個可以在 Pod 運行的小程式。這個小程式是一個 Node.js 的 Web 程式，他會建立一個 Server 來監聽 3000 Port，收到 request 進來後會渲染 `index.html` 這個檔案，這個檔案裡面會有一隻可愛的小柴犬。
@@ -235,16 +236,30 @@ spec:
 ```
 
 apiVersion
-* 該元件的版本號
+
+該元件的版本號，必須依照 Server 上 K8s 版本來做設定 (想要知道k8s 版本，可以使用 `kubectl version` 指令來查詢，會顯示 client 跟 server 的版本訊息，client 代表 kubectl 版本訊息，server 代表的是 master node 的 k8s 版本訊息)，目前 k8s 都使用 1.23 版本以上，所以 `apiVersion` 直接寫 `v1` 即可。
+
+<br>
 
 kind
-* 該元件的屬性，常見的有 `Pod`、`Node`、`Service`、`Namespace`、`ReplicationController` 等等
+
+該元件的屬性，用來決定此設定檔的類型，常見的有 `Pod`、`Node`、`Service`、`Namespace`、`ReplicationController` 等等
+
+<br>
 
 metadata
+
+用來擺放描述性資料的地方，像是 Pod 名稱或是標籤等等都會放在此處。
+
 * name：指定該 Pod 的名稱
 * labels：指定該 Pod 的標籤
 
+<br>
+
 spec
+
+用來描述物件生成的細節，像是 Pod 內其實是跑 Dokcer container，所以在 Pod 的 spec 內就會描述 container 的細節。
+
 * container.name：指定運行的 Container 的名稱
 * container.image：指定 Container 要使用哪個 Image，這裡會從 DockerHub 上搜尋
 * container.ports：指定該 Container 有哪些 Port number 是允許外部存取的
@@ -257,7 +272,27 @@ spec
 
 ```sh
 kubectl create -f kubernetes-demo.yaml
+
+kubectl apply -f kubernetes-demo.yaml
 ```
+
+可以使用 `create` or `apply` 來建立 Pod ，那這兩個的差異是什麼呢？
+
+* kubectl create
+
+1. `kubectl create` 是所謂的 "命令式管理" (`Imperative Management`)。通過這種方式，可以告訴 Kubernets API 你要建立、更新、刪除的內容。
+
+2. `kubectl create` 命令是先刪除所有現有的東西，重新根據 YAML 文件生成新的 Pod。所以要求 YAML 文件中的配置必須完整。
+
+3.   `kubectl create` 命令，使用同一個 YAML 文件重複建立會失敗。
+
+<br>
+
+* kubectl apply
+
+1. `kubectl apply` 是 "聲明式管理" (`Declarative Management`)方法的一部分。在該方法中，即使對目標用了其他更新，也可以保持你對目標應用的更新。
+
+2. `kubectl apply`命令，根據配置文件裡面令出來的內容，生成就有的。所以 YAML 文件的內容可以只寫需要升級的欄位。
 
 <br>
 
@@ -273,6 +308,20 @@ kubectl get pods
 NAME                  READY   STATUS    RESTARTS   AGE
 kubernetes-demo-pod   1/1     Running   0          3m5s
 ```
+
+<br>
+
+
+{{< admonition tip "Pod 指令介紹" >}} 
+查詢現有 Pod 狀態 `kubectl get po/pod/pods`
+
+查看該 Pod 詳細資訊 `kubectl describe pods <pod-name>`
+
+刪除 Pod `kubectl delete pods`
+
+查看 Pod log `kubectl logs <pod-name>`
+
+ {{< /admonition >}}
 
 <br>
 
