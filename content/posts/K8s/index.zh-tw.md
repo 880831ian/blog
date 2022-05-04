@@ -361,6 +361,68 @@ Handling connection for 3000
 
 {{< image src="/images/K8s/Shiba-Inu.png"  width="900" caption="成功顯示柴犬" src_s="/images/K8s/Shiba-Inu.png" src_l="/images/K8s/Shiba-Inu.png" >}}
 
+<br>
+
+
+前面我們已經創建屬於我們第一個 Pod 了，但當我們 Pod 越建越多時，要怎麼快速的得知每個 Pod 在做什麼事情？除了用 Pod 的 metadata name 來命名外，還有另一種方式：
+
+## 什麼是 Label ?
+
+Label 顧名思義就是標籤，可以為每一個 Pod 貼上標籤，讓 Kubernetes 更方便的管控這些 Pod。
+
+Label 的寫法很簡單，可以自己自訂一對具有辨識度的 key/value，舉我們上面的例子來說：我們可以在 labels 內加入 `app: demo`，那 Label 有什麼好處呢?
+
+這邊要稍微提一下 `Selector`，它的功用是選取對應的物件。為了要方便選取到我們設定好的 Pod，這時候 Label 就派上用場了！
+
+`Selector` 的寫法也很簡單，只要把我們在 Label 定義的 key/value 直接完整的貼過來就可以了～ 
+
+<br>
+
+就像這樣：
+
+```yaml
+selectors:
+  app: demo
+```
+那選取後有什麼功用呢！請看 [Kubernetes - 進階 - Service](https://pin-yi.me/k8s-advanced/#%E4%BB%80%E9%BA%BC%E6%98%AF-service-) 
+
+<br>
+
+
+講完 Label 後，順邊提一下跟 Label 有相似的：
+
+## 什麼是 Annotation ?
+
+前面提到的 Label 功用其目的是要讓 Kubernetes 知道可以去更方便管理的，那我們如果想要貼標籤但不想讓 Kubernetes 知道，要怎麼做呢？
+
+這時我們就可以用 `Annotation`，透過 `Annotation` 可以將標籤單純給開發人員查看，那聽起來 `Annotation` 好像沒有什麼實質上的用途，因為 Kubernetes 不會採用這些標籤，但其實 `Annotation` 還是有用的歐！後續文章會再提到 ><
+
+<br>
+
+那既然 Label 跟 Annotation 有相似，所以寫法想必也是差不多吧：
+
+```yaml
+annotations:
+  author: Pin-YI
+  contact: 880831ian@gmail.com
+```
+一樣也是定義一組具有辨識度的 key/value ，我們這邊就先放 author、contact
+
+<br>
+
+那 Label 與 Annotation 要放在 Pod 的哪一處呢？
+
+還記得我們上面說 `metadata` 是用來擺描述性資料的地方嗎，所以不管是 Label 或是 Annotation 都是放在 `metadata` 中歐！
+
+```yaml
+metadata:
+  name: kubernetes-demo-pod
+  labels:
+    app: demo
+  annotations:
+    author: Pin-YI
+    contact: 880831ian@gmail.com
+```
 
 <br>
 
@@ -373,3 +435,9 @@ Handling connection for 3000
 [Docker Swarm vs Kubernetes: how to choose a container orchestration tool](https://circleci.com/blog/docker-swarm-vs-kubernetes/)
 
 [Kubernetes 基礎教學（一）原理介紹](https://cwhu.medium.com/kubernetes-basic-concept-tutorial-e033e3504ec0)
+
+[Kubernetes那些事 — 基礎觀念與操作](https://medium.com/andy-blog/kubernetes%E9%82%A3%E4%BA%9B%E4%BA%8B-%E5%9F%BA%E7%A4%8E%E8%A7%80%E5%BF%B5%E8%88%87%E6%93%8D%E4%BD%9C-97cc203a2660)
+
+[Kubernetes 那些事 — Pod 篇](https://medium.com/andy-blog/kubernetes-%E9%82%A3%E4%BA%9B%E4%BA%8B-pod-%E7%AF%87-57475cec22f3)
+
+[Kubernetes 那些事 — Label 篇](https://medium.com/andy-blog/kubernetes-%E9%82%A3%E4%BA%9B%E4%BA%8B-label-%E7%AF%87-4186af2af556)
