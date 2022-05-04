@@ -306,6 +306,8 @@ $ vim /etc/hosts
 
 ### 設定網域以及路徑
 
+[Github 程式碼連結](https://github.com/880831ian/kubernetes-tutorial/tree/master/Ingress-Domain)
+
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -328,6 +330,8 @@ spec:
 <br>
 
 ### 只設定路徑沒有設定網域
+
+[Github 程式碼連結](https://github.com/880831ian/kubernetes-tutorial/tree/master/Ingress-Path)
 
 ```yaml
 apiVersion: networking.k8s.io/v1
