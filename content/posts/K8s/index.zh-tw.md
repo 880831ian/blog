@@ -165,7 +165,7 @@ Kubernetes 中多個 Node 與 Master 的集合。基本上可以想成在同一�
 
 ## 安裝 Kubernetes 
 
-在我們開始操作 Kubernetes 之前，需要先下載 Minikube、Kubectl 套件：
+在我們開始操作 Kubernetes 之前，需要先下載 Minikube、Hyperkit、Kubectl 套件：
 
 * [Minikube](https://minikube.sigs.k8s.io/docs/start/)
 
@@ -173,9 +173,20 @@ Kubernetes 中多個 Node 與 Master 的集合。基本上可以想成在同一�
 
 <br>
 
-{{< image src="/images/K8s/minikube.png"  width="800" caption="安裝 minikube" src_s="/images/K8s/minikube.png" src_l="/images/K8s/minikube.png" >}}
+{{< image src="/images/K8s/minikube.png"  width="900" caption="安裝 minikube" src_s="/images/K8s/minikube.png" src_l="/images/K8s/minikube.png" >}}
 
 <br>
+
+* (Mac專用) [Hyperkit](https://minikube.sigs.k8s.io/docs/drivers/hyperkit/)
+
+Hyperkit 是 MacOS 系統細部設定的驅動程式。
+
+<br>
+
+{{< image src="/images/K8s/hyperkit.png"  width="900" caption="安裝 Hyperkit" src_s="/images/K8s/hyperkit.png" src_l="/images/K8s/hyperkit.png" >}}
+
+<br>
+
 
 * [Kubectl](https://kubernetes.io/docs/tasks/tools/)
 
@@ -192,9 +203,10 @@ Kubectl 是 Kubernetes 的 Command Line 工具，我們之後會透過 Kubectl �
 版本資訊
 
 * Minikube：v1.25.2
+* hyperkit：0.20200908
 * Kubectl：Client Version：v1.22.5、Server Version：v1.23.3
 
-下載完 Minikube 後，我們可以先透過 `Minikube` 來查詢全部的指令，再透過 `Minikube  start ` 來啟動 Minikube。
+下載完 Minikube 後，我們可以先透過 `Minikube` 來查詢全部的指令，由於我們前面有安裝 Hyperkit 這個驅動程式，啟動 Minikube 預設是使用 Docker，我們這邊要利用 Hyperkit 來啟動，所以使用 `Minikube  start --vm-driver=hyperkit` 來啟動 Minikube。
 
 {{< admonition tip "Minikube 其他指令介紹" >}} 
 顯示 minikube 狀態 `minikube status`

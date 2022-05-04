@@ -154,7 +154,7 @@ ignoreErrors = ["err-missing-comment-accesstoken", "err-missing-oembed-accesstok
         [[languages.en.params.about.status]]
           faIcon = "fas fa-briefcase fa-fw"
           title = "Occupation"
-          desc = "Software Engineer"
+          desc = "Software EngineerSite→Reliability Engineering"
         [[languages.en.params.about.status]]
           title = "Location"
           faIcon = "fas fa-map-marker-alt"
@@ -324,7 +324,7 @@ ignoreErrors = ["err-missing-comment-accesstoken", "err-missing-oembed-accesstok
         [[languages.zh-tw.params.about.status]]
           faIcon = "fas fa-briefcase fa-fw"
           title = "職業"
-          desc = "軟體工程師"
+          desc = "軟體工程師→服務可靠性工程師"
         [[languages.zh-tw.params.about.status]]
           title = "地點"
           faIcon = "fas fa-map-marker-alt"
