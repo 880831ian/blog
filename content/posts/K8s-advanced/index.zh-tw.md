@@ -1,6 +1,6 @@
 ---
 weight: 4
-title: "Kubernetes (K8s) 介紹 - 進階 (Service、Ingress、Deployment、ReplicaSet)"
+title: "Kubernetes (K8s) 介紹 - 進階 (Service、Ingress、StatefulSet、Deployment、ReplicaSet)"
 date: 2022-05-03T10:39:00+08:00
 lastmod: 2022-05-03T10:39:00+08:00
 draft: false
@@ -76,7 +76,7 @@ Handling connection for 3000
 
 <br>
 
-{{< image src="/images/K8s-advanced/service.png"  width="400" caption="k8s service 流程圖 [Kubernetes 那些事 — Service 篇](https://medium.com/andy-blog/kubernetes-%E9%82%A3%E4%BA%9B%E4%BA%8B-service-%E7%AF%87-d19d4c6e945f)" src_s="/images/K8s-advanced/service.png" src_l="/images/K8s-advanced/service.png" >}}
+{{< image src="/images/K8s-advanced/service.png"  width="300" caption="k8s service 流程圖 [Kubernetes 那些事 — Service 篇](https://medium.com/andy-blog/kubernetes-%E9%82%A3%E4%BA%9B%E4%BA%8B-service-%E7%AF%87-d19d4c6e945f)" src_s="/images/K8s-advanced/service.png" src_l="/images/K8s-advanced/service.png" >}}
 
 <br>
 
@@ -473,6 +473,195 @@ kubernetes-demo-ingress   nginx   *       192.168.64.11   80      5m56s
 
 <br>
 
+接下來我們要進入到 Pod 的擴充功能，再進入之前，先帶大家了解一下兩個重要的觀念：
+
+## 什麼是 Stateless 和 Stateful
+
+### Stateless
+
+Stateless 顧名思義就是無狀態，我們可以想成我們每次與伺服器要資料的過程中都不會被伺服器記錄狀態，**每一次的 Request 都是獨立的**，彼此是沒有關聯性的，也就是我們當下獲得的資料只能當下使用沒有辦法保存，靜態網頁通常都是一種 Stateless 的應用。
+
+舉個例子來說：今天我想要查詢火車時刻表，我可以藉由 Google 搜尋火車時刻表，並點選連結，或是直接在瀏覽器輸入 `https://tip.railway.gov.tw/` ，這兩種結果最後都會一致，並不會因為我的操作不同而產生不同結果，這就是一種 Stateless 的表現。
+
+<br>
+
+### Stateful
+
+Stateful 就是 Stateless 的相反，也就是每次的 Request 都會被記錄下來，日後都可以進行存取，Stateful 最常見的例子是資料庫，所以我們可以理解成 Stateful 背後一定會有一個負責更新內容的儲存空間。
+
+幾個例子來說：今天我們想要查看 Google 雲端硬碟的內容，我們必須先登入自己的帳號才可以查看內容，這種有操作先後順序才會有結果的就是一種 Stateful 的表現。
+
+<br>
+
+{{< image src="/images/K8s-advanced/stateless_ful.png"  width="700" caption="Stateless vs Stateful" src_s="/images/K8s-advanced/stateless_ful.png" src_l="/images/K8s-advanced/stateless_ful.png" >}}
+
+<br>
+
+那為什麼要提到 Stateless 跟 Stateful 呢？
+
+因為跟 Pod 有很大的關係，在 Kubernetes 中 Pod 就屬於 Stateless 的，我們前面有提到 Stateless 的特性就是每次的 Request 都是獨立的，這樣有一個好處是可以快速的擴充。
+
+在 [Kubernetes - 基本篇中的 Pod](https://pin-yi.me/k8s/#pod) 有提到：Pod 是 Kubernetes 中最小的單位，由於 Pod 是屬於 Stateless 的，即便今天同一種內容的 Pod 有很多個也沒有關係，因為每次的 Request 都是獨立的，多個 Pod 就多個連線的端點而已。
+
+<br>
+
+### Kubernetes 的 Stateful
+
+上面有說到 Kubernetes 的 Pod 是 Stateless 的，那難道 Kubernetes 沒有辦法做 Stateful 應用嗎？其實是可以的，Kubernetes 為了 Stateful 有特別開啟一個類別叫：`StatefulSet`
+
+<br>
+
+這邊會簡單說明一下 `StatefulSet` 的架構：
+
+### StatefulSet
+
+StatefulSet 一共有兩個重要的部分：
+
+* Persistent Volume Claim
+
+前面有說到 Stateful 背後有一個更新內容的儲存空間，在 Kubernetes 中負責管理儲存的空件是 `Volume`，作用與 Docker 的 Volume 幾乎一模一樣，但 Kuberntes 的 Volume 只是在 Pod 中暫時存放的儲存空間，當 Pod 移除之後這個儲存空間就會消失，為了要在 Kubernetes 中建立一個像是資料庫可以永久儲存的空間，這個 Volume 不能被包含在 Pod 中，而這個就是 `Persistent Volume (PV)`。
+
+Persistent Volume Claim (PVC) 就是負責連接 Persistent Volume (PV) 的物件，所以可以想像一下今天有多少的 Persistent Volume 就會有多少的 Persistent Volume Ckaim。
+
+<br>
+
+* Headless Service
+
+還記得在 [Service](#什麼是-service-) 有提到 ClusterIP 嗎？其實每個 Service 都會有自己一組的 ClusterIP (ExternalName 形式的除外)，所以 Headless 的意思其實就是不要有 ClusterIP，方法也很簡單，直接在設定檔中加入 `ClusterIP: Nono` 就可以了！
+
+這麼做有什麼好處？由於 Headless Service 並沒有直接跟 Pod 有對應關係，因此 Service 本身沒有 ClusterIP，所以 Kubernetes 內部在溝通時就沒有辦法把我們設定好的 Service 名稱進行 IP 轉換，不過 Headless Service 會將內部的 Pod 的都建立屬於自己的 domain，所以我們可以自由的選擇要連接到哪一個 Pod。
+
+這時候你會說可以用手動來連接呀？但因為 Service 一般是跟著 Pod 的 Label ，所以一個 Service 都會連接許多個 Pod，這樣我們就沒有辦法針對某個 Pod 來做事情，所以 Headless Service 在 Stateful 中也會被建立。
+
+<br>
+
+我們一直強調說 Kubernetes 最小的單位是 Pod，即便是 StatefulSet 也會有 Pod，只是這個 Pod 會歸 StatefulSet 管理，綜合上面所述可以知道一個 StatefulSet 裡面除了執行的 Pod 外還會有負責跟 Persistent Volume 連接的 Persistent Volume Claim，整體的 StatefulSet 架構會長得像這樣：
+
+<br>
+
+{{< image src="/images/K8s-advanced/StatefulSet.png"  width="300" caption="Kubernetes StatefulSet 架構" src_s="/images/K8s-advanced/StatefulSet.png" src_l="/images/K8s-advanced/StatefulSet.png" >}}
+
+<br>
+
+前面有提到 Pod 是 Stateless，所以我們可以擴充 Pod，今天這邊文章要開始介紹如何擴充 Pod ，我們從最簡單的 [Replication Controller](https://kubernetes.io/docs/concepts/workloads/controllers/replicationcontroller/) 開始說起！
+
+## 什麼是 Replication Controller ?
+
+大家看到 Controller 就知道 Replication Controller 也是一種 Controller 負責控制 Replication，而 Replication 翻成中文是複製的意思，在 Kubernetes 中 Replication 代表同一種 Pod 的複製品。
+
+這邊要帶給大家認識一個重要的設定：`replica`，`replica` 就是複製品的意思，透過這個設定我們就可以快速產生一樣內容的 Pod，舉例來說：今天設定了 `replica: 3` 就代表會產生兩個內容一樣的 Pod 出來。
+
+<br>
+
+{{< image src="/images/K8s-advanced/ReplicationController.png"  width="700" caption="Kubernetes StatefulSet 架構" src_s="/images/K8s-advanced/ReplicationController.png" src_l="/images/K8s-advanced/ReplicationController.png" >}}
+
+<br>
+
+### Replication Controller 用途
+
+上面有提到 Replication Controller 可以利用設定 `replica` 的方式快速建立 Pod 數量，除了建立之外 Replication Controller 也確保 Pod 數量與我們設定的 `replica` 一致，假如今天不小心刪除其中一個 Pod，這時候 Replication Controller 會自動再產生一個新的 Pod 來補齊刪除的 Pod 空缺，所以我們可以善用 Replication Controller 來讓系統更佳穩定。
+
+<br>
+
+### Replication Controller 寫法
+
+我們來修改一下之前的 kubernetes-demo.yaml Pod 檔案：
+
+```yaml
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: kubernetes-demo
+spec:
+  replicas: 3
+  selector:
+    app: demo
+  template:
+    metadata:
+      labels:
+        app: demo
+    spec:
+      containers:
+        - name: kubernetes-demo-container
+          image: 880831ian/kubernetes-demo
+          ports:
+            - containerPort: 3000
+```
+
+這個設定檔看似複雜但其實很簡單，可以發現 `template` 區塊內的設定基本上就是 Pod 的設定，再加上一些屬於 Replication Controller 的設定。
+
+由於我們要建立的是 Replication Controller，因此在一開始的 `spec` 要填的是 Replication Controller 的設定，所以 `replica` 會擺在第一個 `spec` 內。
+
+可以再看到 `selector`，前面提到 Replication Controller 要控制的就是 Pod 的數量，所以這邊的 `selector` 就是要選取 Pod，就跟我們在 Service 要選取 Pod 的一樣。
+
+最後一個新的設定：`template`，`template` 就是用來定義 Pod 的資訊，所以 Pod 的內容像是 `metadata`、`spec` 等等都會寫在 `template` 內，所以可以把 `template` 想像成不需要寫 `apiVersion` 跟  `kind` 的 Pod 壓模檔，有了這個觀念再來看 `template` 內的描述就很簡單，只是把 Pod 的內容複製過來而已，而 `template` 內的 `spec` 就是寫上 Pod 的 container 資訊。
+
+<br>
+
+### Replication Controller 建立
+
+老樣子，也是使用 `apply` 來建立壓模檔：
+
+```sh
+$ kubectl apply -f kubernetes-demo.yaml
+
+replicationcontroller/kubernetes-demo created
+```	
+
+<br>
+
+來查看一下 Replication Controller 是否有成功建立起來，可以使用 `kubectl get rc` 來查詢：
+
+```sh
+$ kubectl get rc
+
+NAME              DESIRED   CURRENT   READY   AGE
+kubernetes-demo   3         3         3       28s
+```
+
+<br>
+
+接下來可以查看 Pod 是否有出現 3 個，所以使用 `kubectl get po` 來查詢：
+
+```sh
+$ kubectl get po
+
+NAME                    READY   STATUS    RESTARTS   AGE
+kubernetes-demo-4zkxm   1/1     Running   0          37s
+kubernetes-demo-cp8jt   1/1     Running   0          37s
+kubernetes-demo-pt9px   1/1     Running   0          37s
+```
+可以看到為了不要讓名稱重複，所以 Replication Controller 會在每一個 Pod 名稱後面加入亂數。
+
+<br>
+
+接下來我們用 `minikube dashboard` 來測試一下，是否刪除其中一個 Pod 後，Replication Controller 會自動建立新的：
+
+
+<br>
+
+{{< image src="/images/K8s-advanced/rc-1.png"  width="1200" caption="刪除隨機一個 Pod" src_s="/images/K8s-advanced/rc-1.png" src_l="/images/K8s-advanced/rc-1.png" >}}
+
+<br>
+
+當我們隨機刪除一個 Pod 時，被刪除的 Pod 會 Terminating 準備刪除，且啟動一個新的 Pod ContainerCreating：
+
+{{< image src="/images/K8s-advanced/rc-2.png"  width="1200" caption="Pod 服務" src_s="/images/K8s-advanced/rc-2.png" src_l="/images/K8s-advanced/rc-2.png" >}}
+
+<br>
+
+當新的 Pod 啟動成功後，舊的 Pod 才會被刪除，所以可以確保我們的服務穩定度。
+
+{{< image src="/images/K8s-advanced/rc-3.png"  width="1200" caption="Pod 服務" src_s="/images/K8s-advanced/rc-3.png" src_l="/images/K8s-advanced/rc-3.png" >}}
+
+<br>
+
+綜上所述，可以知道 Replication Controller 真的會控制 Pod 數量，那我們刪掉一個 Pod 他就重生一個，這樣不會永遠都刪不完嗎？其實我們可以把 Replication Controller 砍掉就好了，而 Replication Controller 刪除時，也會自動終止底下的 Pod ，最後 Pod 都會自動刪除。
+
+但其實 Kubernetes 官方不建議使用 Replication Controller 的方式來控制 Pod，而是建議使用 Deployment 搭配 ReplicaSet 來控制，我們接下來要介紹的主題就是：`Deployment` 跟 `ReplicaSet` 。
+
+<br>
+
 ## 參考資料
 
 [Kubernetes 那些事 — Service 篇](https://medium.com/andy-blog/kubernetes-%E9%82%A3%E4%BA%9B%E4%BA%8B-service-%E7%AF%87-d19d4c6e945f)
@@ -480,3 +669,9 @@ kubernetes-demo-ingress   nginx   *       192.168.64.11   80      5m56s
 [Kubernetes 那些事 — Ingress 篇（一）](https://medium.com/andy-blog/kubernetes-%E9%82%A3%E4%BA%9B%E4%BA%8B-ingress-%E7%AF%87-%E4%B8%80-92944d4bf97d)
 
 [Kubernetes 那些事 — Ingress 篇（二）](https://medium.com/andy-blog/kubernetes-%E9%82%A3%E4%BA%9B%E4%BA%8B-ingress-%E7%AF%87-%E4%BA%8C-559c7a41404b)
+
+[Kubernetes 那些事 — Stateless 與Stateful](https://medium.com/andy-blog/kubernetes-%E9%82%A3%E4%BA%9B%E4%BA%8B-stateless-%E8%88%87stateful-2c68cebdd635)
+
+[kubernetes ReplicationController](https://kubernetes.io/docs/concepts/workloads/controllers/replicationcontroller/)
+
+[Kubernetes 那些事 — Replication Controller](https://medium.com/andy-blog/kubernetes-%E9%82%A3%E4%BA%9B%E4%BA%8B-replication-controller-5c8592d37083)
