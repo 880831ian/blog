@@ -747,7 +747,7 @@ spec:
 
 * revisionHistoryLimit
 
-每次 Deployment 在進行更新的時候，都會產生一個新的 ReplicaSet 用來進行版本控制，在 Deployment 中這個專有名稱稱為 `revision`，所以這個設定就是要設定最多只會有多少個 `revision`，這個也是選填的設定。
+每次 Deployment 在進行更新的時候，都會產生一個新的 ReplicaSet 用來進行版本控制，在 Deployment 中這個專有名稱為 `revision`，所以這個設定就是要設定最多只會有多少個 `revision`，這個也是選填的設定。
 
 <br>
 
