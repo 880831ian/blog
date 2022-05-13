@@ -150,37 +150,99 @@ Ansible 是一種 IT 自動化工具。它可以部署軟體、配置系統，�
 ## Jenkins 安裝與實作
 
 
-我這次會使用 Docker 來進行安裝，除了 Docker 以外也有不同的安裝方式，可以參考 [Jenkins download and deployment](https://www.jenkins.io/download/)，本次使用的環境版本如下：
+我這次會使用 Docker-compose 來進行安裝，除了 Docker 以外也有不同的安裝方式，可以參考 [Jenkins download and deployment](https://www.jenkins.io/download/)，本次使用的環境版本如下：
 
 ### 版本
 
 * macOS：11.6
 * Docker：Docker version 20.10.14, build a224086
-* Jenkins：jenkins/jenkins:lts-jdk11 (Dokcer:tag)
+* Jenkins：jenkins/jenkins:lts-jdk11
+* yamllint：1.26.0
 
 <br>
 
 ### 安裝
 
-我們安裝 Jenkins 使用[官方提供的 LTS 映像檔](https://hub.docker.com/layers/jenkins/jenkins/jenkins/lts-jdk11/images/sha256-ec98cb8b367b0f9426f71345efe11e001c901704cea0e61fd91beb37af34ef98?context=explore) ，可以參考 [Official Jenkins Docker image](https://github.com/jenkinsci/docker/blob/master/README.md) 官方文件，裡面有說明要如何使用：
+這邊會使用 Jenkins 提供的 [官方 LTS 映像檔](https://hub.docker.com/layers/jenkins/jenkins/jenkins/lts-jdk11/images/sha256-ec98cb8b367b0f9426f71345efe11e001c901704cea0e61fd91beb37af34ef98?context=explore) 來作為基底，因為我們要多安裝測試程式 [yamllint](https://yamllint.readthedocs.io/en/stable/index.html)，所以就自己寫一個 Docker-compose：(同樣的程式碼會放在 [GitHub](https://github.com/880831ian/Jenkins)，也直接包成映像檔放在 [DockerHub](https://hub.docker.com/r/880831ian/jenkins)，歡迎大家自行取用)
 
-我們先下 `docker run` 指令來啟動，我順便跟大家說明指令的每一個參數：
+<br>
+
+{{< admonition tip "yamlint">}}
+[yamlint](https://github.com/adrienverge/yamllint)，它是語法檢查工具，可以用來檢查 yaml 檔案的語法是否正確以及符合規範，我們看一下實際操作的畫面：
+
+
+<br>
+ 
+{{< image src="/images/Jenkins-Ansible/yamllint.png"  width="800" caption="yamllint 測試" src_s="/images/Jenkins-Ansible/yamllint.png" src_l="/images/Jenkins-Ansible/yamllint.png" >}}
+可以看到如果不符合 yaml 規範就會跳出錯誤訊息。
+<br>
+
+{{< /admonition >}}
+
+<br>
+
+接下來先看一下整個 Docker-compose 結構以及各參數：
 
 ```sh
-$ docker run -d -p 8080:8080 -p 50000:50000 --restart always --name="jenkins" -v /Users/ian_zhuang/Desktop/jenkins_home:/var/jenkins_home -v /var/run/docker.sock:/var/run/docker.sock jenkins/jenkins:lts-jdk11
-
-232df6cfa9b95068a515e8e0c1f8325f54f52218753a681e7d37eac96e3b4a3d
+.
+├── Docker-compose.yaml
+├── jenkins
+│   └── Dockerfile
 ```
 
 <br>
 
+**Docker-compose.yaml**
+```yaml
+version: "3.8"
+
+services:
+  jenkins:
+    build: ./jenkins/
+    container_name: jenkins
+    ports:
+      - 8080:8080
+      - 50000:50000
+    restart: always
+    volumes:
+      - ./jenkins_home:/var/jenkins_home
+```
+
 參數說明：
-* `-d`：背景執行，就不會佔用一個 Terminal。
-* `-p 8080:8080 -p 50000:50000`：8080 是待會我們瀏覽儀表板會使用到的 Port，如果本機上 8080 已經被佔用，可以自行更換，50000 是 Jenkins 所使用的 Port。
-* `--restart always`：當容器停止時，會自動重新啟動容器。
-* `--name="jenkins"`：容器的名稱。
-* `-v /Users/ian_zhuang/Desktop/jenkins_home:/var/jenkins_home`：掛載目錄，就算刪除容器一樣可以保留其他設定。我將我本機桌面的 jenkins_home 與容器內 /var/jenkins_home 做映射。
-* `jenkins/jenkins:lts-jdk11`：本此使用的映像檔，是使用 LTS 版本，可以較為穩定。
+* `build: ./jenkins/`：因為要先安裝 yamllint，所以使用 Dockerfile 另外寫。
+* `container_name:jenkins`：容器的名稱。
+* `ports: -8080:8080 - 50000:50000`：8080 是待會我們瀏覽儀表板會使用到的 Port，如果本機上 8080 已經被佔用，可以自行更換，50000 是 Jenkins 所使用的 Port。
+* `restart: always`：當容器停止時，會自動重新啟動容器。
+* `volumes: - ./jenkins_home:/var/jenkins_home`：掛載目錄，就算刪除容器一樣可以保留其他設定。我將啟動 `Docker-compose.yaml` 的資料夾下多一個 jenkins_home 與容器內 /var/jenkins_home 做映射，大家可以自己去調整。
+
+<br>
+
+**jenkins/Dockerfile**
+
+```dockerfile
+FROM jenkins/jenkins:lts-jdk11
+
+LABEL maintainer="880831ian@gmail.com"
+
+USER root
+
+RUN apt-get upgrade -y\
+    && apt-get update -y\
+    && apt-get install yamllint -y
+```
+參數說明：
+* `FROM`：我們使用 Jenkins 官方提供的 LTS 維護版本。
+* `USER`：因為要先安裝東西，所以直接給 root 權限。
+*   `RUN`：先升級完後，再更新，最後再裝 [yamllint](https://yamllint.readthedocs.io/en/stable/index.html)。(-y 是同意所以詢問)
+
+<br>
+
+最後使用 `docker-compose` 來執行：
+
+```sh
+$ docker-compose -d
+```
+要在 Docker-compose.yaml 資料夾下指令才有用。
 
 <br>
 
@@ -325,43 +387,15 @@ This may also be found at: /var/jenkins_home/secrets/initialAdminPassword
 
 <br>
 
-接下來我會使用 [jenkins-testfile](https://github.com/880831ian/jenkins-testfile) 這個專案來作示範，大家也可以使用自己的程式碼來測試。我會利用 [yamlint](https://github.com/adrienverge/yamllint) 這個語法檢查工具來檢查 yaml 檔案的語法是否正確以及符合規範：
-
-### 安裝 yamllint 
-
-首先我們要先安裝 yamllint 到本機裡，我們這邊使用 `brew` 來做安裝，其他可以參考[ yamlint 官方文件](https://yamllint.readthedocs.io/en/stable/quickstart.html)。
-
-```sh
-$ brew install yamlint
-```
-
-<br>
-
-安裝好後，我們可以先在本機測試一下，我測試的檔案是上次的 Kubernetes-EFK yaml 檔：
-
-<br>
- 
-{{< image src="/images/Jenkins-Ansible/yamllint.png"  width="800" caption="yamllint 測試" src_s="/images/Jenkins-Ansible/yamllint.png" src_l="/images/Jenkins-Ansible/yamllint.png" >}}
-可以發現它有正常運作，他會檢查 yaml 檔案的格式是否正確，並且會提示你錯誤的地方。那我們現在要做的，就是從本機檢查變成檢查 GitHub 的 上的程式碼是否格式正確。
-<br>
-
 ### 建置專案
 
 #### HTTPS
 
-接下來我們先建立一個新的 Job，這次要在原始碼管理裡面選擇 Git，在 Repositories > Repository URL 裡面輸入我們這次要測試的 [repository URL](https://github.com/880831ian/jenkins-testfile)：
+接下來我們先建立一個新的 Job，選擇 Free-style 模式，這次要在原始碼管理裡面選擇 Git，在 Repositories > Repository URL 裡面輸入我們這次要測試的 [repository URL](https://github.com/880831ian/Jenkins)：
 
 <br>
  
 {{< image src="/images/Jenkins-Ansible/repository.png"  width="1000" caption="設定 Repository URL" src_s="/images/Jenkins-Ansible/repository.png" src_l="/images/Jenkins-Ansible/repository.png" >}}
-
-<br>
-
-我們接著點選 Credentials 欄位選擇 `Add > Jenkins` 後，在  **Kind** 欄位選擇 **Username with password**
- 
-<br>
- 
-{{< image src="/images/Jenkins-Ansible/username_password.png"  width="1000" caption="欄位選擇  Username with password" src_s="/images/Jenkins-Ansible/username_password.png" src_l="/images/Jenkins-Ansible/username_password.png" >}}
 
 <br>
 
@@ -414,7 +448,7 @@ $ brew install yamlint
 
 <br>
 
-2. 先點選左邊的 **Developer settings** > 點選左邊的 **Personal access tokens** > 點選右上角的 **Generate new token**，輸入 token 的描述並勾選 `repo` scope 以及 `admin:repo_hook` scope ，點選 **Generate token**：
+2. 先點選左邊的 **Developer settings** > 點選左邊的 **Personal access tokens** > 點選右上角的 **Generate new token**，輸入 token 的描述並勾選 `repo` scope 以及 `admin:repo_hook` scope 跟 `admin:org_hook` scope，點選 **Generate token**：
 
 <br>
 
@@ -432,7 +466,7 @@ $ brew install yamlint
 
 ##### 設定 Jenkins GitHub
 
-1. 進入 Jenkins 儀表板頁面，點選左邊**管理 Jenkiins** > System Configuration 的**設定系統**，往下滑找到 GitHub：
+1. 進入 Jenkins 儀表板頁面，點選左邊**管理 Jenkins** > System Configuration 的**設定系統**，往下滑找到 GitHub：
 
 <br>
 
@@ -490,13 +524,15 @@ done
 
 <br>
 
-##### GitHub 設定 Jenkins
+##### GitHub 上整合 Jenkins
 
-1. 在 GitHub 上整合 Jenkins，先到 GitHub 被建置專案的頁面下點 **Setting** 標籤 > 點選左邊的 **Webhook**  > 點選右上角的 **Add webhook**  > 輸入 Jenkins Hook URL 到 Payload URL > 選擇 Content type 為 **application/json**
+1. 先到 GitHub 被建置專案的頁面下點 **Setting** 標籤 > 點選左邊的 **Webhook**  > 點選右上角的 **Add webhook**  > 輸入 **Jenkins Hook URL** 到 Payload URL：
+
+	記得 Jenkins Hook URL 後面要加 `/github-webhook/`，小弟我卡在這裡很久😢 😢
 
 <br>
 
-{{< image src="/images/Jenkins-Ansible/setting_10.png"  width="800" caption="GitHub hook trigger for GITScm polling 設定" src_s="/images/Jenkins-Ansible/setting_10.png" src_l="/images/Jenkins-Ansible/setting_10.png" >}}
+{{< image src="/images/Jenkins-Ansible/setting_10.png"  width="800" caption="Webhooks 設定" src_s="/images/Jenkins-Ansible/setting_10.png" src_l="/images/Jenkins-Ansible/setting_10.png" >}}
 
 <br>
 
@@ -511,9 +547,208 @@ done
 
 <br>
 
-圖片中 `https://efd5-111-235-135-57.in.ngrok.io` 就是 Public 的 Jenkins Hook URL
+圖片中 `https://2063-111-235-135-57.jp.ngrok.io` 就是 Public 的 Jenkins Hook URL
 
 {{< /admonition >}}
+
+<br>
+
+完成後，先點選 **Recent Deliveries** 檢查是否成功，底下的 Response 需要是 <font color=green>200</font>，才是對的歐！(這裡一定要先檢查，不然後面會找問題到死 XD)
+
+<br>
+
+{{< image src="/images/Jenkins-Ansible/setting_12.png"  width="1000" caption="Webhooks 設定" src_s="/images/Jenkins-Ansible/setting_12.png" src_l="/images/Jenkins-Ansible/setting_12.png" >}}
+
+<br>
+
+### 測試
+
+我們都設定好後，要開始來測試，我們可以直接先點選 **馬上建置**，來測試是否可以透過 **GitHub personal access token**，抓取 GitHub 的檔案。
+
+<br>
+
+{{< image src="/images/Jenkins-Ansible/test_1.png"  width="800" caption="馬上建置" src_s="/images/Jenkins-Ansible/test_1.png" src_l="/images/Jenkins-Ansible/test_1.png" >}}
+
+<br>
+
+可以看到在建置流程那邊發現建置失敗，點進去可以看詳細內容，
+
+<br>
+
+{{< image src="/images/Jenkins-Ansible/test_2.png"  width="800" caption="建置失敗" src_s="/images/Jenkins-Ansible/test_2.png" src_l="/images/Jenkins-Ansible/test_2.png" >}}
+
+<br>
+
+點選左側的 **Console Output**，可以看到我們有成功獲取 GitHub 上得專案，並且執行我們的 Shell 來檢查 yaml 的檔案格式，發現是因為格式有錯誤，所以建置才會失敗 ❌ 
+
+<br>
+
+{{< image src="/images/Jenkins-Ansible/test_3.png"  width="1000" caption="Console Output" src_s="/images/Jenkins-Ansible/test_3.png" src_l="/images/Jenkins-Ansible/test_3.png" >}}
+
+<br>
+
+接下來我們先修改一下 yaml 的檔案，後重新 push 到 Github 上，並觀察 Jenkins 會不會自動建置 ！(修改位置大家可以直接看 [Commit 結果](https://github.com/880831ian/Jenkins/commit/729556412ef8796477a351040604aad8c8083c05))
+
+<br>
+
+{{< image src="/images/Jenkins-Ansible/test_4.png"  width="1000" caption="Console Output" src_s="/images/Jenkins-Ansible/test_4.png" src_l="/images/Jenkins-Ansible/test_4.png" >}}
+當你 push 完後，發現它會自動建置，請因為我們修改成正確格式，所以他也建置成功囉！
+
+<br>
+
+也可以點選左側有一個新的 **GitHub Hook Log** ，可以看到我們成功透過 **GitHub hook trigger for GITScm polling** 偵測到有新的 event，透過 WebHook 讓 Jenkins 知道。
+
+<br>
+
+{{< image src="/images/Jenkins-Ansible/test_5.png"  width="1000" caption="GitHub Hook Log" src_s="/images/Jenkins-Ansible/test_5.png" src_l="/images/Jenkins-Ansible/test_5.png" >}}
+
+<br>
+
+### 建置後觸發通知
+
+當我們自動建置成功當然沒什麼問題，但如果失敗有可能就會影響後續程式的上線時間，所以我們希望建置完成後，可以收到通知，通知除了可以用 email 以外，也可以使用套件去串接我們常用的平台，例如 Telegram、Slack、Line 等等，接下來我會教大家要怎麼去串接這些服務，在開始之前要請大家先安裝兩個套件：
+
+#### 安裝/設定 Build Timestamp
+
+[Build Timestamp](https://plugins.jenkins.io/build-timestamp/) 這個套件可以幫我們在稍後傳送通知時加上當下的時間戳，那要怎麼安裝套件呢？先到儀表板首頁，點選左側的 **管理 Jenkins** > 點選 **管理外掛程式**：
+
+<br>
+
+{{< image src="/images/Jenkins-Ansible/trigger_1.png"  width="1200" caption="管理 Jenkins > 管理外掛程式" src_s="/images/Jenkins-Ansible/trigger_1.png" src_l="/images/Jenkins-Ansible/trigger_1.png" >}}
+
+<br>
+
+再 Plugin Manager 的 可用的裡面搜尋 Build Timestamp，選擇後點下方的 **Download now and install after restart**，等待他安裝後會自動重啟。
+
+<br>
+
+{{< image src="/images/Jenkins-Ansible/trigger_2.png"  width="1200" caption="安裝 Build Timestamp" src_s="/images/Jenkins-Ansible/trigger_2.png" src_l="/images/Jenkins-Ansible/trigger_2.png" >}}
+
+<br>
+
+重啟後從儀表板點選左側 **管理 Jenkins** > 點選 **設定系統**，找到 **Build Timestamp**，開啟設定，並設定 Timezone 為 `Asia/Taipei` 以及 pattern `yyyy-MM-dd HH:mm:ss z`，這樣我們待會就可以使用 `BUILD_TIMESTAMP` 參數來獲取當下時間，記得要按下儲存歐！
+
+<br>
+
+{{< image src="/images/Jenkins-Ansible/trigger_3.png"  width="1200" caption="設定 Build Timestamp" src_s="/images/Jenkins-Ansible/trigger_3.png" src_l="/images/Jenkins-Ansible/trigger_3.png" >}}
+
+<br>
+
+#### 安裝/設定 Notify.Events
+
+[Notify.Events](https://plugins.jenkins.io/notify-events/) 這個套件可以串接很多的平台，例如 Telegram、Slack、Line 等，也可以透過它寄發郵件，是一個十分方便的套件，但缺點是他需要註冊，免費版只有每個月 300 次的訊息傳輸量，但在我們測試階段已經十分夠用。一樣我們用剛剛的方法安裝 **Notify.Events**。
+
+<br>
+
+{{< image src="/images/Jenkins-Ansible/trigger_4.png"  width="1200" caption="安裝 Notify.Events" src_s="/images/Jenkins-Ansible/trigger_4.png" src_l="/images/Jenkins-Ansible/trigger_4.png" >}}
+
+<br>
+
+安裝好後，Notify.Events 他不需要先設定，它可以依據不同的 Job 有不同的設定，所以我們開啟剛剛的 Job 組態，拉到最下面找到 **建置後動作** ，選擇 **Notify.Events**：
+
+<br>
+
+{{< image src="/images/Jenkins-Ansible/trigger_5.png"  width="1200" caption="安裝 Notify.Events" src_s="/images/Jenkins-Ansible/trigger_5.png" src_l="/images/Jenkins-Ansible/trigger_5.png" >}}
+可以看到這邊要先輸入 Token，那 Token 就必須去官網註冊後設定。
+
+<br>
+
+我們先開啟瀏覽器，搜尋 [Notify.Events](https://notify.events/en)，註冊帳號後，在 Channels 點選 **Create**，輸入一下 Title 按下 **Save**。 
+
+<br>
+
+{{< image src="/images/Jenkins-Ansible/trigger_6.png"  width="1200" caption="Notify.Events 官網設定" src_s="/images/Jenkins-Ansible/trigger_6.png" src_l="/images/Jenkins-Ansible/trigger_6.png" >}}
+
+<br>
+
+完成後，應該可以看到以下畫面，這邊就可以讓我們選擇來源，以及要發送到哪裡：
+
+<br>
+
+{{< image src="/images/Jenkins-Ansible/trigger_7.png"  width="1200" caption="Notify.Events 官網設定" src_s="/images/Jenkins-Ansible/trigger_7.png" src_l="/images/Jenkins-Ansible/trigger_7.png" >}}
+
+<br>
+
+我們先選擇 Sources，點選 **Add source**，可以看到很多來源，選擇 **CI/CD and Version control** ，再選擇 **Jenkins**：
+
+<br>
+
+{{< image src="/images/Jenkins-Ansible/trigger_8.png"  width="1200" caption="Notify.Events 官網設定" src_s="/images/Jenkins-Ansible/trigger_8.png" src_l="/images/Jenkins-Ansible/trigger_8.png" >}}
+
+<br>
+
+點選 **Next**，就可以看到以下畫面，它告訴我們要將它提供的 `Token` 貼入設定檔，也就是我們剛剛在 Job 組態裡面的那個 Token：
+
+<br>
+
+{{< image src="/images/Jenkins-Ansible/trigger_9.png"  width="1200" caption="Notify.Events 官網設定" src_s="/images/Jenkins-Ansible/trigger_9.png" src_l="/images/Jenkins-Ansible/trigger_9.png" >}}
+
+<br>
+
+設定好 Sources，接下來要設定接收方，回到剛剛 Notify.Events 的儀表板，點選 **Subscribe**，我們測試使用 Telegram 來當接收方，它會跳出一個視窗，告訴你要怎麼把他的機器人加成好友或是加入群組，這邊就依大家需要自行選擇，那我就將它加入群組，使用 `/subscribe DRr0bIZ0 @NotifyEventsBot` 指令來綁定
+
+<br>
+
+{{< image src="/images/Jenkins-Ansible/trigger_10.png"  width="1200" caption="Notify.Events 官網設定" src_s="/images/Jenkins-Ansible/trigger_10.png" src_l="/images/Jenkins-Ansible/trigger_10.png" >}}
+
+<br>
+
+這時候我們都設定好了，我們回到 Job 組態的 Notify.Events 設定位置，將 Token 貼上去，它可以自訂訊息的模板，可以全部都一樣，也可以針對建置後的狀態，產生不同的訊息模板，我們來自定義設計一下：
+
+**Success**
+
+```
+📢  Jenkins 建置通知 📣
+
+時間：$BUILD_TIMESTAMP 🕐
+名稱： <a href="$PROJECT_URL">$PROJECT_NAME</a>
+次數： <a href="$BUILD_URL">#$BUILD_NUMBER</a>
+建置狀態： 🟢 <b>$BUILD_STATUS</b> 🟢
+
+<a href="$BUILD_URL/console">建置日誌連結</a>
+
+--------- 😍😍😍  ---------
+```
+
+<br>
+
+{{< image src="/images/Jenkins-Ansible/trigger_11.png"  width="1000" caption="Notify.Events Success" src_s="/images/Jenkins-Ansible/trigger_11.png" src_l="/images/Jenkins-Ansible/trigger_11.png" >}}
+
+<br>
+
+**Failure**
+
+```
+📢  Jenkins 建置通知 📣
+
+時間：$BUILD_TIMESTAMP 🕐
+名稱： <a href="$PROJECT_URL">$PROJECT_NAME</a>
+次數： <a href="$BUILD_URL">#$BUILD_NUMBER</a>
+建置狀態： 🔴  <b>$BUILD_STATUS</b> 🔴
+
+<a href="$BUILD_URL/console">建置日誌連結</a>
+
+--------- 😭😭😭  ---------
+```
+
+<br>
+
+{{< image src="/images/Jenkins-Ansible/trigger_12.png"  width="1000" caption="Notify.Events Failure" src_s="/images/Jenkins-Ansible/trigger_12.png" src_l="/images/Jenkins-Ansible/trigger_12.png" >}}
+
+<br>
+
+#### Telegram 通知測試
+
+最後我們都設定好了，就來測試一下吧！我們先故意將程式碼格式用錯，[讓他先跳出錯誤](https://github.com/880831ian/Jenkins/commit/e88d35d56f2b2d1b999682c0f748431999bb4b9e)，[再修改](https://github.com/880831ian/Jenkins/commit/ec0e9f9c2148cecde6f70ec391d4c775fc180029)，來看看結果如何吧！(文字連結是對應的 Commit )
+
+<br>
+
+{{< image src="/images/Jenkins-Ansible/trigger_13.png"  width="600" caption="Telegram 通知" src_s="/images/Jenkins-Ansible/trigger_13.png" src_l="/images/Jenkins-Ansible/trigger_13.png" >}}
+
+<br>
+
+可以看到，我們分別兩次的測試，會依據我們建置後的結果，觸發不同的通知模板。
+
 
 <br>
 
