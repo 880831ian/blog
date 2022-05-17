@@ -1,6 +1,6 @@
 ---
 weight: 4
-title: "Ansible 介紹與實作 (Inventory、Playbooks、Module、Template)"
+title: "Ansible 介紹與實作 (Inventory、Playbooks、Module、Template、Handlers)"
 date: 2022-05-16T11:26:40+08:00
 lastmod: 2022-05-16T11:26:40+08:00
 draft: false
@@ -31,7 +31,7 @@ toc:
 
 ## Ansible 是如何運作的？
 
-在 Ansible 世界裡，我們會透過 `inventory 檔案` 來定義有哪些的 `Managed Node`，並藉由 `SSH` 與 `Python` 來進行溝通。那我們先來看一張圖：
+在 Ansible 世界裡，我們會透過 `Inventory 檔案` 來定義有哪些的 `Managed Node`，並藉由 `SSH` 與 `Python` 來進行溝通。那我們先來看一張圖：
 
 {{< image src="/images/Ansible/run.png"  width="600" caption="Ansible 運作原理  (圖片來源：[七分鐘掌握 Ansible 核心觀念](https://school.soft-arch.net/courses/28546/lectures/655359))" src_s="/images/Ansible/run.png" src_l="/images/Ansible/run.png" >}}
 
@@ -47,13 +47,13 @@ toc:
 * 控制主機 (Control Machine)：顧名思義，這類主機可以透過運行 Ansible 的劇本 (Playbooks) 對被控節點進行部署。
 * 被控節點 (Managed Node)：也稱為遙控節點 (Remote Node)。相對於控制主機，這類節點就是我們透過 Ansible 進行部署的對象。
 
-所以代表我們在操作這邊就是 Control Machine，要部署的機器就是 Managed Node，透過 SSH 來做連線。但什麽是 `inventory` 跟 `Playbooks` 呢？
+所以代表我們在操作這邊就是 Control Machine，要部署的機器就是 Managed Node，透過 SSH 來做連線。但什麽是 `Inventory` 跟 `Playbooks` 呢？
 
 <br>
 
-### 什麼是 Ansible inventory
+### 什麼是 Ansible Inventory
 
-`inventory` 這個單字本身有**詳細目錄**、**清單**和**列表**的意思。在這裡我們可以把它理解成一份主機列表，可以透過它來定義每個 Managed Node 的代號、IP 位址、連線設定和群組。
+`Inventory` 這個單字本身有**詳細目錄**、**清單**和**列表**的意思。在這裡我們可以把它理解成一份主機列表，可以透過它來定義每個 Managed Node 的代號、IP 位址、連線設定和群組。
 
 ```sh
 $ vim hosts
@@ -905,9 +905,9 @@ Hello "{{ dynamic_word }}"
 
 <br>
 
-2. 	建立 playbook，並加入變數
+2. 	建立 playbook，並加入變數 `vim template_demo.yaml`
 
-```sh
+```yaml
 ---
 - name: Play the template module
   hosts: localhost
@@ -915,7 +915,7 @@ Hello "{{ dynamic_word }}"
     dynamic_word: "World"
   tasks:
     - name: generation the hello_world.txt file
-      template:
+      ansible.builtin.template:
         src: hello_world.txt.j2
         dest: /tmp/hello_world.txt
 
@@ -959,11 +959,9 @@ Hello "{{ dynamic_word }}"
 ### 如何切換不同環境
 
 
-1. 除了我們剛剛用 `vars` 來宣告變以外，還可以使用 `vars_files` 來 include 其他的變數檔：
+1. 除了我們剛剛用 `vars` 來宣告變以外，還可以使用 `vars_files` 來 include 其他的變數檔：`$ vim template_demo2.yaml`
 
-```
-$ vim template_demo2.yaml
-
+```yaml
 ---
 - name: Play the template module
   hosts: localhost
@@ -975,7 +973,7 @@ $ vim template_demo2.yaml
 
   tasks:
     - name: generation the hello_world.txt file
-      template:
+      ansible.builtin.template:
         src: hello_world.txt.j2
         dest: /tmp/hello_world.txt
 
@@ -1024,10 +1022,241 @@ $ vim template_demo2.yaml
 
 <br>
 
-Template 系統是實務上很常見的手法之一，藉由它我們可以很輕鬆地讓開發、測試、正式環境無縫接軌。但若是在大型的 Playbook 裡切環境，建議使用較為進階的 `group_vars` 跟 `host_vars`，詳情請參考 "(尚未產出)" 文章
-
+Template 系統是實務上很常見的手法之一，藉由它我們可以很輕鬆地讓開發、測試、正式環境無縫接軌。但若是在大型的 Playbook 裡切換環境，建議使用較為進階的 `group_vars` 跟 `host_vars`。
 
 <br>
+
+## 在 Playbooks 使用 Handlers
+
+[Handlers](https://docs.ansible.com/ansible/latest/user_guide/playbooks_handlers.html) 是我們在 Ansible Playbooks 裡很常用來重開系統服務 (Service) 的手法，我們這邊透過安裝 Nginx 來介紹它。
+
+那什麼是 Handlers 呢？Handler 本身是一種非同步的 callback function ; 在這裡則是指關聯於特定 tasks 的事件 (event) 觸發機制。當這些特定的 tasks 狀態為 **被改變 (changed)** 且都已被執行，才會觸發一次的 event。
+
+<br>
+
+1. 我們建立 setup_nginx.yaml
+
+```yaml
+---
+- name: setup the nginx
+  hosts: all
+  become: true
+  vars:
+    username: "PinYi"
+    mail: "880831ian@gmail.com"
+    blog: "https://pin-yi.me"
+
+  tasks:
+    # 執行 'apt-get update' 指令。
+    - name: update apt repo cache
+      apt: name=nginx update_cache=yes
+
+    # 執行 'apt-get install nginx' 指令。
+    - name: install nginx with apt
+      apt: name=nginx state=present
+
+    # 於網頁根目錄 (DocumentRoot) 編輯 index.html。
+    - name: modify index.html
+      ansible.builtin.template: src=templates/index.html.j2
+        dest=/var/www/html/index.html
+        owner=www-data
+        group=www-data
+        mode="644"
+        backup=yes
+      notify: restart nginx
+
+  # handlers
+  #
+  # * 當確認事件有被觸發才會動作。
+  # * 一個 handler 可被多個 task 通知 (notify)，並於 tasks 跑完才會執行。
+  handlers:
+    # 執行 'sudo service nginx restart' 指令。
+    - name: restart nginx
+      service: name=nginx enabled=yes state=restarted
+
+  # post_tasks:
+  #
+  # 在 tasks 之後執行的 tasks。
+  post_tasks:
+    # 檢查網頁內容。
+    - name: review http state
+      command: "curl -s http://localhost"
+      register: web_context
+
+    # 印出檢查結果。
+    - name: print http state
+      debug: msg={{ web_context.stdout_lines }}
+```
+來說明一下上面這個 yaml 檔案：
+
+* 首先我們想要安裝 Nginx，我們給了三個參數，分別是 username、mail、blog，等等會帶入我們的 template。
+* 我們一開始有 3 個 task，分別代表執行更新、安裝、編輯 index.html 檔案。
+* 以及 1 個 handlers 他會等 `modify index.html` 有改變且執行後才會動作。
+* 最後是 post_tasks 他是等 tasks 之後執行的 tasks。
+
+<br>
+
+2. 接下建立 Nginx html 的 template：`vim templates/index.html.j2`
+
+```yaml
+ _____________________________________
+/ This is a ansible-playbook demo for \
+\ automate-with-ansible at 2022/05/17./
+ -------------------------------------
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
+[ {{ username }}@automate-with-ansible ~ ]$
+[ {{ username }}@automate-with-ansible ~ ]$
+[ {{ username }}@automate-with-ansible ~ ]$ cat .profile
+- {{ mail }}
+- {{ blog }}
+```
+
+<br>
+
+3. 執行 Playbook
+
+可以看到因為我們 `modify index.html` 沒有被改變，notify 沒有通知 handlers，所以他不會執行 handlers 該段程式。(正常來說，修改 html 不需要重啟，此為範例🤣 )
+
+<br>
+
+{{< image src="/images/Ansible/handlers_1.png"  width="900" caption="Handlers 範例" src_s="/images/Ansible/handlers_1.png" src_l="/images/Ansible/handlers_1.png" >}}
+
+<br>
+
+4. 那我們修改一下 index.html 來測試一下會不會把 index.html 的狀態**被改變**，而讓 handlers 執行呢！我們隨意修改 index.html 內容，修改日期改成 05/17：
+
+<br>
+
+{{< image src="/images/Ansible/handlers_2.png"  width="900" caption="Handlers 範例" src_s="/images/Ansible/handlers_2.png" src_l="/images/Ansible/handlers_2.png" >}}
+可以看到我們的 `modify index.html` 被改變了，所以 notify 通知 handlers 執行重新啟動。
+
+<br>
+
+## 在 Playbooks 使用 loops
+
+在 Shell Script 中，我們會使用 for 和 while 等迴圈 (loop) 來簡化重複的程式碼，而在 Ansible 我們也可以使用 loop 來簡化**重複的任務 (Tasks)**。
+
+### 標準迴圈
+
+首先我們先以簡單的方式重複印出三筆資料。
+
+* Shell Script
+
+1. 建立 for loop 的 Script
+
+```sh
+$ vim bash_loop.sh
+
+#!/bin/bash
+for x in 0 1 2; do
+        echo Loop $x
+done
+```
+* 在第 4 行，我們用 `for`，並代入 0,1,2 三個值到 `$x` 變數
+* 在第 5 行，則用了 `echo`，印出訊息和 `$x` 變數
+
+<br>
+
+2. 執行 Script：可以看到底下跑了 3 次的 loop
+
+```sh
+$ chmod a+x bash_loop.sh
+$ ./bash_loop.sh
+
+Loop 0
+Loop 1
+Loop 2
+```
+
+<br>
+
+* Ansible Playbooks
+
+我們需要透過 `item` 和 `with_items` 來使用 Ansible 的 loop，其 `item` 為預設名。在 Ansible 2.5 中添加了 `loop`，所以我們後續兩者都會提到 (目前兩者都可以使用！)
+
+1. 建立 loop 的 playbook `vim playbook_with_items.yaml`
+
+```yaml
+---
+- name: a basic loop with playbook
+  hosts: localhost
+  tasks:
+    - name: print loop message
+      ansible.builtin.debug:
+        msg: "Loop {{ item }}"
+      with_items:
+        - 0
+        - 1
+        - 2
+```
+* 在第 6、7 行裡，我們用 `debug` module 來印出訊息，並定義 `item`
+*  在第 8 ~ 11 行，則用了 `with_item` 將 0,1,2 的值傳入 `item`
+
+<br>
+
+2. 執行 `ansible-playbook playbook_with_items.yaml` 後會得到：
+
+```yaml
+TASK [print loop message] *************************************************************************************************************
+ok: [server1] => (item=0) => {
+    "msg": "Loop 0"
+}
+ok: [server1] => (item=1) => {
+    "msg": "Loop 1"
+}
+ok: [server1] => (item=2) => {
+    "msg": "Loop 2"
+}
+```
+
+<br>
+
+另一種 在 Ansible 新增的 `loop`
+
+1. 建立 loop 的 playbook `vim playbook_loop.yaml `
+
+```yaml
+---
+- name: a basic loop with playbook
+  hosts: all
+  tasks:
+    - name: print loop message
+      ansible.builtin.debug:
+        msg: "{{ item }} {{ my_idx }}"
+      loop:
+        - Loop
+        - Loop
+        - Loop
+      loop_control:
+        index_var: my_idx
+```
+
+<br>
+
+2. 執行 `ansible-playbook playbook_loop.yaml` 後會得到：
+
+```yaml
+TASK [print loop message] *************************************************************************************************************
+ok: [server1] => (item=0) => {
+    "msg": "Loop 0"
+}
+ok: [server1] => (item=1) => {
+    "msg": "Loop 1"
+}
+ok: [server1] => (item=2) => {
+    "msg": "Loop 2"
+}
+```
+
+<br>
+
+會使用 Loop 就可以減少我們在寫重複的程式碼，當然上面的只是簡單的範例，詳細請參考 [Loops - Ansible Documentation](https://docs.ansible.com/ansible/latest/user_guide/playbooks_loops.html#query-vs-lookup)。
+
+<br> 
 
 ## 參考資料
 

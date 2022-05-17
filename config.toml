@@ -161,13 +161,13 @@ ignoreErrors = ["err-missing-comment-accesstoken", "err-missing-oembed-accesstok
           desc = "Taiwan/Taichung"
         # description of your parameter
         [[languages.en.params.about.parameter]]
-          language = "PHP"
+          language = "Docker"
           level = "80"
         [[languages.en.params.about.parameter]]
-          language = "HTML"
-          level = "70"
+          language = "Kubernetes"
+          level = "60"
         [[languages.en.params.about.parameter]]
-          language = "MYSQL"
+          language = "CI/CD"
           level = "75"
 
       # Home page config
@@ -331,13 +331,13 @@ ignoreErrors = ["err-missing-comment-accesstoken", "err-missing-oembed-accesstok
           desc = "台灣/台中"
         # 參數說明
         [[languages.zh-tw.params.about.parameter]]
-          language = "PHP"
+          language = "Docker"
           level = "80"
         [[languages.zh-tw.params.about.parameter]]
-          language = "HTML"
-          level = "70"
+          language = "Kubernetes"
+          level = "60"
         [[languages.zh-tw.params.about.parameter]]
-          language = "MYSQL"
+          language = "CI/CD"
           level = "75"
 
       # 主頁信息設置
