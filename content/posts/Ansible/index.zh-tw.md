@@ -1,6 +1,6 @@
 ---
 weight: 4
-title: "Ansible 介紹與實作 (Inventory、Playbooks、Module)"
+title: "Ansible 介紹與實作 (Inventory、Playbooks、Module、Template)"
 date: 2022-05-16T11:26:40+08:00
 lastmod: 2022-05-16T11:26:40+08:00
 draft: false
@@ -23,6 +23,9 @@ toc:
 ---
 
 本篇文章是接續前面兩篇 [Jenkins 及 Ansible IT 自動化 CI/CD 介紹](https://pin-yi.me/jenkins-ansible/) 跟 [使用 Jenkins 設定 GitHub 觸發程序並通知 Telegram Bot](https://pin-yi.me/jenkins/) 文章，歡迎大家先去觀看前面兩篇文章 🤪
+
+
+本篇所使用到的程式碼都會整理於  [GitHub 連結](https://github.com/880831ian/Ansible)，大家有興趣可以去瀏覽看看歐！
 
 <br>
 
@@ -50,7 +53,7 @@ toc:
 
 ### 什麼是 Ansible inventory
 
-`inventory` 這個單子本身有**詳細目錄**、**清單**和**列表**的意思。在這裡我們可以把它理解成一份主機列表，可以透過它來定義每個 Managed Node 的代號、IP 位址、連線設定和群組。
+`inventory` 這個單字本身有**詳細目錄**、**清單**和**列表**的意思。在這裡我們可以把它理解成一份主機列表，可以透過它來定義每個 Managed Node 的代號、IP 位址、連線設定和群組。
 
 ```sh
 $ vim hosts
@@ -70,11 +73,11 @@ server1 ansible_ssh_host=127.0.0.1  ansible_ssh_port=55000 ansible_ssh_pass=dock
 
 ### 什麼是 Ansible Playbooks
 
-再談 Ansible Playbooks 之前，先說明我們要怎麼去操作 Ansible？一般來說，我們可以使用 Ad-Hoc commands 和 Playbooks 兩種方式來操作 Ansible。
+再談 Ansible Playbooks 之前，先說明我們要怎麼去操作 Ansible？一般來說，我們可以使用 Ad-Hoc Commands 和 Playbooks 兩種方式來操作 Ansible。
 
 <br>
 
-#### Ad-Hoc commands 是什麼？
+#### Ad-Hoc Commands 是什麼？
 
 Ad hoc 可以翻譯成**簡短地指令**，也就是我們常用的指令模式，最常見的 `ping`和`echo` 為例。
 
@@ -102,7 +105,7 @@ $ ansible all -m command -a "echo Hello World"
 server1 | CHANGED | rc=0 >>
 Hello World
 ```
-從上面的例子中可以看到 Ad-Hoc commands 一次只能處理一件事情，這是它與 Playbooks 最大的差異。
+從上面的例子中可以看到 Ad-Hoc Commands 一次只能處理一件事情，這是它與 Playbooks 最大的差異。
 
 <br>
 
@@ -178,7 +181,7 @@ ansible [core 2.12.5]
 
 <br>
 
-那我們為了要模擬，所以我們使用 Docker 來模擬 Managed Node，首先老樣子，一樣先寫一個 Dockerfile 來建立我們的映像檔，此映像檔是微調 [chusiang/ansible-managed-node.dockerfile](https://github.com/chusiang/ansible-managed-node.dockerfile/blob/master/ubuntu-14.04/Dockerfile) 的內容，修改 ubuntu 版本以及內容作調整，我會把程式碼放在 [GitHub 連結](https://github.com/880831ian/Ansible)，以及 [DockerHub 連結](https://hub.docker.com/r/880831ian/ansible-ubuntu-server)，歡迎大家前去下載使用。
+那我們為了要模擬，所以我們使用 Docker 來模擬 Managed Node，首先老樣子，一樣先寫一個 Dockerfile 來建立我們的映像檔，此映像檔是微調 [chusiang/ansible-managed-node.dockerfile](https://github.com/chusiang/ansible-managed-node.dockerfile/blob/master/ubuntu-14.04/Dockerfile) 的內容，修改 ubuntu 版本以及內容作調整，我會把程式碼放在 [GitHub 連結](https://github.com/880831ian/Ansible) ，以及 [DockerHub 連結](https://hub.docker.com/r/880831ian/ansible-ubuntu-server)，歡迎大家前去下載使用。
 
 <br>
 
@@ -369,8 +372,8 @@ $ ansible-playbook helloworld.yaml
 
 <br>
 
-{{< admonition question "我們剛剛明明只寫兩個 tasks，為什麼執行就變成 3 個 tasks？">}}
-這是因為 Ansible 預設會使用 `Setup` task 來取得 Managed node 的 facts。關於 facts 的詳細說明，請滑到後面 "" 觀看😬
+{{< admonition question "我們剛剛明明只寫兩個 tasks，為什麼執行就變成三個 tasks？">}}
+這是因為 Ansible 預設會使用 `Setup` task 來取得 Managed node 的 facts。關於 facts 的詳細說明，請滑到後面 [取得-managed-node-的-facts](#取得-managed-node-的-facts) 觀看😬
 {{< /admonition >}}
 
 <br>
@@ -385,6 +388,8 @@ $ ansible-playbook helloworld.yaml
 #! /bin/bash
 echo "Hello World"
 ```
+
+<br>
 
 * 執行 `helloworld.sh`
 
@@ -408,9 +413,7 @@ Hello World
 ### `ansible.builtin.apt`
 [apt module](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/apt_module.html#ansible-collections-ansible-builtin-apt-module) 是給 Debian, Ubuntu 等作業系統使用的套件模組 (Packing Modules)，我們可以透過它管理 apt 套件。類似的有 `apt-get`、`dpkg`等。
 
-<br>
-
-1. 更新套件索引(快取)，等同於 `apt-get update` 指令。
+1. 更新套件索引(快取)，等同於 `apt-get update` 指令
 
 ```yaml
 - name: Update repositories cache
@@ -418,7 +421,9 @@ Hello World
     update_cache: yes
 ```
 
-2. 安裝 vim 套件。
+<br>
+
+2. 安裝 vim 套件
 
 ```yaml
 - name: Install the package "vim"
@@ -426,7 +431,10 @@ Hello World
     name: vim
     state: present
 ```
-3. 移除 nano 套件。
+
+<br>
+
+3. 移除 nano 套件
 
 ```yaml
  - name: Remove "nano" package
@@ -440,14 +448,14 @@ Hello World
 ### `ansible.builtin.command`
 [command module](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/command_module.html#ansible-collections-ansible-builtin-command-module) 是可以在遠端上執行指令的指令模組，但它不支援變數 (variables) 和 `<`、`>`、`|`、`;`、`&`，若有這類需求要改用 `shell` module。
 
-<br>
-
 1. 重新開機
 
 ```yaml
 - name: Reboot at now
   ansible.builtin.command: /sbin/shutdown -r now
 ```
+
+<br>
 
 2. 當某個檔案不存在時才執行指令
 
@@ -456,7 +464,9 @@ Hello World
   ansible.builtin.command: mkdir .ssh creates=.ssh/
 ```
 
-3. 先切換目錄再執行指令。
+<br>
+
+3. 先切換目錄再執行指令
 
 ```yaml
 - name: cat /etc/passwd
@@ -471,8 +481,6 @@ Hello World
 
 [copy moudule](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/copy_module.html#ansible-collections-ansible-builtin-copy-module) 是從本地複製檔案到遠端的檔案模組，若有使用變數需求，可以改用 `template`。它類似 Linux 指令的 `scp`。
 
-<br>
-
 1. 複製 ssh public key 到遠端 (chmod 644 /target/file)
 
 ```yaml
@@ -485,6 +493,8 @@ Hello World
     mode: 0644
 ```
 
+<br>
+
 2. 複製 ssh public key 到遠端 (chmod u=rw,g=r,o=r /target/file)
 
 ```yaml
@@ -496,6 +506,8 @@ Hello World
     group: docker
     mode: "u=rw,g=r,o=r"
 ```
+
+<br>
 
 3. 複製 nginx vhost 設定檔到遠端，並備份原有的檔案
 
@@ -526,7 +538,9 @@ Hello World
     mode: "u=rw,g=r,o=r"
 ```
 
-2. 建立目錄 (mkdir)，並設定檔案擁有者為 docker。
+<br>
+
+2. 建立目錄 (mkdir)，並設定檔案擁有者為 docker
 
 ```yaml
 - name: create a directory, and set the permissions
@@ -537,7 +551,9 @@ Hello World
     mode: "700"
 ```
 
-3. 建立軟連結 (ln)。
+<br>
+
+3. 建立軟連結 (ln)
 
 ```yaml
 - name: create a symlink file
@@ -562,6 +578,8 @@ Hello World
     state: absent
     regexp: '^docker'
 ```
+
+<br>
 
 2. 在 /etc/hosts 檔案裡用 127.0.0.1 localhost 取代開頭為 127.0.0.1 的一行
 
@@ -591,6 +609,8 @@ Hello World
     state: started
 ```
 
+<br>
+
 2. 停止 Nginx
 
 ```yaml
@@ -599,6 +619,8 @@ Hello World
     name: nginx
     state: stopped
 ```
+
+<br>
 
 3. 重開網路服務
 
@@ -622,6 +644,8 @@ Hello World
 - name: check files number
   ansible.builtin.shell: ls /home/docker/ | wc -l
 ```
+
+<br>
 
 2. 把所有的 Python 行程給砍掉
 
@@ -651,6 +675,8 @@ Hello World
           mode: "u=rw,g=r,o=r"
   when: stat_vimrc.stat.exists == false
 ```
+
+<br>
 
 2. 取的某檔案的 md5sum
 
@@ -738,6 +764,268 @@ Hello World
 <br>
 
 {{< image src="/images/Ansible/telegram_4.png"  width="600" caption="發送通知至 Telegram 群組 Bot" src_s="/images/Ansible/telegram_4.png" src_l="/images/Ansible/telegram_4.png" >}}
+
+<br>
+
+## 取得 Managed node 的 facts 
+
+還記得我們在執行任務 (Tasks) 時，明明只有兩個，但最後結果顯示三個嗎？是因為在使用 Playbooks 時，Ansible 會自動執行 [Setup module](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/setup_module.html#ansible-collections-ansible-builtin-setup-module) 以蒐集各個 Managed node 的 **facts**。 這個 facts 就好比是系統變數一樣，從 IP 位址、作業系統、CPU 等資訊應有盡有。
+
+<br>
+
+### Ad-Hoc Commands
+
+通常我們都會先使用 Ad-Hoc Commands 來呼叫 `setup` 看看有哪些可用的資訊，這對於我們稍後撰寫較為複雜的 Playbooks 會很有幫助。
+
+1. 可以藉由 ``less`` 快速搜尋所有的變數
+
+```sh
+$ ansible all -m setup | less
+
+server1 | SUCCESS => {
+    "ansible_facts": {
+        "ansible_apparmor": {
+            "status": "disabled"
+        },
+        "ansible_architecture": "x86_64",
+        "ansible_bios_date": "03/14/2014",
+        "ansible_bios_vendor": "BHYVE",
+        "ansible_bios_version": "1.00",
+        "ansible_board_asset_tag": "NA",
+        "ansible_board_name": "NA",
+        "ansible_board_serial": "NA",
+        "ansible_board_vendor": "NA",
+        "ansible_board_version": "NA",
+```
+
+<br>
+
+2. 搭配 `filter` 將發行版本 (distribution) 資訊給過濾出來
+
+```sh
+$ ansible all -m setup -a "filter=ansible_distribution*"
+
+server1 | SUCCESS => {
+    "ansible_facts": {
+        "ansible_distribution": "Ubuntu",
+        "ansible_distribution_file_parsed": true,
+        "ansible_distribution_file_path": "/etc/os-release",
+        "ansible_distribution_file_variety": "Debian",
+        "ansible_distribution_major_version": "22",
+        "ansible_distribution_release": "kinetic",
+        "ansible_distribution_version": "22.10",
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false
+}
+```
+
+<br>
+
+3. 取得套件管理員的種類資訊，例子中取得的值是 **apt**
+
+```sh
+$ ansible all -m setup -a "filter=ansible_pkg_mgr"
+
+server1 | SUCCESS => {
+    "ansible_facts": {
+        "ansible_pkg_mgr": "apt",
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false
+}
+```
+
+<br>
+
+### 轉寫 Playbooks
+
+我來出個題目，我想要知道 Ansible 所使用的公鑰，並透過 Telegram Bot 發送到群組，要怎麼做呢！？
+
+首先要利用剛剛的 Ad-Hoc Commands filter，找到公鑰，再將公鑰透過 Telegram Bot 傳送，所以我們會有兩個 Tasks，那我們開始實作囉 🤓
+
+1.找到公鑰
+
+```yaml
+---
+- name: Filter rsa_public & Send notify
+  hosts: all
+  tasks:
+    - name: Filter setup rsa_public key
+      ansible.builtin.setup:
+        filter:
+          - "ansible_ssh_host_key_rsa_public"
+      register: result
+```
+可以看到我們將 filter setup 從 Ad-Hoc 轉成 Playbooks，並使用 result 來存在找到的公鑰。
+
+<br>
+
+2. 發送通知至 Telegram Bot
+
+```yaml
+    - name: Send notify to Telegram
+      community.general.telegram:
+        token: "5335968936:AAFhxxMRJy-rucGKgSE80Xss7qPq2iOHWlc"
+        api_args:
+          chat_id: -540226836
+          parse_mode: "markdown"
+          text: "{{ result }}"
+          disable_web_page_preview: True
+          disable_notification: True
+```
+老樣子，我們就使用上次 `send_notify_tg.yaml` 內的 Send notify to Telegram 任務來傳送通知。
+
+<br>
+
+執行後，看看群組是否有收到我們找到的 ansible_ssh_host_key_rsa_public 通知。
+
+<br>
+
+{{< image src="/images/Ansible/telegram_5.png"  width="800" caption="發送通知至 Telegram 群組 Bot" src_s="/images/Ansible/telegram_5.png" src_l="/images/Ansible/telegram_5.png" >}}
+
+<br>
+
+## 使用 Ansible 的 Template 系統
+
+[Template module](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/template_module.html#ansible-collections-ansible-builtin-template-module) 是常使用的檔案模組之一，我們在 [常用的 Ansible Module 有哪些？](#常用的-ansible-module-有哪些) 文章中有提到，可以用它和變數 (Variables) 來操作檔案。
+
+我們只需要事先定義變數和模板 (Templates)，即可用它動態產生遠端的 Shell Script、設定檔 (Configure)等。換句話說，我們可以用一份 template 來開發 (Development)、測試 (Test)、正式環境 (Production) 等不同環境設定。
+
+舉例說明：
+
+1. 建立 template 檔案
+
+```j2
+$ vim hello_world.txt.j2
+Hello "{{ dynamic_word }}"
+```
+* 由於 Ansible 是就由 [Jinja2](https://jinja.palletsprojects.com/en/3.1.x/) 來實作 template 系統，所以需要使用 `*.j2` 的副檔名。
+* 上面的 `"{{ dynamic_word }}""` 代表我們在 template 裡使用了名為 `dynameic_word` 的變數。
+
+<br>
+
+2. 	建立 playbook，並加入變數
+
+```sh
+---
+- name: Play the template module
+  hosts: localhost
+  vars:
+    dynamic_word: "World"
+  tasks:
+    - name: generation the hello_world.txt file
+      template:
+        src: hello_world.txt.j2
+        dest: /tmp/hello_world.txt
+
+    - name: show file context
+      command: cat /tmp/hello_world.txt
+      register: result
+
+    - name: print stdout
+      debug:
+        msg: "{{ result.stdout_lines }}"
+```
+* 在第 5 行，我們幫 `dynamic_word` 變數設了一個預設值 `World`。
+* 在 8 行的第 1 個 task 裡，我們使用 template module，並指定了檔案的來源 (src) 和目的地 (dest)。
+* 之後的 2 個 task 則是把 template module 產生的檔案給印出來。
+
+<br>
+
+3. 直接使用 `ansible-playbook template_demo.yaml` 執行 Playbook。
+
+<br>
+
+{{< image src="/images/Ansible/template.png"  width="900" caption="Template Module 範例" src_s="/images/Ansible/template.png" src_l="/images/Ansible/template.png" >}}
+
+<br>
+
+也可以透過 `-e` 參數將 `dynamic_word` 覆寫成 "ansible"
+
+<br>
+
+```sh
+ $ ansible-playbook template_demo.yaml -e "dynamic_word=ansible"
+```
+
+<br>
+
+{{< image src="/images/Ansible/template_1.png"  width="900" caption="Template Module 使用 `-e` 覆寫參數" src_s="/images/Ansible/template_1.png" src_l="/images/Ansible/template_1.png" >}}
+
+<br>
+
+
+### 如何切換不同環境
+
+
+1. 除了我們剛剛用 `vars` 來宣告變以外，還可以使用 `vars_files` 來 include 其他的變數檔：
+
+```
+$ vim template_demo2.yaml
+
+---
+- name: Play the template module
+  hosts: localhost
+  vars:
+    env: "development"
+
+  vars_files:
+    - vars/{{ env }}.yml
+
+  tasks:
+    - name: generation the hello_world.txt file
+      template:
+        src: hello_world.txt.j2
+        dest: /tmp/hello_world.txt
+
+    - name: show file context
+      command: cat /tmp/hello_world.txt
+      register: result
+
+    - name: print stdout
+      debug:
+        msg: "{{ result.stdout_lines }}"
+```
+可以看到上面例子中第 7 行，就是我們使用 `vars_files` 來 include 其他的變數檔。
+
+<br>
+
+2. 建立 `vars/development.yaml`、`vars/test.yaml`、`vars/production.yaml` 檔案，接下來將依不同得環境 include 不同的檔案變數檔案 (vars files)，這樣就可以用一份 Playbook 切換環境了！
+
+* Development
+
+```sh
+ $ vim vars/development.yaml
+ dynamic_word: "development"
+```
+
+* Test
+
+```sh
+ $ vim vars/test.yaml
+ dynamic_word: "test"
+```
+
+* Production
+
+```sh
+ $ vim vars/production.yaml
+ dynamic_word: "production"
+```
+
+<br>
+
+3. 執行 `ansible-playbook template_demo2.yaml -e "dynamic_word=Test"`，並有 `-e` 去修改各個環境。
+
+<br>
+
+{{< image src="/images/Ansible/template_2.png"  width="900" caption="Template Module 範例" src_s="/images/Ansible/template_2.png" src_l="/images/Ansible/template_2.png" >}}
+
+<br>
+
+Template 系統是實務上很常見的手法之一，藉由它我們可以很輕鬆地讓開發、測試、正式環境無縫接軌。但若是在大型的 Playbook 裡切環境，建議使用較為進階的 `group_vars` 跟 `host_vars`，詳情請參考 "(尚未產出)" 文章
+
 
 <br>
 
