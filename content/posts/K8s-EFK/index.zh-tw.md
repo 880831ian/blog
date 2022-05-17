@@ -575,7 +575,7 @@ spec:
           hostPath:
             path: /var/lib/docker/containers
 ```
-我們設置 Fluentd Pod 上使用 512 MiB 的內存限制，並保證 0.1 個 CPU 跟 200 MiB 的內存。我們將 varlog `/var/log` 掛載到容器的 varlibdockercontainers `var/lib/docker/containers` 中。最後一個設定是 `Fluentd` 在收到信號 `terminationGracePeriodSeconds` 後有 30 秒的時間可以優雅的關閉。
+我們設置 Fluentd Pod 上使用 512 MiB 的內存限制，並保證 0.1 個 CPU 跟 200 MiB 的內存。我們將 varlog `/var/log` 以及 varlibdockercontainers `var/lib/docker/containers` 一併掛載進容器內。最後一個設定是 `Fluentd` 在收到信號 `terminationGracePeriodSeconds` 後有 30 秒的時間可以優雅的關閉。
 
 <br>
 
