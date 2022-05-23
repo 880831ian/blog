@@ -55,7 +55,7 @@ Git 的操作指令繁多，包含環境類、查看類、提交類、分支類�
 
 <br>
 
-{{< image src="/images/git/gitkraken.png"  width="500" caption="Git GUI 工具 (Gitkraken)" src_s="/images/git/gitkraken.png" src_l="/images/git/gitkraken.png" >}}
+{{< image src="/images/git/gitkraken.png"  width="600" caption="Git GUI 工具 (Gitkraken)" src_s="/images/git/gitkraken.png" src_l="/images/git/gitkraken.png" >}}
 
 <br>
 
