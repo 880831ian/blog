@@ -220,6 +220,300 @@ $ git commit -m "內容打這"
 
 我們可以在雙引號內輸入我們修改的內容，方便其他人了解該版本的差異。
  
+ 
+<br>
+
+### 分支類
+
+#### branch
+
+我們專案初始化後，一開始都只會有一個 master 分支，如果想要新增分支，可以使用：
+
+```sh
+$ git branch "分支名稱"
+```
+
+會將所在分支的檔案狀態複製到新增的分支上，當該分支改動時，不會影響到原本的分支。
+
+<br>
+ 
+{{< image src="/images/git/branch.png"  width="600" caption="Git branch" src_s="/images/git/branch.png" src_l="/images/git/branch.png" >}}
+ 
+<br>
+
+#### checkout
+
+如果想要切換不同版本或是分支，就可以使用：
+
+```sh
+$ git checkout "分支名稱/分支ID"
+```
+來切換不同的分支或是以前的版本。
+
+<br>
+ 
+{{< image src="/images/git/checkout_1.png"  width="600" caption="Git checkout" src_s="/images/git/checkout_1.png" src_l="/images/git/checkout_1.png" >}}
+
+<br>
+
+如果想要同時建立分支並切換，可以使用：
+
+```sh
+$ git chechout -b "分支名稱"
+```
+`-b` 這個參數就等於是 `git branch "分支" & git checkout "分支"`。
+
+<br>
+ 
+{{< image src="/images/git/checkout_2.png"  width="600" caption="Git checkout -b" src_s="/images/git/checkout_2.png" src_l="/images/git/checkout_2.png" >}}
+
+<br>
+
+### 遠端類
+
+#### clone
+
+如果我們遠端上已經有版本庫，想要下載到本地端，就可以使用：
+
+```sh
+$ git clone [遠端網址]
+```
+會在下指令的當前路徑下，下載整個遠端的專案。
+
+
+
+<br>
+
+#### remote
+
+如果要新增遠端版本庫，就可以使用：
+
+```sh
+$ git remote add [簡稱] [遠端網址]
+```
+取一個可以代表要新增的遠端 Git 版本庫簡稱。
+
+<br>
+ 
+{{< image src="/images/git/remote_1.png"  width="1000" caption="Git remote" src_s="/images/git/remote_1.png" src_l="/images/git/remote_1.png" >}}
+
+<br>
+
+如果想要檢視已經設定好的遠端版本庫，就可以使用：
+
+```sh
+$ git remote
+```
+他會列出每個遠端本版本庫的簡稱。
+
+也可以使用 `git remote -v` 指令，會顯示 Git 用來讀寫遠端簡稱時所用的網址：
+
+<br>
+ 
+{{< image src="/images/git/remote_2.png"  width="600" caption="Git remote -v" src_s="/images/git/remote_2.png" src_l="/images/git/remote_2.png" >}}
+
+<br>
+
+#### push
+
+當我們已經設定好遠端版本庫的位址，我們如果想要將本地端的專案版本庫放到遠端，就可以使用：
+
+```sh
+$ git push [簡稱] [分支名稱]
+```
+將本地端版本庫推到遠端的版本庫。
+
+<br>
+ 
+{{< image src="/images/git/push.png"  width="600" caption="Git push" src_s="/images/git/push.png" src_l="/images/git/push.png" >}}
+上面這張圖片，就是把本地端的 `master` 分支內容，推一份到 `origin` 這個地方 (可能是 GitHub 或公司內部 Git 伺服器)，並且在 `origin` 這個地方形成同名的 `master` 分支。
+
+<br>
+
+但很多人不知道的是，其實 push 指令的完整型態長這樣：
+
+```sh
+$ git push origin master:master
+```
+意思就是「把本地的 `master` 分支內容，推一份到 `origin` 上，並且在 `origin` 上建立一個 `master` 分支」
+
+<br>
+
+如果我們把指令改為：
+
+```sh
+$ git push origin master:dog
+```
+意思就會變成「把本地的 `master` 分支內容，推一份到 `origin` 上，並且在 `origin` 上建立一個 `dog` 分支」
+
+<br>
+
+#### pull
+
+如果我們想要將遠端的專案 **下載並合併** 至本地端，就可以使用：
+
+```sh
+$ git pull [簡稱] [分支名稱]
+```
+將遠端專案資料下載並合併到本地端。
+
+<br>
+
+{{< image src="/images/git/pull.png"  width="600" caption="Git pull" src_s="/images/git/pull.png" src_l="/images/git/pull.png" >}}
+
+<br>
+
+#### fetch
+
+如果我們單純只想要將遠端的專案 **下載** 至本地端，就可以使用：
+
+```sh
+$ git fetch [簡稱] [分支名稱]
+```
+將遠端專案資料下載到本地端。
+
+<br>
+
+{{< image src="/images/git/fetch.png"  width="600" caption="Git pull" src_s="/images/git/fetch.png" src_l="/images/git/fetch.png" >}}
+
+<br>
+
+#### clone、pull、fetch 差異
+
+| 差異 | clone | pull | fetch | 
+| :---: | :---: | :---: | :---: |
+| 功能 | 會把遠端整份專案都下載到本地端 | 只會下載，並不會合併 | 會下載且合併檔案 | 
+| 補充說明 | 適用於專案一開始時使用，如果 clone 之後要再更新，通常是執行 `git fetch` or `git pull` | 假設我遠端叫 `orgin`，當執行時，Git 會比對本地端與遠端，會「下載 `origin` 上有但本地端沒有的檔案下來」| pull 與 fetch 做的事情差不多，多了一個進行合併的功能 | 
+
+<br>
+
+### 合併類
+
+#### merge
+
+如果想要將不同分支內容合併，就可以使用：
+
+```sh
+$ git merge [分支名稱]
+```
+像下面這張圖，我們將分支 123 合併到分支 master。(要記得先切換到要合併的主分支，才可以合併其他的分支進來)
+
+<br>
+
+{{< image src="/images/git/merge.png"  width="600" caption="Git pull" src_s="/images/git/merge.png" src_l="/images/git/merge.png" >}}
+
+<br>
+
+#### merge (fast-fastward)
+
+merge 有一個參數叫做 fast-fastward，我們先看圖片再來說明：
+
+<br>
+
+{{< image src="/images/git/merge_1.gif"  width="700" caption="Git merge fast-fastward 圖一 ([CS Visualized: Useful Git Commands](https://dev.to/lydiahallie/cs-visualized-useful-git-commands-37p1#merge))" src_s="/images/git/merge_1.gif" src_l="/images/git/merge_1.gif" >}}
+{{< image src="/images/git/merge_2.gif"  width="700" caption="Git merge no fast-fastward 圖二 ([CS Visualized: Useful Git Commands](https://dev.to/lydiahallie/cs-visualized-useful-git-commands-37p1#merge))" src_s="/images/git/merge_2.gif" src_l="/images/git/merge_2.gif" >}}
+
+<br>
+
+圖一是我們的 `fast-fastward`，也是 Git 預設的合併方式，當我們要將 dev 合併到 master，`fast-fastward` 會將 dev 分支的 commit 紀錄合併到 master 上，然而圖二是不使用 `fast-fastward` 方式，會保留 dev 分支上的 commit 紀錄，並在 master 上新增一個。 
+
+<br>
+
+`no fast-fastward` 好處是可以完整保留每個分支的 commit 紀錄，壞處是假如 commit 紀錄只有一個，合併多次就會出現很多小叉路。要怎麽使用 `no fast-fastward`：
+
+```sh
+$ git merge --no-ff [分支名稱]
+```
+
+<br>
+
+#### rebase (合併)
+
+如果想要重新修改特定分支的「 基礎版本 」，要把另一個分支的變更，當成我這隻分支的基礎，就可以使用：
+
+```sh
+$ git rebase [分支名稱]
+```
+
+<br>
+
+{{< image src="/images/git/rebase_1.gif"  width="700" caption="Git rebase (合併) ([CS Visualized: Useful Git Commands](https://dev.to/lydiahallie/cs-visualized-useful-git-commands-37p1#Rebasing))" src_s="/images/git/rebase_1.gif" src_l="/images/git/rebase_1.gif" >}}
+
+<br>
+
+#### rebase (修改)
+
+如果想要修改特定分支上任何一個版本資訊，就可以使用：
+
+```sh
+$ git rebase -i [HEAD~?]
+```
+但要記得，如果再使用前，要先詢問是否有人正在使用此分支，因為 rebase 會改變歷史紀錄。
+
+<br>
+
+{{< image src="/images/git/rebase_2.gif"  width="700" caption="Git rebase (修改) ([CS Visualized: Useful Git Commands](https://dev.to/lydiahallie/cs-visualized-useful-git-commands-37p1#Rebasing))" src_s="/images/git/rebase_2.gif" src_l="/images/git/rebase_2.gif" >}}
+
+<br>
+
+#### cherry-pick
+
+如果想要從某個分支，拉幾個 Commit 進來該分支，就可以使用：
+
+```sh
+$ git cherry-pick [分支ID]
+```
+但做此動作，需要解決修改後的版本衝突。
+
+<br>
+
+### 還原類
+
+#### reset
+
+如果想要還原任意 Commit，就可以使用：
+
+```sh
+$ git reset [HEAD~?] 
+```
+會還原選擇的 Commit，且檔案還是維持最新版本。
+
+<br>
+
+#### revert
+
+如果想要還原任意 Commit，但又想保留在歷史紀錄，就可以使用：
+
+```sh
+$ git revert [HEAD~?]
+```
+會還原選擇的 Commit，檔案也會還原到舊的版本
+
+<br>
+
+#### reset 與 revert 差異
+
+| 指令 | reset | revert |
+| :---: | :---: | :---: |
+| 改變歷史狀態 | 是 | 否 |
+| 說明 | 把目前狀態設定成某個指定的 Commit 狀態，通常適用於尚未推到遠端的 Commit | 新增一個 Commit 來取消另一個 Commit 的內容，原本的 Commit 依舊會保留在歷史紀錄中。通常適用於已經推到遠端的 Commit |
+
+<br>
+
+## Git 常見問題
+
+{{< admonition question "Git 裡的 HEAD 是什麼？">}}
+HEAD 本身是一個指標，通常會指向某個本地端分支或是其他 Commit，所以也可以把 HEAD 當作目前所在的分支。
+{{< /admonition >}}
+
+{{< admonition question "刪除合併後的分支會發生什麼事情嗎？">}}
+分支本身就像指標或是貼紙一樣，貼在某個 Commit 上面，分支並不是目錄或是檔案，所以當我們刪除已經合併過的分支，不會造成檔案或目錄跟著被刪除。
+{{< /admonition >}}
+
+{{< admonition question "什麼是標籤 Tag？">}}
+通常在開發軟體有完成特定的里程碑時，軟體版號 1.0.0 或是 beta、release 之類，就很適合用標籤來標記，例如：`git tag 1.0.0`。
+{{< /admonition >}}
+
 <br>
 
 ## 參考資料
@@ -233,3 +527,5 @@ $ git commit -m "內容打這"
 [連猴子都能懂的Git入門指南](https://backlog.com/git-tutorial/tw/)
 
 [Git教學】分支合併: merge 與 rebase 差異](https://www.maxlist.xyz/2020/05/02/git-merge-rebase/)
+
+[Git 面試題](https://gitbook.tw/interview)
