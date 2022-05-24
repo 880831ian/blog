@@ -480,6 +480,83 @@ $ git reset [HEAD~?]
 
 <br>
 
+`reset` 指令可以搭配參數使用，常見到的三種參數，方別是 `--mixed`、`--soft`、`--hard`，不同的參數執行之後會有稍微不太一樣的結果。
+* mixed 模式：`--mixed` 是預設的參數，如果沒有特別加其他參數，`got reset` 會使用 `--mix` 模式。這個模式會把暫存區的檔案丟掉，但不會影響到工作目錄的檔案，也就是說 Commit 拆出來的檔案會留在工作目錄(實體的檔案)，但不會留在暫存區。
+* soft 模式：這個模式下的 reset，工作目錄跟暫存區檔案都不會被丟掉，所以看起來只有 HEAD 的移動而已。也因此，Commit 拆出來的檔案會直接放在暫存區。
+* hard 模式：在這個模式下，不管是工作目錄以及暫存區的檔案都會丟掉。
+
+以下用表格在整理一次：
+
+| 模式 | mixed 模式 | soft 模式 | hard 模式 |
+| :---: | :---: | :---: | :---: |
+| 工作目錄(實體的檔案) | 不變 | 不變 | 丟掉 |
+| 暫存區 | 丟掉 | 不變 | 丟掉 | 
+
+<br>
+
+文字說明也不太懂對吧！沒錯我也是 😂，所以我整理了三種不同的範例，我們一起做看看吧！
+
+我們先開一個新專案，在 master 上面 commit 2 次，可以參考下方圖片：
+
+<br>
+
+{{< image src="/images/git/reset_1.png"  width="800" caption="Git reset 示範" src_s="/images/git/reset_1.png" src_l="/images/git/reset_1.png" >}}
+
+<br>
+
+我們用 `git log` 來看一下記錄：
+
+<br>
+
+{{< image src="/images/git/reset_2.png"  width="800" caption="Git reset 示範 log 紀錄" src_s="/images/git/reset_2.png" src_l="/images/git/reset_2.png" >}}
+
+<br>
+
+都設定好後，我們要來測試每個參數的不同之處，先以預設的 `--mixed` 來測試：
+
+##### reset - mixed
+
+我們下 `git reset --minxed` 按 Tab 可以看要還原的 commit，我們之後的測試都是還原到 `24aeb0d  -- [HEAD^]   add a.txt` 這個，來觀察 `add b.txt` 這個 commit 的變化。
+
+<br>
+
+{{< image src="/images/git/reset_3.png"  width="800" caption="Git reset mixed 模式" src_s="/images/git/reset_3.png" src_l="/images/git/reset_3.png" >}}
+
+<br>
+
+所以我們的指令是 `git reset --mixed 24aebo4`，我們再來觀看看看，檔案狀態也就是 b.txt 以及暫存區狀態。
+
+<br>
+
+{{< image src="/images/git/reset_4.png"  width="800" caption="Git reset mixed 模式" src_s="/images/git/reset_4.png" src_l="/images/git/reset_4.png" >}}
+可以看到使用 `--mixed` 模式，檔案 b.txt 還會存在，只是移除暫存區。
+
+<br>
+
+##### reset - soft
+
+我們指令是 `git reset --soft 24aebo4`：
+
+<br>
+
+{{< image src="/images/git/reset_5.png"  width="800" caption="Git reset soft 模式" src_s="/images/git/reset_5.png" src_l="/images/git/reset_5.png" >}}
+可以看到使用 `--soft` 模式，檔案 b.txt 還會存在，且會在暫存區。
+
+<br>
+
+##### reset - hard
+
+我們指令是 `git reset --hard 24aebo4`：
+
+<br>
+
+{{< image src="/images/git/reset_6.png"  width="800" caption="Git reset hard 模式" src_s="/images/git/reset_6.png" src_l="/images/git/reset_6.png" >}}
+可以看到使用 `--hard` 模式，檔案 b.txt 不見了，所以也不會在暫存區。
+
+<br>
+
+<br>
+
 #### revert
 
 如果想要還原任意 Commit，但又想保留在歷史紀錄，就可以使用：
