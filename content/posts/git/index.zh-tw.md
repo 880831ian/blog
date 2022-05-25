@@ -380,7 +380,7 @@ $ git fetch [簡稱] [分支名稱]
 
 #### clone、pull、fetch 差異
 
-| 差異 | clone | pull | fetch | 
+| 差異 | clone | fetch | pull | 
 | :---: | :---: | :---: | :---: |
 | 功能 | 會把遠端整份專案都下載到本地端 | 只會下載，並不會合併 | 會下載且合併檔案 | 
 | 補充說明 | 適用於專案一開始時使用，如果 clone 之後要再更新，通常是執行 `git fetch` or `git pull` | 假設我遠端叫 `orgin`，當執行時，Git 會比對本地端與遠端，會「下載 `origin` 上有但本地端沒有的檔案下來」| pull 與 fetch 做的事情差不多，多了一個進行合併的功能 | 
@@ -606,3 +606,5 @@ HEAD 本身是一個指標，通常會指向某個本地端分支或是其他 Co
 [Git教學】分支合併: merge 與 rebase 差異](https://www.maxlist.xyz/2020/05/02/git-merge-rebase/)
 
 [Git 面試題](https://gitbook.tw/interview)
+
+[Reset、Revert 跟 Rebase 指令有什麼差別？](https://gitbook.tw/chapters/rewrite-history/reset-revert-and-rebase)
