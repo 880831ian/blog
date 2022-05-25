@@ -271,7 +271,7 @@ ignoreErrors = ["err-missing-comment-accesstoken", "err-missing-oembed-accesstok
       # 應用圖標配置
       [languages.zh-tw.params.app]
         # 當添加到 iOS 主屏幕或者 Android 啟動器時的標題, 覆蓋默認標題
-        title = "PinYi"
+        title = "PinYi 小天地"
         # 是否隱藏網站圖標資源鏈接
         noFavicon = false
         # 更現代的 SVG 網站圖標, 可替代舊的 .png 和 .ico 文件
@@ -435,7 +435,7 @@ ignoreErrors = ["err-missing-comment-accesstoken", "err-missing-oembed-accesstok
     enable = true
     # Custom content (HTML format is supported)
     # 自定義內容 (支持 HTML 格式)
-    custom = ''
+    custom = '此 Blog 多數程式文章都是參考網路大神，加上自己的見解與實作內容編寫而成的筆記，若有侵權，請聯繫我。'
     # whether to show Hugo and theme info
     # 是否顯示 Hugo 和主題信息
     hugo = false
