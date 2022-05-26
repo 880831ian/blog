@@ -1,6 +1,6 @@
 ---
 weight: 4
-title: "如何從頭打造專屬的 GitLab CI/CD 全攻略"
+title: "如何從頭打造專屬的 GitLab CI/CD "
 date: 2022-05-26T10:10:00+08:00
 lastmod: 2022-05-26T10:10:00+08:00
 draft: false
@@ -128,6 +128,14 @@ deploy-prod:
 
 <br>
 
+當然 `.gitlab-ci.yml` 有很多功能，上面只是簡單說明比較常用的，當你不確定自己寫的 CI 設定檔有沒有問題，沒關係就直接推上去，GitLab 還會先檢查一下設定檔是不是正確：
+
+<br>
+
+{{< image src="/images/gitlab-cicd/error.png"  width="600" caption="GitLab CI/CD 檢查格式有錯" src_s="/images/gitlab-cicd/error.png" src_l="/images/gitlab-cicd/error.png" >}}
+
+<br>
+
 當我們將 `.gitlab-ci.yml` 連同專案一起推到 GitLab 上後，我們可以看到它會開始執行我們所寫的腳本，會顯示整個執行過程：
 
 <br>
@@ -168,7 +176,11 @@ deploy-prod:
 * 共享 Runner (Shared Runners)
 * 自架 Runner (Specific Runners)
 
-因為我們本文章以及後續 [部署 Laravel 於 Heroku 搭配 GitLab CI/CD](https://pin-yi.me/laravel-heroku-gitlab-cicd) 文章所使用的平台是 [gitlab.com](https://gitlab.com)，由官方所提供，所以我們直接使用共享 Runner，可以在 repository Settings → CI / CD → Runners 中找到，有不少官方提供的共享 Runner 可以使用，也不需要做任何設定。
+<br>
+
+#### 共享 Runner (Shared Runners)
+
+因為本文章以及後續 [部署 Laravel 於 Heroku 搭配 GitLab CI/CD](https://pin-yi.me/laravel-heroku-gitlab-cicd) 文章所使用的平台是 [gitlab.com](https://gitlab.com)，由官方所提供，所以我們直接使用共享 Runner，可以在 repository Settings → CI / CD → Runners 中找到，有不少官方提供的共享 Runner 可以使用，也不需要做任何設定。
 
 <br>
 
@@ -176,13 +188,86 @@ deploy-prod:
 
 <br>
 
+但也有幾個缺點：
+
+* 因為是共享，所以 Server 資源也會共享，理論上多人使用的速度還是會比較慢。
+* 以及如果是開源專案，是完全免費。但如果是私人專案，一個月有 400 分鐘的 CI 執行時間限制。
+
+<br>
+
+#### 自架 Runner (Specific Runners)
+
+<br>
+
+{{< image src="/images/gitlab-cicd/gitlab-runner.jpg"  width="600" caption="GitLab CI/CD 自架 Runner (圖片來源：[Best Practice for DevOps on GitLab and GCP : GitLab Runner 簡介與安裝 - Day 7](https://ithelp.ithome.com.tw/articles/10214266) )" src_s="/images/gitlab-cicd/gitlab-runner.jpg" src_l="/images/gitlab-cicd/gitlab-runner.jpg" >}}
+
+<br>
+
+GitLab Server 和 GitLab Runner 是 GitLab CI/CD 中不可或缺的兩者，但如果像公司是自架 GitLab，首先要先找一台電腦或是 Server 做為 Runner，那我們這邊以 Docker 作示範。
+
+GitLab Runner 的建議建置步驟如下：
+
+1. 準備/安裝一個 GitLab Server (這邊我們直接使用 [gitlab.com](https://gitlab.com))
+2. 安裝一個與 GitLab Server 對應版本的 GitLab Runner
+3. 在安裝 GitLab Runner 的設備上設定 [Executor](https://docs.gitlab.com/runner/executors/)
+
+<br>
+
+什麼是 Executor ?
+
+如果把 GitLab Runner 當成一個工廠來看，那 Executor 就是工廠內一個又一個的產線，同一個工廠內可以擁有不同種類的產線，Runner 與 Executor 之間的關係就是如此，這些產線會根據專案中 `.gitlab-ci.yml` 的內容，決定產線以及如何產出開發者期望的產品。
+
+另外 Executor 的種類非常多，可以看下方這些圖片，因為我們最常使用的就是 Docker，所以我們等等的範例，也是建置在 Docker 之上！
+
+<br>
+
+{{< image src="/images/gitlab-cicd/executor.png"  width="700" caption="GitLab Runner Executors" src_s="/images/gitlab-cicd/executor.png" src_l="/images/gitlab-cicd/executor.png" >}}
+
+<br>
+
+那我們就開始來實作我們的 GitLab Runner吧：
+
+1. 首先，我們回去剛剛在 repository Settings → CI / CD → Runners 左側的 Specific runners
+
+<br>
+
+{{< image src="/images/gitlab-cicd/specificrunners.png"  width="700" caption="GitLab Runner Executors" src_s="/images/gitlab-cicd/specificrunners.png" src_l="/images/gitlab-cicd/specificrunners.png" >}}
+可以看到一個註冊的 URL 以及 Token，這個我們在設定 Executor 會使用到！
+
+<br>
+
+2. 接下來開始安裝 GitLab Runner，我們使用 Docker，以下是 Docker 執行的指令：本此使用 [gitlab-runner](https://hub.docker.com/layers/gitlab-runner/gitlab/gitlab-runner/alpine-v15.0.0/images/sha256-f44b39d92aa31186b4d6b986d1c3ffbf8ef4228c2e070410a7a417fb0aa159ce?context=explore) 版本是 alpine-v15.0.0
+
+```sh
+docker run -d --name gitlab-runner --restart always \                      
+-v ~/Shared/gitlab-runner/config:/etc/gitlab-runner \
+-v /var/run/docker.sock:/var/run/docker.sock \
+gitlab/gitlab-runner:alpine-v15.0.0
+```
+
+<br>
+
+3. 接著進入容器裡面，使用  `docker exec -it gitlab-runner gitlab-runner register` 來註冊，可以參考下方圖片，輸入 URL 以及 自己的 Token：
+
+{{< image src="/images/gitlab-cicd/register_executor.png"  width="1000" caption="GitLab Runner 註冊 Executors" src_s="/images/gitlab-cicd/register_executor.png" src_l="/images/gitlab-cicd/register_executor.png" >}}
+
+<br>
+
+4. 可以回到 gitlab.com 查看 Specific runners 下方是否多了我們剛剛所註冊的 GitLab-Runner
+
+{{< image src="/images/gitlab-cicd/available_runners.png"  width="700" caption="GitLab Available specific runners" src_s="/images/gitlab-cicd/available_runners.png" src_l="/images/gitlab-cicd/available_runners.png" >}}
+
+<br>
+
+我們已經清楚知道 GitLab CI/CD 的整個流程，那接下來請大家接續看下一篇 [部署 Laravel 於 Heroku 搭配 GitLab CI/CD](https://pin-yi.me/laravel-heroku-gitlab-cicd) ，一起學習吧 GoGo !
+
 <br>
 
 ## 參考資料
 
 [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/)
 
-[Best Practice for DevOps on GitLab and GCP : GitLab CI/CD - Day 6 -](https://ithelp.ithome.com.tw/articles/10214114)
+[Best Practice for DevOps on GitLab and GCP : GitLab CI/CD - Day 6](https://ithelp.ithome.com.tw/articles/10214114)
 
 [Gitlab-CI 入門實作教學 - 單元測試篇](https://nick-chen.medium.com/gitlab-ci-%E5%85%A5%E9%96%80%E7%AD%86%E8%A8%98-%E5%96%AE%E5%85%83%E6%B8%AC%E8%A9%A6%E7%AF%87-156455e2ad9f)
 
