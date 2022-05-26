@@ -62,7 +62,7 @@ GitLab CI/CD 是 GitLab 內建強大的工具，在 GitHub 被稱為 Github Acti
 
 <br>
 
-{{< image src="/images/gitlab-cicd/cicd.jpg"  width="800" caption="GitLab CI/CD (圖片：[GitLab Agile Planning](https://about.gitlab.com/solutions/agile-delivery/))" src_s="/images/gitlab-cicd/cicd.jpg" src_l="/images/gitlab-cicd/cicd.jpg" >}}
+{{< image src="/images/gitlab-cicd/cicd.jpg"  width="800" caption="GitLab CI/CD (圖片來源：[GitLab Agile Planning](https://about.gitlab.com/solutions/agile-delivery/))" src_s="/images/gitlab-cicd/cicd.jpg" src_l="/images/gitlab-cicd/cicd.jpg" >}}
 
 <br>
 
@@ -143,7 +143,6 @@ deploy-prod:
 {{< image src="/images/gitlab-cicd/ci.png"  width="1000" caption="GitLab CI/CD 執行過程" src_s="/images/gitlab-cicd/ci.png" src_l="/images/gitlab-cicd/ci.png" >}}
 
 <br>
-
 
 查看執行的狀態：
 
@@ -259,7 +258,9 @@ gitlab/gitlab-runner:alpine-v15.0.0
 
 <br>
 
-我們已經清楚知道 GitLab CI/CD 的整個流程，那接下來請大家接續看下一篇 [部署 Laravel 於 Heroku 搭配 GitLab CI/CD](https://pin-yi.me/laravel-heroku-gitlab-cicd) ，一起學習吧 GoGo !
+### GitLab CD
+
+GitLab CD 其實就是在 `.gitlab-ci.yml` 後面加上我們要部署的設定，透過 CI 整合完，我們可以設定他要部署到哪一台機器或是設備上這部分就放到下一篇文章直接用實作來告訴大家要怎麼使用吧！，請大家接續看下一篇 [部署 Laravel 於 Heroku 搭配 GitLab CI/CD](https://pin-yi.me/laravel-heroku-gitlab-cicd) ，一起學習吧 GoGo !
 
 <br>
 
