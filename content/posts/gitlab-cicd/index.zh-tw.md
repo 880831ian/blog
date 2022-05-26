@@ -26,7 +26,7 @@ toc:
 
 <br>
 
-那我們就開始囉！此篇會複習一下 CI/CD 並且說明 GitLab CI/CD 運作的原理，關於實作部分會放到下一篇文章 [部署 Laravel 於 Heroku 搭配 GitLab CI/CD](https://pin-yi.me/laravel-heroku-gitlab-cicd)
+那我們就開始囉！此篇會複習一下 CI/CD 並且說明 GitLab CI/CD 運作的原理，關於實作部分會放到下一篇文章 [部署 Laravel 於 Heroku 搭配 GitLab CI/CD](https://pin-yi.me/laravel-gitlab-cicd-heroku/)
 
 對了工商一下，剛剛有提到的 Jenkins 及 Ansible CI/CD 總共有 3 篇文章，還沒看過的可以先飛過去看一下歐 👇👇👇
 
@@ -124,7 +124,7 @@ deploy-prod:
 * stage：他現在要執行的階段，對應到 stages。
 * before_script：可以把它當先需要先執行的指令，後面才會執行主要的 script 指令。所以需要安裝的可以先寫在這裡面。
 * script：主指令，在實際運行的腳本中，通常會見到多行的指令被依序執行。
-* $CI_COMMIT_BRANC：當然 `.gitlab-ci.yml` 檔案也可以帶入參數，這個部分我們留到 [部署 Laravel 於 Heroku 搭配 GitLab CI/CD](https://pin-yi.me/laravel-heroku-gitlab-cicd) 搭配實際操作來說明。
+* $CI_COMMIT_BRANC：當然 `.gitlab-ci.yml` 檔案也可以帶入參數，這個部分我們留到 [部署 Laravel 於 Heroku 搭配 GitLab CI/CD](https://pin-yi.me/laravel-gitlab-cicd-heroku/) 搭配實際操作來說明。
 
 <br>
 
@@ -179,7 +179,7 @@ deploy-prod:
 
 #### 共享 Runner (Shared Runners)
 
-因為本文章以及後續 [部署 Laravel 於 Heroku 搭配 GitLab CI/CD](https://pin-yi.me/laravel-heroku-gitlab-cicd) 文章所使用的平台是 [gitlab.com](https://gitlab.com)，由官方所提供，所以我們直接使用共享 Runner，可以在 repository Settings → CI / CD → Runners 中找到，有不少官方提供的共享 Runner 可以使用，也不需要做任何設定。
+因為本文章以及後續 [部署 Laravel 於 Heroku 搭配 GitLab CI/CD](https://pin-yi.me/laravel-gitlab-cicd-heroku/) 文章所使用的平台是 [gitlab.com](https://gitlab.com)，由官方所提供，所以我們直接使用共享 Runner，可以在 repository Settings → CI / CD → Runners 中找到，有不少官方提供的共享 Runner 可以使用，也不需要做任何設定。
 
 <br>
 
@@ -260,7 +260,7 @@ gitlab/gitlab-runner:alpine-v15.0.0
 
 ### GitLab CD
 
-GitLab CD 其實就是在 `.gitlab-ci.yml` 後面加上我們要部署的設定，透過 CI 整合完，我們可以設定他要部署到哪一台機器或是設備上這部分就放到下一篇文章直接用實作來告訴大家要怎麼使用吧！，請大家接續看下一篇 [部署 Laravel 於 Heroku 搭配 GitLab CI/CD](https://pin-yi.me/laravel-heroku-gitlab-cicd) ，一起學習吧 GoGo !
+GitLab CD 其實就是在 `.gitlab-ci.yml` 後面加上我們要部署的設定，透過 CI 整合完，我們可以設定他要部署到哪一台機器或是設備上這部分就放到下一篇文章直接用實作來告訴大家要怎麼使用吧！，請大家接續看下一篇 [部署 Laravel 於 Heroku 搭配 GitLab CI/CD](https://pin-yi.me/laravel-gitlab-cicd-heroku/) ，一起學習吧 GoGo !
 
 <br>
 
