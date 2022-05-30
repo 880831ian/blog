@@ -116,7 +116,7 @@ RUN apt-get upgrade -y\
 最後使用 `docker-compose` 來執行：
 
 ```sh
-$ docker-compose -d
+$ docker-compose up -d
 ```
 要在 Docker-compose.yaml 資料夾下指令才有用。
 
