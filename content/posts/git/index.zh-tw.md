@@ -577,6 +577,88 @@ $ git revert [HEAD~?]
 
 <br>
 
+### 其他
+
+#### tag
+
+標籤是用於標記特定的點或是提交的歷史，通常會用來標記發佈版本的名稱或是編號，例如：`v1.0`。標籤看起來有點像是分支，但打上標籤的提交是固定的，不能隨意的變更位置。
+
+Git 中有兩種標籤類型：輕量標籤(lightweight tag)和標示標籤(annotated tag)，他們有什麼區別呢？我們分別列出他們不同之處。
+
+<br>
+
+* 輕量標籤(lightweight tag)
+	* 不可以變更的暫時標籤
+	* 可以添加名稱
+
+* 標示標籤(annotated tag)
+	* 可以添加打標籤者的名稱、email、日期
+	* 可以添加名稱
+	* 可以添加註解
+	* 可以添加簽名
+
+<br>
+
+一般情況下，標示標籤都會用在較為重要的提交上，如發布提交可以使用標示標籤來新增註解或簽名，另一方面，輕量標籤通常使用在本機端最為暫時性的使用或是一次性使用。
+
+我們分別來看一下要如何新增輕量標籤(lightweight tag)以及標示標籤(annotated tag)吧！
+
+<br>
+
+我們先隨意在分支上推一次 commit ，如下圖，讓我們等等有 commit 可以來新增標籤：
+
+<br>
+
+{{< image src="/images/git/tag.png"  width="800" caption="在隨意的分支推一個 commit" src_s="/images/git/tag.png" src_l="/images/git/tag.png" >}}
+
+<br>
+
+##### 輕量標籤
+
+使用 `tag` 且不帶其他的參數來下指令：
+
+```sh
+$ git tag lightweight bc4c597
+```
+lightweight 是我們 tag 名稱，bc4c597 是剛剛 commit 的 SHA-1
+
+<br>
+
+接著我們使用 `git show lightweight` 來查看標籤：
+
+<br>
+
+{{< image src="/images/git/tag_1.png"  width="800" caption="輕量標籤 lightweight" src_s="/images/git/tag_1.png" src_l="/images/git/tag_1.png" >}}
+可以發現因為我們使用「輕量標籤」，所以沒有存任何資訊，但可以在圖片第一行最後面看到我們使用的 tag。
+
+<br>
+
+##### 標示標籤
+
+我們一樣使用 `tag`，但後面可以加上 -a -m 參數：
+
+```sh
+$ git tag annotated bc4c597 -a -m "可以備註"
+```
+`-a` 參數是請 Git 幫我們建立有附註的標籤，後面的 `-m` 則是跟我們 commit 一樣可以來輸入訊息
+
+<br>
+
+接著我們使用 `git show annotated` 來查看標籤：
+
+<br>
+
+{{< image src="/images/git/tag_2.png"  width="800" caption="標示標籤 annotated" src_s="/images/git/tag_2.png" src_l="/images/git/tag_2.png" >}}
+可以看到我們使用標示標籤，所以可以查看標籤是誰填寫、他的信箱、填寫時間以及他的備註內容。
+
+<br>
+
+官方文件對於這兩種標籤的說明：
+
+有標示標籤主要用來做像是軟體版號之類的用途，而輕量標籤則是來於個人使用或暫時的標記用途。簡單來說，有標示標籤的好處是有更多關於這張標籤的資訊，假設不是很在乎這些資訊，使用一般的輕量標籤也是沒有問題的！
+
+<br>
+
 ## Git 常見問題
 
 {{< admonition question "Git 裡的 HEAD 是什麼？">}}
@@ -586,11 +668,6 @@ HEAD 本身是一個指標，通常會指向某個本地端分支或是其他 Co
 {{< admonition question "刪除合併後的分支會發生什麼事情嗎？">}}
 分支本身就像指標或是貼紙一樣，貼在某個 Commit 上面，分支並不是目錄或是檔案，所以當我們刪除已經合併過的分支，不會造成檔案或目錄跟著被刪除。
 {{< /admonition >}}
-
-{{< admonition question "什麼是標籤 Tag？">}}
-通常在開發軟體有完成特定的里程碑時，軟體版號 1.0.0 或是 beta、release 之類，就很適合用標籤來標記，例如：`git tag 1.0.0`。
-{{< /admonition >}}
-
 <br>
 
 ## 參考資料
