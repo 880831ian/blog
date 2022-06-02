@@ -34,14 +34,6 @@ When the system detects that the user has left the location area or the 14-day h
 
 <br>
 
-### [jingwei Company HomePage(still under development)](https://jingwei.tw/)
-#### Contracting company homepage development and maintenance
-###### 2021/05/10 - Today
-
-* :(fas fa-building fa-fw): Help Jingwei Engineering company. develop the company's official website,Customize the page style and various functions according to the company's needs.
-
-<br>
-
 ### [Event application system](https://active.cyut.edu.tw/)
 #### Contract school project
 ###### 2020/08 - Today
