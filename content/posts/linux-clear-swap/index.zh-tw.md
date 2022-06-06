@@ -99,16 +99,56 @@ Swap:           15G          0B         15G
 
 <br>
 
-{{< image src="/images/linux-clear-swap/1.png"  width="800" caption="Swap 使用狀態" src_s="/images/linux-clear-swap/1.png" src_l="/images/linux-clear-swap/1.png" >}}
-可以看到我們的 Swap used 是 797M，那我們設定他不能超過 5%，超過就會通知，所以我們接著要把它手動清除。
+{{< image src="/images/linux-clear-swap/before.png"  width="800" caption="Swap 使用 (尚未清除)" src_s="/images/linux-clear-swap/before.png" src_l="/images/linux-clear-swap/before.png" >}}
+可以看到我們的 Swap used 是 797M，我們設定它不能超過 5%，超過就會通知，所以我們要把它手動清除。
+
 <br>
 
+### 先檢查記憶體 available
+
+為什麼要先檢查 available，是因為一開始會使用到 Swap 的原因就是因為應用程式的可用記憶體空間不足，所以現在要清除 Swap 條件就是：Mem 的 available 必須要大於 Swap 的 used 才可以，否則會導致記憶體爆炸 💥
+
+<br>
+
+### 將記憶體資料暫存到硬碟
+
+接下來因為我們要清除 Swap ，所以不能讓資料在寫入記憶體中，所以我們先使用下方指令，讓記憶體的資料暫存到硬碟。
+
+```sh
+sync
+```
+這個指令就是將存於暫存的資料強制寫入到硬碟中，來確保清除時導致資料遺失。
 
 
+### 關閉 Swap，再打開 Swap
+
+沒錯，Swap 的清除就是把他先關掉，再重新打開，他就會自己清除 Swap 的資料了！使用的指令如下：(清除過程需要稍等，讓他進行刪除動作)
+
+```sh
+swapoff -a && swapon -a
+```
+
+<br>
+
+確認都沒問題後，我們就使用 `free` 來重新查看記憶體狀態：
+
+<br>
+
+{{< image src="/images/linux-clear-swap/after.png"  width="800" caption="Swap 使用 (已清除)" src_s="/images/linux-clear-swap/after.png" src_l="/images/linux-clear-swap/after.png" >}}
+可以看到我們清除完 Swap 後，Swap 的 used 已經從 797M 變成 0B。
+
+<br>
+
+{{< admonition tip "小提醒">}}
+如果碰到執行 `swapoff -a && swapon -a` 出現 `swapoff: Not superuser.`，只需要在指令前面加上 `sudo` 就可以了！
+{{< /admonition >}}
 
 <br>
 
 ## 參考資料
 
 [Linux內存、Swap、Cache、Buffer詳細解析](https://os.51cto.com/article/636622.html)
+
 [linux free 命令下free/available區別](https://www.796t.com/content/1545715382.html)
+
+[釋放linux的swap記憶體](https://www.796t.com/article.php?id=207781)
