@@ -1,6 +1,6 @@
 ---
 weight: 4
-title: "Google Cloud Platform (GCP) 百科全書  - Google Compute Engine [ EP.2 ]"
+title: "Google Cloud Platform (GCP) 百科全書  - Compute Engine [ EP.2 ]"
 date: 2022-06-29T10:00:00+08:00
 lastmod: 2022-06-29T10:00:00+08:00
 draft: false
