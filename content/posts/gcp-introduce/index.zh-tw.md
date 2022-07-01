@@ -47,6 +47,9 @@ toc:
 
 [Google Cloud Platform (GCP) 百科全書 - IAM 與管理 [ EP.1 ]](https://pin-yi.me/gcp-iam/)
 
+[Google Cloud Platform (GCP) 百科全書 - Compute Engine [ EP.2 ]](https://pin-yi.me/gcp-gce/)
+
+
 <br>
 
 ## 參考資料
