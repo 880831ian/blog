@@ -13,7 +13,7 @@ resources:
 - name: "featured-image-preview"
   src: "featured-image-preview.webp"
 
-tags: ["GCP", "GKE", "K8s"]
+tags: ["GCP", "IAM"]
 categories: ["codenotes"]
 
 lightgallery: true
