@@ -91,7 +91,7 @@ gcloud source repos create <repo name>
 
 <br>
 
-## 將程式碼新增至存放區中
+### 將程式碼新增至存放區中
 
 1. 我們要在這一步來設定鏡像 (mirror)，首先我們看剛剛上面建立好的 Source Repositories，其中有一個**手動產生的憑證**，點選 **產生及儲存 Git 憑證**
 	
@@ -110,6 +110,99 @@ gcloud source repos create <repo name>
 <br>
 
 3. 接著把藍色框框內的輸入到終端機內
+
+<br>	
+
+{{< image src="/images/gcp-gcsr/7.png"  width="800" caption="Configure Git" src_s="/images/gcp-gcsr/7.png" src_l="/images/gcp-gcsr/7.png" >}}
+
+<br>	
+
+4. 接著請複製以下指令貼到終端機內，會生成憑證密碼：
+
+```sh
+grep 'source.developers.google.com' ~/.gitcookies | tail -1 | cut -d= -f2
+```
+
+<br>	
+
+{{< image src="/images/gcp-gcsr/8.png"  width="800" caption="生成憑證密碼" src_s="/images/gcp-gcsr/8.png" src_l="/images/gcp-gcsr/8.png" >}}
+
+<br>	
+
+5. 接著請複製以下指令貼到終端機內，將用戶名存儲在 CSR_USER 環境變量中：
+
+```sh
+CSR_USER=$(grep 'source.developers.google.com' ~/.gitcookies | \
+    tail -1 | cut -d$'\t' -f7 | cut -d= -f1)
+```
+
+<br>	
+
+{{< image src="/images/gcp-gcsr/9.png"  width="800" caption="用戶名存儲在 CSR_USER 環境變量中" src_s="/images/gcp-gcsr/9.png" src_l="/images/gcp-gcsr/9.png" >}}
+
+<br>	
+
+6. 接著請複製以下指令貼到終端機內，將 GCP 存儲庫的 URL 存儲在 CSR_REPO 環境變量中 (repo name 要改成你在 gcp 上面的 repo)：
+
+```sh
+CSR_REPO=$(gcloud source repos describe <repo name> --format="value(url)")
+```
+
+<br>	
+
+{{< image src="/images/gcp-gcsr/10.png"  width="800" caption="將 GCP 存儲庫的 URL 存儲在 CSR_REPO 環境變量中" src_s="/images/gcp-gcsr/10.png" src_l="/images/gcp-gcsr/10.png" >}}
+
+<br>	
+
+7. 接著請複製以下指令貼到終端機內，將存儲庫的 URL（包括用戶名）印到終端機上：
+
+```sh
+echo $CSR_REPO | sed "s/:\/\//:\/\/${CSR_USER}@/"
+```
+
+<br>	
+
+{{< image src="/images/gcp-gcsr/11.png"  width="800" caption="存儲庫的 URL（包括用戶名）印到終端機上" src_s="/images/gcp-gcsr/11.png" src_l="/images/gcp-gcsr/11.png" >}}
+
+<br>
+
+經過上面操作，我們可以在第 4 步驟拿到密碼，以及在第 7 步驟拿到完整的 GCP URL，接著我們要到 GItLab Mirror 來設定鏡像。
+
+<br>
+
+### 到 GitLab Mirror 設定鏡像
+
+1. 先從右側 muen > 選擇 **Settings** > 點選 **Repository**，找到 **Mirroring repositories**
+
+<br>	
+
+{{< image src="/images/gcp-gcsr/12.png"  width="800" caption=" GitLab Mirror 設定鏡像" src_s="/images/gcp-gcsr/12.png" src_l="/images/gcp-gcsr/12.png" >}}
+
+<br>
+
+2. 將剛剛拿到的 URL 以及密碼各別輸入 Git repository URL 以及 Password，記得要選擇 Mirror direction，因為我們是要將 gitlab 的鏡像到 GCP 的 Cloud Source Repositories，所以我們要選擇 **PUSH**，最後按下 **Mirror repository**：
+
+<br>	
+
+{{< image src="/images/gcp-gcsr/13.png"  width="800" caption=" GitLab Mirror 設定鏡像" src_s="/images/gcp-gcsr/13.png" src_l="/images/gcp-gcsr/13.png" >}}
+
+<br>
+
+如果沒有跳出錯誤，基本上是沒有問題了！
+
+<br>	
+
+{{< image src="/images/gcp-gcsr/14.png"  width="800" caption=" GitLab Mirror 檢查" src_s="/images/gcp-gcsr/14.png" src_l="/images/gcp-gcsr/14.png" >}}
+
+<br>
+
+3. 就可以試著在 gitlab 上面推程式，看看有沒有跑到 Cloud Source Repositories 上面囉！
+
+<br>	
+
+{{< image src="/images/gcp-gcsr/15.png"  width="800" caption=" GitLab 推程式測試" src_s="/images/gcp-gcsr/15.png" src_l="/images/gcp-gcsr/15.png" >}}
+
+<br>
 
 <br>
 
