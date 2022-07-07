@@ -51,7 +51,9 @@ toc:
 
 [Google Cloud Platform (GCP) 百科全書 - Cloud Source Repositories [ EP.3 ]](https://pin-yi.me/gcp-gcsr/)
 
-[Google Cloud Platform (GCP) 百科全書 - Cloud Build [ EP.4 ]
+[Google Cloud Platform (GCP) 百科全書 - Container Registry [ EP.4 ]](https://pin-yi.me/gcp-gcr/)
+
+[Google Cloud Platform (GCP) 百科全書 - Cloud Build [ EP.5 ]
 ](https://pin-yi.me/gcp-gcb/)
 
 <br>
