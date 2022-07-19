@@ -1,4 +1,4 @@
-baseURL = "https://pin-yi.me"
+baseURL = "https://blog.pin-yi.me"
 # [en, zh-tw, fr, pl, ...] determines default content language
 # [en, zh-tw, fr, pl, ...] 設置默認的語言
 defaultContentLanguage = "zh-tw"
