@@ -5,7 +5,7 @@ date: 2022-06-29T10:00:00+08:00
 lastmod: 2022-06-29T10:00:00+08:00
 draft: false
 author: "PinYi"
-authorLink: ""
+authorLink: "https://pin-yi.me"
 description: ""
 resources:
 - name: "featured-image"
@@ -22,7 +22,7 @@ toc:
   auto: false
 ---
 
-本篇是我們進入 GCP 的第二篇文章，詳細的文章列表大家可以到[這一篇查看](https://pin-yi.me/gcp-introduce/) ～ 跟大家介紹一下今天的主題 Google Compute Engine(GCE)，GCE 是 Google Cloud 上的基礎架構服務 (IaaS)，該平台可以提供大規模的虛擬機器以及相關的基礎建設 (包含硬碟、網路、附載平衡器... 等等)來建置及運作您的服務，那我們可以將 GCE 服務的主要功能劃分成以下幾點：
+本篇是我們進入 GCP 的第二篇文章，詳細的文章列表大家可以到[這一篇查看](https://blog.pin-yi.me/gcp-introduce/) ～ 跟大家介紹一下今天的主題 Google Compute Engine(GCE)，GCE 是 Google Cloud 上的基礎架構服務 (IaaS)，該平台可以提供大規模的虛擬機器以及相關的基礎建設 (包含硬碟、網路、附載平衡器... 等等)來建置及運作您的服務，那我們可以將 GCE 服務的主要功能劃分成以下幾點：
 
 <br>
 
