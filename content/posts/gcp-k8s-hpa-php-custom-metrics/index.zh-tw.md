@@ -26,7 +26,7 @@ toc:
 	
 不知道什麼是 HorizontalPodAutoscaler 嗎？可以先查看：
 
-* [Kubernetes (K8s) HorizontalPodAutoscaler (HPA) 原理與實作](https://pin-yi.me/k8s-hpa/)
+* [Kubernetes (K8s) HorizontalPodAutoscaler (HPA) 原理與實作](https://blog.pin-yi.me/k8s-hpa/)
 
 <br>
 
@@ -42,7 +42,7 @@ HorizontalPodAutoscaler 會先訪問 K8s 的 API，並向 API 取得指標資料
 
 <br>
 
-大致了解後，我們就來進入今天的重點，也就是透過自定義化 PHP 的指標來讓 HorizontalPodAutoscaler 進行擴縮，這次使用的平台是 Google Cloud Platform，前面介紹 GCP 服務的大家可以參考 [Google Cloud Platform (GCP) 百科全書 - 介紹與開頭 [ EP.0 ]](https://pin-yi.me/gcp-introduce/)，我們這邊就直接跳到程式碼與操作部分。
+大致了解後，我們就來進入今天的重點，也就是透過自定義化 PHP 的指標來讓 HorizontalPodAutoscaler 進行擴縮，這次使用的平台是 Google Cloud Platform，前面介紹 GCP 服務的大家可以參考 [Google Cloud Platform (GCP) 百科全書 - 介紹與開頭 [ EP.0 ]](https://blog.pin-yi.me/gcp-introduce/)，我們這邊就直接跳到程式碼與操作部分。
 
 <br>
 
