@@ -54,8 +54,8 @@ Kubernetes 將水平 Pod 自動擴縮定義為一個間歇運行的控制迴路�
 	
 有關於其他 Kubernetes 觀念部分，可以先查看：
 
-* Kubernetes : [Kubernetes (K8s) 介紹 - 基本](https://pin-yi.me/k8s/)
-* kubernetes : [Kubernetes (K8s) 介紹 - 進階 (Service、Ingress、StatefulSet、Deployment、ReplicaSet、ConfigMap)](https://pin-yi.me/k8s-advanced/)
+* Kubernetes : [Kubernetes (K8s) 介紹 - 基本](https://blog.pin-yi.me/k8s/)
+* kubernetes : [Kubernetes (K8s) 介紹 - 進階 (Service、Ingress、StatefulSet、Deployment、ReplicaSet、ConfigMap)](https://blog.pin-yi.me/k8s-advanced/)
 
 <br>
 
