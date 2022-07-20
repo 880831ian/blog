@@ -5,7 +5,7 @@ date: 2022-06-29T10:00:00+08:00
 lastmod: 2022-06-29T10:00:00+08:00
 draft: false
 author: "PinYi"
-authorLink: ""
+authorLink: "https://pin-yi.me"
 description: ""
 resources:
 - name: "featured-image"
@@ -22,7 +22,7 @@ toc:
   auto: false
 ---
 
-本篇是我們進入 GCP 的第一篇文章，詳細的文章列表大家可以到[這一篇查看](https://pin-yi.me/gcp-introduce/) ～ IAM 的全名是 Identity and Access Management，當我們藉由 IAM，可以授與特定 Google Cloud 資源的 **精細** 訪問權限，並防止對其他資源的訪問。疑！？為什麼是精細？我們接著看下去，我們可以採用最小權限安全原則，該原則要求任何人都不應擁有超出實際所需的權限。
+本篇是我們進入 GCP 的第一篇文章，詳細的文章列表大家可以到[這一篇查看](https://blog.pin-yi.me/gcp-introduce/) ～ IAM 的全名是 Identity and Access Management，當我們藉由 IAM，可以授與特定 Google Cloud 資源的 **精細** 訪問權限，並防止對其他資源的訪問。疑！？為什麼是精細？我們接著看下去，我們可以採用最小權限安全原則，該原則要求任何人都不應擁有超出實際所需的權限。
 
 <br>
 
