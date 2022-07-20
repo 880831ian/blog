@@ -5,7 +5,7 @@ date: 2022-06-28T15:00:00+08:00
 lastmod: 2022-06-28T15:00:00+08:00
 draft: false
 author: "PinYi"
-authorLink: ""
+authorLink: "https://pin-yi.me"
 description: ""
 resources:
 - name: "featured-image"
@@ -45,16 +45,19 @@ toc:
 
 ## 文章連結
 
-[Google Cloud Platform (GCP) 百科全書 - IAM 與管理 [ EP.1 ]](https://pin-yi.me/gcp-iam/)
+[Google Cloud Platform (GCP) 百科全書 - IAM 與管理 [ EP.1 ]](https://blog.pin-yi.me/gcp-iam/)
 
-[Google Cloud Platform (GCP) 百科全書 - Compute Engine [ EP.2 ]](https://pin-yi.me/gcp-gce/)
+[Google Cloud Platform (GCP) 百科全書 - Compute Engine [ EP.2 ]](https://blog.pin-yi.me/gcp-gce/)
 
-[Google Cloud Platform (GCP) 百科全書 - Cloud Source Repositories [ EP.3 ]](https://pin-yi.me/gcp-gcsr/)
+[Google Cloud Platform (GCP) 百科全書 - Cloud Source Repositories [ EP.3 ]](https://blog.pin-yi.me/gcp-gcsr/)
 
-[Google Cloud Platform (GCP) 百科全書 - Container Registry [ EP.4 ]](https://pin-yi.me/gcp-gcr/)
+[Google Cloud Platform (GCP) 百科全書 - Container Registry [ EP.4 ]](https://blog.pin-yi.me/gcp-gcr/)
 
 [Google Cloud Platform (GCP) 百科全書 - Cloud Build [ EP.5 ]
-](https://pin-yi.me/gcp-gcb/)
+](https://blog.pin-yi.me/gcp-gcb/)
+
+[Google Cloud Platform (GCP) 百科全書 - Kubernetes Engine [ EP.6 ]
+](https://blog.pin-yi.me/gcp-gke/)
 
 <br>
 
