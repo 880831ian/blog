@@ -5,7 +5,7 @@ date: 2022-07-03T17:02:00+08:00
 lastmod: 2022-07-03T12:17:00+08:00
 draft: false
 author: "PinYi"
-authorLink: ""
+authorLink: "https://pin-yi.me"
 description: ""
 resources:
 - name: "featured-image"
@@ -22,7 +22,7 @@ toc:
   auto: false
 ---
 
-本篇是我們進入 GCP 的第四篇文章，詳細的文章列表大家可以到[這一篇查看](https://pin-yi.me/gcp-introduce/) ～ 跟大家介紹一下今天的主題 Container Registry，Container Registry 是儲存、管理和保護 Docker 容器映像檔的存放區，可以讓團隊透過同一項服務服務集中管理 Docker 映像檔、也可以執行安全漏洞分析，還能透過精密的存取權管理機制，來決定誰可以存取哪些內容。簡單來說他就是一個讓我們存放 Docker 映像檔的地方，他有以下幾個特點：
+本篇是我們進入 GCP 的第四篇文章，詳細的文章列表大家可以到[這一篇查看](https://blog.pin-yi.me/gcp-introduce/) ～ 跟大家介紹一下今天的主題 Container Registry，Container Registry 是儲存、管理和保護 Docker 容器映像檔的存放區，可以讓團隊透過同一項服務服務集中管理 Docker 映像檔、也可以執行安全漏洞分析，還能透過精密的存取權管理機制，來決定誰可以存取哪些內容。簡單來說他就是一個讓我們存放 Docker 映像檔的地方，他有以下幾個特點：
 
 <br>
 
@@ -33,7 +33,7 @@ toc:
 
 <br>
 
-2. 自動建立及部署映像檔：在您修訂 Cloud Source Repositories 中的程式碼時，系統會自動建立映像檔並推送至私人註冊資料庫。您可以輕鬆設定持續整合/持續推送軟體更新管道，並整合至 Cloud Build，或是直接將管道部署至 Google Kubernetes Engine、App Engine、Cloud Functions 或 Firebase。(這個就是我們在[下一篇文章](https://pin-yi.me/gcp-gcb/)會使用到的功能)
+2. 自動建立及部署映像檔：在您修訂 Cloud Source Repositories 中的程式碼時，系統會自動建立映像檔並推送至私人註冊資料庫。您可以輕鬆設定持續整合/持續推送軟體更新管道，並整合至 Cloud Build，或是直接將管道部署至 Google Kubernetes Engine、App Engine、Cloud Functions 或 Firebase。(這個就是我們在[下一篇文章](https://blog.pin-yi.me/gcp-gcb/)會使用到的功能)
 
 <br>
 
@@ -61,7 +61,7 @@ toc:
 
 <br>
 
-我們可以延續上一篇文章 [Cloud Source Repositories](https://pin-yi.me/gcp-gcsr/) 來說明上面圖片，一開始先 commit 到 GCP 上，也可以把它當成 Cloud Source Repositories，就著透過會透過[下一篇要講的 Cloud Build](https://pin-yi.me/gcp-gcb) 來建置，並且掃描，如果沒有問題就會 Pubish 到 Container Registry 存放囉～
+我們可以延續上一篇文章 [Cloud Source Repositories](https://blog.pin-yi.me/gcp-gcsr/) 來說明上面圖片，一開始先 commit 到 GCP 上，也可以把它當成 Cloud Source Repositories，就著透過會透過[下一篇要講的 Cloud Build](https://blog.pin-yi.me/gcp-gcb) 來建置，並且掃描，如果沒有問題就會 Pubish 到 Container Registry 存放囉～
 
 <br>
 
@@ -89,7 +89,7 @@ toc:
 
 <br>
 
-那我們下一篇會整合 [Cloud Source Repositories](https://pin-yi.me/gcp-gcsr/) 、[Compute Engine](https://pin-yi.me/gcp-gce/)、[Container Registry](https://pin-yi.me/gcp-gcr/)，大家可以期待一下 🥰
+那我們下一篇會整合 [Cloud Source Repositories](https://blog.pin-yi.me/gcp-gcsr/) 、[Compute Engine](https://blog.pin-yi.me/gcp-gce/)、[Container Registry](https://blog.pin-yi.me/gcp-gcr/)，大家可以期待一下 🥰
 
 <br>
 
