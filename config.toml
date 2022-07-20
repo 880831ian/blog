@@ -90,7 +90,7 @@ ignoreErrors = ["err-missing-comment-accesstoken", "err-missing-oembed-accesstok
         pre = ""
         post = ""
         name = "About Me"
-        url = "/about/"
+        url = "https://pin-yi.me"
         title = ""
         weight = 6
     [languages.en.params]
@@ -260,7 +260,7 @@ ignoreErrors = ["err-missing-comment-accesstoken", "err-missing-oembed-accesstok
         pre = ""
         post = ""
         name = "關於我"
-        url = "/about/"
+        url = "https://pin-yi.me"
         title = ""
         weight = 6
     [languages.zh-tw.params]
