@@ -265,13 +265,13 @@ ignoreErrors = ["err-missing-comment-accesstoken", "err-missing-oembed-accesstok
         weight = 6
     [languages.zh-tw.params]
       # 網站描述
-      description = "這裡是關於一個菜鳥工程師斜槓Youtuber的小天地"
+      description = "這裡是關於一個菜鳥工程師斜槓Youtuber的部落格"
       # 網站關鍵詞
       keywords = ["CodeNotes", "Engineer", "Youtuber"]
       # 應用圖標配置
       [languages.zh-tw.params.app]
         # 當添加到 iOS 主屏幕或者 Android 啟動器時的標題, 覆蓋默認標題
-        title = "PinYi 小天地"
+        title = "PinYi 部落格"
         # 是否隱藏網站圖標資源鏈接
         noFavicon = false
         # 更現代的 SVG 網站圖標, 可替代舊的 .png 和 .ico 文件
@@ -354,7 +354,7 @@ ignoreErrors = ["err-missing-comment-accesstoken", "err-missing-oembed-accesstok
           # 主頁顯示的網站標題 (支持 HTML 格式)
           title = "PinYi"
           # 主頁顯示的網站副標題 (支持 HTML 格式)
-          subtitle = "你好 大家好<br>這裡是關於一個菜鳥工程師斜槓Youtuber的小天地"
+          subtitle = "你好 大家好<br>這裡是關於一個菜鳥工程師斜槓Youtuber的部落格"
           # 是否為副標題顯示打字機動畫
           typeit = true
           # 是否顯示社交賬號
@@ -415,7 +415,7 @@ ignoreErrors = ["err-missing-comment-accesstoken", "err-missing-oembed-accesstok
       logo = ""
       # title name
       # 標題名稱
-      name = "PinYi 小天地"
+      name = "PinYi 部落格"
       # you can add extra information before the name (HTML format is supported), such as icons
       # 你可以在名稱 (允許 HTML 格式) 之前添加其他信息, 例如圖標
       pre = ""
