@@ -70,21 +70,13 @@ ignoreErrors = ["err-missing-comment-accesstoken", "err-missing-oembed-accesstok
         title = ""
         weight = 3
       [[languages.en.menu.main]]
-        identifier = "sideproject"
-        pre = ""
-        post = ""
-        name = "Side Project"
-        url = "/sideproject/"
-        title = ""
-        weight = 4
-      [[languages.en.menu.main]]
         identifier = "youtube"
         pre = ""
         post = ""
         name = "YouTube Video"
         url = "/categories/youtube/"
         title = ""
-        weight = 5
+        weight = 4
       [[languages.en.menu.main]]
         identifier = "about"
         pre = ""
@@ -92,7 +84,7 @@ ignoreErrors = ["err-missing-comment-accesstoken", "err-missing-oembed-accesstok
         name = "About Me"
         url = "https://pin-yi.me"
         title = ""
-        weight = 6
+        weight = 5
     [languages.en.params]
       # site description
       description = "Here's a little world about a rookie engineer and Youtuber"
@@ -138,9 +130,9 @@ ignoreErrors = ["err-missing-comment-accesstoken", "err-missing-oembed-accesstok
       [languages.en.params.about]
         # whether to enable profile on about page
         # depends on .Site.Params.home.profile.enable
-        enable = true
+        enable = false
         # whether to enable param layout
-        param = true
+        param = false
         # title for param layout
         paramTitle = "Personal Information"
         # general description of your site
@@ -227,7 +219,7 @@ ignoreErrors = ["err-missing-comment-accesstoken", "err-missing-oembed-accesstok
         identifier = "categories"
         pre = ""
         post = ""
-        name = "分類"
+        name = "文章分類"
         url = "/categories/"
         title = ""
         weight = 2
@@ -235,18 +227,10 @@ ignoreErrors = ["err-missing-comment-accesstoken", "err-missing-oembed-accesstok
         identifier = "tags"
         pre = ""
         post = ""
-        name = "標籤"
+        name = "文章標籤"
         url = "/tags/"
         title = ""
         weight = 3
-      [[languages.zh-tw.menu.main]]
-        identifier = "sideproject"
-        pre = ""
-        post = ""
-        name = "作品集"
-        url = "/sideproject/"
-        title = ""
-        weight = 4
       [[languages.zh-tw.menu.main]]
         identifier = "youtube"
         pre = ""
@@ -254,7 +238,7 @@ ignoreErrors = ["err-missing-comment-accesstoken", "err-missing-oembed-accesstok
         name = "YouTube 影片"
         url = "/categories/youtube/"
         title = ""
-        weight = 5
+        weight = 4
       [[languages.zh-tw.menu.main]]
         identifier = "about"
         pre = ""
@@ -262,7 +246,7 @@ ignoreErrors = ["err-missing-comment-accesstoken", "err-missing-oembed-accesstok
         name = "關於我"
         url = "https://pin-yi.me"
         title = ""
-        weight = 6
+        weight = 5
     [languages.zh-tw.params]
       # 網站描述
       description = "這裡是關於一個菜鳥工程師斜槓Youtuber的部落格"
@@ -308,9 +292,9 @@ ignoreErrors = ["err-missing-comment-accesstoken", "err-missing-oembed-accesstok
       [languages.zh-tw.params.about]
         # 是否啟用關於頁面的配置文件
         # 依賴於取決於 .Site.Params.home.profile.enable
-        enable = true
+        enable = false
         # 是否啟用參數佈局
-        param = true
+        param = false
         # 參數佈局的標題
         paramTitle = "個人資訊"
         # 您網站的一般描述
