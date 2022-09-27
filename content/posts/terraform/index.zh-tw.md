@@ -2,7 +2,7 @@
 weight: 4
 title: "什麼是 IaC ? Terraform 又是什麼？"
 date: 2022-09-26T15:58:00+08:00
-lastmod: 2022-09-26T15:58:00+08:00
+lastmod: 2022-09-27T17:14:00+08:00
 draft: false
 author: "PinYi"
 authorLink: "https://pin-yi.me"
@@ -57,13 +57,13 @@ IaC 的工具有很多種，接著我們就來介紹其中一個工具 - Terrafo
 
 1. Terraform 可以管理多個雲平台上的基礎架構
 2. 使用人類可讀的配置語言來幫助我們快速編寫基礎架構代碼
-3. 可以將配置提交給版本控制，以安全地在基礎架構上進行協作
+3. 可以將配置提交給版本控制，安全地在基礎架構上進行協作
 
 <br>
 
 ### 管理任何基礎設施
 
-Terraform 提供插件讓 Terraform 可以通過其 API 與雲平台和其他服務進行交互。HashiCorp 和 Terraform 社區編寫了 1,000 多個提供商來管理像 AWS、Azure、GCP、Kubernetes、Helm、GitHub 等資源，可以到 [Terraform Registry](https://registry.terraform.io/browse/providers?_gl=1*a2tlfj*_ga*MTc0NDA4ODQ5MC4xNjYzOTI0ODI5*_ga_P7S46ZYEKW*MTY2NDE4MjM4NC40LjEuMTY2NDE4Mjc5Ny4wLjAuMA..) 查看更多平台或服務的提供者，當然如果沒有找到想要的提供者，也可以自己編寫自己的套件。
+Terraform 提供插件讓 Terraform 可以通過其 API 與雲平台和其他服務進行交互。HashiCorp 和 Terraform 社區編寫了 2,500 多個提供商來管理像 AWS、Azure、GCP、Kubernetes、Helm、GitHub 等資源，可以到 [Terraform Registry](https://registry.terraform.io/browse/providers?_gl=1*a2tlfj*_ga*MTc0NDA4ODQ5MC4xNjYzOTI0ODI5*_ga_P7S46ZYEKW*MTY2NDE4MjM4NC40LjEuMTY2NDE4Mjc5Ny4wLjAuMA..) 查看更多平台或服務的提供者，當然如果沒有找到想要的提供者，也可以自己編寫自己的套件。
 
 <br>
 
@@ -117,6 +117,137 @@ brew install hashicorp/tap/terraform
 
 <br>
 
+1. 首先，我們必須要先安裝好 Docker，下載 [Mac 版 Docker 桌面](https://docs.docker.com/desktop/install/mac-install/)
+2. 建立一個資料夾，並進入該資料夾內
+3. 將以下 Terraform 配置文件貼到檔案中，並取名 `main.tf` ([同步到 GitHub 需要程式碼的可以前往查看](https://github.com/880831ian/terraform/tree/master/docker_nginx))
+
+```
+terraform {
+  required_providers {
+    docker = {
+      source  = "kreuzwerker/docker"
+      version = "~> 2.13.0"
+    }
+  }
+}
+
+provider "docker" {}
+
+resource "docker_image" "nginx" {
+  name         = "nginx:1.23"
+  keep_locally = false
+}
+
+resource "docker_container" "nginx" {
+  image = docker_image.nginx.name
+  name  = "nginx"
+  ports {
+    internal = 80
+    external = 8000
+  }
+}
+```
+(以上程式碼來自官網 [安裝 Terraform#快速入門](https://learn.hashicorp.com/tutorials/terraform/install-cli?in=terraform/aws-get-started#quick-start-tutorial) 加上小修改)
+
+<br>
+
+先來簡單說明一下 Terraform 程式碼格式，Terraform 的檔案副檔名是 `*.tf`，而基本的一個 Terraform 配置是透過叫做 HCL 語言撰寫。
+
+`provider` 是決定要對哪一個平台或是提供商進行操作，`resource` 的欄位我們用下方程式來做說明：
+
+```
+resource 雲端資源名稱 自定義的名稱 {
+ 	 屬性 = 值
+}
+```
+
+這邊的雲端資源名稱是固定的，所以不能隨意更改，要依照你要使用的提供商所給的資源來做設定！
+
+<br>
+
+所以我們已上面的 Docker 配置好 NGINX 伺服器為例，provider 我們這次使用的是 `docker`， resource 我們可以拆開來寫，
+
+像是第一個 resource `docker_image` 我們幫他取叫 nginx，裡面就是放有關 image 的設定，詳細的 image 設定可以參考 [Resource (docker_image)](https://registry.terraform.io/providers/kreuzwerker/docker/latest/docs/resources/image)，
+
+第二個 resource `docker_container` 一樣叫 nginx，裡面用的 image 是拿前面的 docker_image resource name 來使用，一樣詳細可以參考 [Resource (docker_container)](https://registry.terraform.io/providers/kreuzwerker/docker/latest/docs/resources/container)。
+
+<br>
+
+接著有幾個指令要帶大家認識：
+
+
+* `terraform init`：初始化項目，下載 tf 檔案中所需要的外掛套件
+* `terraform plan`：會產生一份執行計劃。上面會寫著它將會做哪些事，你可以驗證是否符合你預期的設計
+* `terraform apply`：實際運作，把基礎架構建置完成。在完成之後，會把目前的狀態儲存到一份檔案中
+* `terraform destroy`：會銷毀用 Terraform 起的服務
+
+附上懶人指令
+```
+alias ti='terraform init'
+alias ta='terraform apply'
+alias tp='terraform plan'
+alias td='terraform destroy'
+```
+
+<br>
+
+有上面的指令後，我們來實際操作看看：
+
+<br>
+
+1. 首先到該 `main.tf` 檔案目錄下，使用 `terraform apply` 來運作看看：
+
+<br>
+
+{{< image src="/images/terraform/2.png"  width="900" caption="無法直接執行 apply " src_s="/images/terraform/2.png" src_l="/images/terraform/2.png" >}}
+
+<br>
+
+會發現沒有辦法直接用 `terraform apply` 指令來建置服務，我們看一下他提示的說明，他說需要先進行初始化才可以執行！所以我們的建置流程是先 init --> apply
+
+<br>
+
+2. 我們先執行 `terraform init`，可以看到他會下載 tf 檔案中所需要的外掛套件 (docker)
+
+<br>
+
+{{< image src="/images/terraform/3.png"  width="800" caption="terraform init" src_s="/images/terraform/3.png" src_l="/images/terraform/3.png" >}}
+
+<br>
+
+3. 接著我們使用 `terraform plan` 來查看我們的計劃，可以看到他會列出我們所寫的 tf 裡面有用到的 resource，除了我們有設定的屬性，其他的屬性也會顯示出來，可以更方便地讓我們知道這個 resource 有哪些屬性可以設定
+
+<br>
+
+{{< image src="/images/terraform/4.png"  width="700" caption="terraform plan" src_s="/images/terraform/4.png" src_l="/images/terraform/4.png" >}}
+
+<br>
+
+4. 最後我們檢查都沒有問題，就可以使用 `terraform apply` 來建置，apply 其實跟 plan 一樣都會先讓我們看一下計劃，但會跳出詢問是否要執行，除非你輸入 `yes`，否則就跟 plan 單純顯示計劃內容，最後我們就可以看到他成功在 docker 上面建立 nginx 服務
+
+<br>
+
+{{< image src="/images/terraform/5.png"  width="800" caption="terraform apply" src_s="/images/terraform/5.png" src_l="/images/terraform/5.png" >}}
+{{< image src="/images/terraform/6.png"  width="800" caption="查看 docker nginx 以及檢查其服務" src_s="/images/terraform/6.png" src_l="/images/terraform/6.png" >}}
+
+<br>
+
+5. 另外，當你想要移除服務時，可以使用 `terraform destroy` 來將服務給移除
+
+<br>
+
+{{< image src="/images/terraform/7.png"  width="700" caption="terraform destroy" src_s="/images/terraform/7.png" src_l="/images/terraform/7.png" >}}
+
+<br>
+
+## 後續文章
+
+經過上面的步驟，了解 IaC Infrastructure as Code (基礎設施即代碼) 以及實際去使用 Terraform 去建置 docker 的 nginx 服務，之後還會更新有關 Terraform 的文章，會不定時更新此篇文章的後續文章連結區，大家有興趣可以多留意歐！
+
+<br>
+
 ## 參考資料
 
 [初探 Infrastructure as Code 工具 Terraform vs Pulumi](https://blog.wu-boy.com/2021/02/introduction-to-infrastructure-as-code-terraform-vs-pulumi/)
+
+[今晚我想認識 Terraform](https://ithelp.ithome.com.tw/articles/10233759)
