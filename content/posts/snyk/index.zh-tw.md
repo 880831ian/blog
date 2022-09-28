@@ -155,17 +155,14 @@ brew install snyk
 
 ### Iac
 
-Snyk 的基礎設施即代碼 (IaC) 可幫助開發人員編寫安全的應用程序配置，修正錯誤的 Configuration，並且支援多種格式：
+Snyk 的基礎設施即代碼 (IaC) 可幫助開發人員編寫安全的基礎設施配置，預防錯誤的設定產生，並且支援多種格式：
 
 * K8s YAML
 * HashiCorp Terraform
 * AWS CloudFormation
 * Azure Resource Manager (ARM)
 
-
-
 <br>
-
 
 ## 參考資料
 
@@ -173,3 +170,5 @@ Snyk 的基礎設施即代碼 (IaC) 可幫助開發人員編寫安全的應用�
 ](https://hackmd.io/@DevOpsDay/2022/%2F%40DevOpsDay%2FHkm1iY6xi)
 
 [身為DevOps工程師，使用Snyk掃描漏洞也是很正常的](https://barry-cheng.medium.com/%E8%BA%AB%E7%82%BAdevops%E5%B7%A5%E7%A8%8B%E5%B8%AB-%E4%BD%BF%E7%94%A8snyk%E6%8E%83%E6%8F%8F%E6%BC%8F%E6%B4%9E%E4%B9%9F%E6%98%AF%E5%BE%88%E6%AD%A3%E5%B8%B8%E7%9A%84-d7d8f2ad2304)
+
+[在你的DevOps中加入一點Security — GitLab CI/CD with Snyk (講師簡報)](https://s.itho.me/ccms_slides/2022/9/26/3a2ac1ef-4143-4328-9fef-066782ac7dc6.pdf)
