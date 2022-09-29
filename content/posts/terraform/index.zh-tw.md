@@ -111,6 +111,31 @@ brew install hashicorp/tap/terraform
 
 <br>
 
+### 自動補全指令
+
+可以啟動終端機上的 Tab 自動補全功能，執行以下指令，再重開終端機，就會出現了：
+
+```
+terraform -install-autocomplete
+```
+
+<br>
+
+想要解除自動補全 (雖然應該不會拉)，執行以下指令：
+
+```
+terraform -uninstall-autocomplete
+```
+
+<br>
+
+{{< image src="/images/terraform/8.png"  width="800" caption="放上成果圖片" src_s="/images/terraform/8.png" src_l="/images/terraform/8.png" >}}
+
+
+
+
+<br>
+
 ### 快速入門
 
 當我們安裝好，想要最快的了解 Terraform ，當然是自己動手做一次，我們依照官網的教學，可以在一分鐘內使用 Docker 配置好 NGINX 伺服器，那我們開始囉！
@@ -119,7 +144,7 @@ brew install hashicorp/tap/terraform
 
 1. 首先，我們必須要先安裝好 Docker，下載 [Mac 版 Docker 桌面](https://docs.docker.com/desktop/install/mac-install/)
 2. 建立一個資料夾，並進入該資料夾內
-3. 將以下 Terraform 配置文件貼到檔案中，並取名 `main.tf` ([同步到 GitHub 需要程式碼的可以前往查看](https://github.com/880831ian/terraform/tree/master/docker_nginx))
+3. 將以下 Terraform 配置文件貼到檔案中，並取名 `main.tf` ([同步到 GitHub 需要程式碼的可以前往查看](https://github.com/880831ian/terraform/tree/master/docker_container))
 
 ```
 terraform {
