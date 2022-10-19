@@ -205,6 +205,9 @@ resource 雲端資源名稱 自定義的名稱 {
 * `terraform plan`：會產生一份執行計劃。上面會寫著它將會做哪些事，你可以驗證是否符合你預期的設計
 * `terraform apply`：實際運作，把基礎架構建置完成。在完成之後，會把目前的狀態儲存到一份檔案中
 * `terraform destroy`：會銷毀用 Terraform 起的服務
+* `terraform fmt`：幫你整理好 tf 文件
+* `terraform validate`：靜態檢查 tf 文件
+
 
 附上懶人指令
 ```
