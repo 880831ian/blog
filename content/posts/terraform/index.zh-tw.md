@@ -219,6 +219,10 @@ alias td='terraform destroy'
 
 <br>
 
+由於在 apply 的時候會跳出詢問視窗，如果是要寫成腳本，可以把指令改成 `terraform apply -auto-approve` 就不需要輸入 yes 了！
+
+<br>
+
 有上面的指令後，我們來實際操作看看：
 
 <br>
@@ -271,6 +275,8 @@ alias td='terraform destroy'
 ## 後續文章
 
 經過上面的步驟，了解 IaC Infrastructure as Code (基礎設施即代碼) 以及實際去使用 Terraform 去建置 docker 的 nginx 服務，之後還會更新有關 Terraform 的文章，會不定時更新此篇文章的後續文章連結區，大家有興趣可以多留意歐！
+
+[使用 Terraform 建立 Google Compute Engine](https://blog.pin-yi.me/terraform/)
 
 <br>
 
