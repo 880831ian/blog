@@ -1,0 +1,175 @@
+---
+weight: 4
+title: "使用 Terraform 建立 Google Kubernetes Engine"
+date: 2022-11-29T10:10:00+08:00
+lastmod: 2022-11-29T10:10:00+08:00
+draft: false
+author: "PinYi"
+authorLink: "https://pin-yi.me"
+description: ""
+resources:
+- name: "featured-image"
+  src: "featured-image.webp"
+- name: "featured-image-preview"
+  src: "featured-image-preview.webp"
+
+tags: ["IaC", "基礎設施即代碼", "Terraform", "GCP", "GKE"]
+categories: ["codenotes"]
+
+lightgallery: true
+
+toc:
+  auto: false
+---
+
+我們接續昨天的建立 Google Kubernetes Engine 文章，今天要來介紹的是如何用 Terraform 建立 Google Kubernetes Engine，由於使用 terraform 去建立、修改、刪除的指令大家應該都清楚裡，那我這邊就不在多說，我們直接來介紹一下要怎麼撰寫 Google Kubernetes Engine tf 檔案 😏
+
+<br>
+
+## 撰寫 Google Kubernetes Engine tf 檔案
+
+程式碼會同步到 Github ，需要的也可以去 Clone 來使用歐！ [Github 程式碼連結](https://github.com/880831ian/terraform-gke)，小提醒：由於程式碼較長，我將他拆開來說明 💖
+
+由於等等程式碼較長，所以我在前面這邊先做說明，GKE 的結構是 叢集(cluster) > 節點池(node_pool) > 節點(node)，本次的介紹範例，會有一個叢集裡面有兩個節點池，每個節點池裡面的節點數量也不同，範例裡面會加上我比較常用到的一些設定，以及
+
+<br>
+
+### 限制使用的版本
+
+在上一篇 [使用 Terraform 建立 Google Compute Engine](https://blog.pin-yi.me/terraform-gce/)，我們知道 Terraform 其實就是對應的提供商，提供對應的 api 來讓我們可以用 terraform 去建置很多 Iac，但供應商提供的 api 會隨著版本而有所更動，可能換了一個版本，原本可以使用的 resource 參數就會有所不同，所以我們可以在一開始，先設定好這隻 tf 要使用的供應商及對應的版本，可以參考以下程式碼：
+
+<br>
+
+```tf
+terraform {
+  required_providers {
+    google = {
+      source = "hashicorp/google"
+      version = "~> 4.38.0"
+    }
+  }
+}
+```
+可以看到我們把 google 這個供應商裡面設定好他的 source 以及 version，這樣就算之後 goolge 有更新 terraform 的 api，我們也不需要去更換參數就可以使用了～
+
+<br>
+
+### 選擇供應者以及對應的專案 
+
+
+```tf
+provider "google" {
+  project = "project"
+}
+```
+
+除了可以使用專案 ID 以外，當然也可以使用專案的名稱拉 🥳
+
+<br>
+
+### resource 設定
+
+#### google_container_cluster
+
+接下來的設定都會放在以下的 google_container_cluster resource 內，為了方便介紹，就不會標明 google_container_cluster，詳細完整程式碼請參考 GitLab [Github 程式碼連結](https://github.com/880831ian/terraform-gke)
+
+```tf
+resource "google_container_cluster" "cluster" {
+}
+```
+
+<br>
+
+```tf
+  name     = "test"
+  location = "asia-southeast1-b"
+  min_master_version = "1.22.12-gke.300"
+  network = "projects/gcp-202011216-001/global/networks/XXXX"
+  subnetwork = "projects/gcp-202011216-001/regions/asia-southeast1/subnetworks/XXXX"
+  default_max_pods_per_node = 64
+  remove_default_node_pool = true
+  initial_node_count       = 1
+  enable_intranode_visibility = false
+  ip_allocation_policy {
+    cluster_secondary_range_name = "gke-pods"
+    services_secondary_range_name = "gke-service"
+  }
+  resource_labels = {
+    "env" = "test"
+  }
+  addons_config {
+    http_load_balancing {
+      disabled = false
+    }
+    horizontal_pod_autoscaling {
+      disabled = false
+    }
+    network_policy_config {
+      disabled = false
+    }
+  }
+  master_auth {
+    client_certificate_config {
+      issue_client_certificate = false
+    }
+  }
+  private_cluster_config {
+    enable_private_endpoint = false
+    enable_private_nodes = true
+    master_ipv4_cidr_block = "172.16.0.0/28"
+  }
+  logging_config {
+    enable_components = ["SYSTEM_COMPONENTS", "WORKLOADS"] # 啟用系統元件和工作負載的日誌
+  }
+  monitoring_config {
+    enable_components = ["SYSTEM_COMPONENTS"] # 啟用系統元件的監控
+  }
+  node_config {
+    machine_type = "e2-medium" # 機器類型
+    disk_size_gb = 100 # 磁碟大小
+    disk_type    = "pd-standard" # 磁碟類型
+    image_type   = "COS_CONTAINERD" # 長期支援的 Container-Optimized OS (COS) Containerd
+    oauth_scopes    = [
+      "https://www.googleapis.com/auth/devstorage.read_only",
+      "https://www.googleapis.com/auth/logging.write",
+      "https://www.googleapis.com/auth/monitoring",
+      "https://www.googleapis.com/auth/servicecontrol",
+      "https://www.googleapis.com/auth/service.management.readonly",
+      "https://www.googleapis.com/auth/trace.append"
+    ]
+    metadata = {
+      disable-legacy-endpoints = "true"
+    }      
+  }  
+```
+* name：叢集的名稱，在這個專案及區域唯一名稱 <font color='red'>(必填)</font>
+* location：要將此叢集建立在哪一個區域 <font color='blue'>(選填)</font>
+* min_master_version：master 的最低版本 <font color='blue'>(選填)</font>
+* network：叢集連接到的 Google Compute Engine 網絡的名稱或 self_link <font color='blue'>(選填)</font>
+* subnetwork：啟動叢集的 Google Compute Engine 子網的名稱或 self_link <font color='blue'>(選填)</font>
+* default_max_pods_per_node：此叢集中每個節點的默認最大 pod 數 <font color='blue'>(選填)</font>
+* remove_default_node_pool：如果設定為 `true`，則在創建叢集時會幫我們刪除預設的節點池。會使用到這個的原因是因為 terraform 沒辦法修改預設節點池的名稱，所以我的做法是，會新增要的節點池，在使用這個參數把預設的給刪掉<font color='blue'>(選填)</font>
+* initial_node_count：要在此叢集的默認節點池中創建的節點數 <font color='blue'>(選填)</font>
+* enable_intranode_visibility：是否為此叢集啟用了節點內可見性 <font color='blue'>(選填)</font>
+* ip_allocation_policy：為 VPC 原生叢集分配叢集 IP  <font color='blue'>(選填)</font>
+* resource_labels：應用於叢集的 GCE 資源標籤 key/value <font color='blue'>(選填)</font>
+* addons_config
+	* http_load_balancing：是否要啟用 HTTP (L7) 的負載平衡 <font color='blue'>(選填)</font>
+	* horizontal_pod_autoscaling：是否要啟用 HPA 水平Pod自動擴展 <font color='blue'>(選填)</font>
+	* network_policy_config：是否要啟用網路策略 <font color='blue'>(選填)</font>
+* master_auth 
+	* client_certificate_config：是否要啟用該叢集客戶端證書授權 <font color='blue'>(選填)</font>
+* private_cluster_config	 
+	* enable_private_endpoint：是否要啟用叢集專用的私有端點，禁止公共端點的訪問 <font color='blue'>(選填)</font>
+	* enable_private_nodes：是否要啟用私有叢集功能，在叢集創建私有端點 <font color='blue'>(選填)</font>
+	* master_ipv4_cidr_block：私有端點 IP 範圍 <font color='blue'>(選填)</font>
+*  logging_config：叢集的日誌記錄配置
+	* enable_components (公開日誌的 GKE 組件) 設定，包含：SYSTEM_COMPONENTS、APISERVER、CONTROLLER_MANAGER、SCHEDULER、WORKLOADS <font color='red'>(必填)</font>
+* monitoring_config：叢集的監控配置
+	* enable_components (GKE 組件公開指標) 設定，包含：SYSTEM_COMPONENTS、APISERVER、CONTROLLER_MANAGER、SCHEDULER <font color='blue'>(選填)</font>
+
+<br>
+
+## 參考資料
+
+[registry.terraform.io/providers (google_container_cluster)](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/container_cluster)
