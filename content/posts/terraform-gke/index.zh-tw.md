@@ -22,7 +22,7 @@ toc:
   auto: false
 ---
 
-我們接續昨天的建立 Google Kubernetes Engine 文章，今天要來介紹的是如何用 Terraform 建立 Google Kubernetes Engine，由於使用 terraform 去建立、修改、刪除的指令大家應該都清楚裡，那我這邊就不在多說，我們直接來介紹一下要怎麼撰寫 Google Kubernetes Engine tf 檔案 😏
+我們接續昨天的建立 Google Kubernetes Engine 文章，今天要來介紹的是如何用 Terraform 建立 Google Kubernetes Engine，由於使用 terraform 去建立、修改、刪除的指令大家應該都清楚了，那我今天的文章就不在多說，直接來介紹一下要怎麼撰寫 Google Kubernetes Engine tf 檔案 😏
 
 <br>
 
@@ -119,16 +119,16 @@ resource "google_container_cluster" "cluster" {
     master_ipv4_cidr_block = "172.16.0.0/28"
   }
   logging_config {
-    enable_components = ["SYSTEM_COMPONENTS", "WORKLOADS"] # 啟用系統元件和工作負載的日誌
+    enable_components = ["SYSTEM_COMPONENTS", "WORKLOADS"]
   }
   monitoring_config {
-    enable_components = ["SYSTEM_COMPONENTS"] # 啟用系統元件的監控
+    enable_components = ["SYSTEM_COMPONENTS"]
   }
   node_config {
-    machine_type = "e2-medium" # 機器類型
-    disk_size_gb = 100 # 磁碟大小
-    disk_type    = "pd-standard" # 磁碟類型
-    image_type   = "COS_CONTAINERD" # 長期支援的 Container-Optimized OS (COS) Containerd
+    machine_type = "e2-medium"
+    disk_size_gb = 100
+    disk_type    = "pd-standard"
+    image_type   = "COS_CONTAINERD"
     oauth_scopes    = [
       "https://www.googleapis.com/auth/devstorage.read_only",
       "https://www.googleapis.com/auth/logging.write",
@@ -147,9 +147,9 @@ resource "google_container_cluster" "cluster" {
 * min_master_version：master 的最低版本 <font color='blue'>(選填)</font>
 * network：叢集連接到的 Google Compute Engine 網絡的名稱或 self_link <font color='blue'>(選填)</font>
 * subnetwork：啟動叢集的 Google Compute Engine 子網的名稱或 self_link <font color='blue'>(選填)</font>
-* default_max_pods_per_node：此叢集中每個節點的默認最大 pod 數 <font color='blue'>(選填)</font>
+* default_max_pods_per_node：此叢集中每個節點的預設最大 pod 數 <font color='blue'>(選填)</font>
 * remove_default_node_pool：如果設定為 `true`，則在創建叢集時會幫我們刪除預設的節點池。會使用到這個的原因是因為 terraform 沒辦法修改預設節點池的名稱，所以我的做法是，會新增要的節點池，在使用這個參數把預設的給刪掉<font color='blue'>(選填)</font>
-* initial_node_count：要在此叢集的默認節點池中創建的節點數 <font color='blue'>(選填)</font>
+* initial_node_count：要在此叢集的預設節點池中創建的節點數 <font color='blue'>(選填)</font>
 * enable_intranode_visibility：是否為此叢集啟用了節點內可見性 <font color='blue'>(選填)</font>
 * ip_allocation_policy：為 VPC 原生叢集分配叢集 IP  <font color='blue'>(選填)</font>
 * resource_labels：應用於叢集的 GCE 資源標籤 key/value <font color='blue'>(選填)</font>
@@ -164,9 +164,16 @@ resource "google_container_cluster" "cluster" {
 	* enable_private_nodes：是否要啟用私有叢集功能，在叢集創建私有端點 <font color='blue'>(選填)</font>
 	* master_ipv4_cidr_block：私有端點 IP 範圍 <font color='blue'>(選填)</font>
 *  logging_config：叢集的日誌記錄配置
-	* enable_components (公開日誌的 GKE 組件) 設定，包含：SYSTEM_COMPONENTS、APISERVER、CONTROLLER_MANAGER、SCHEDULER、WORKLOADS <font color='red'>(必填)</font>
+	* enable_components (公開日誌的 GKE 組件) 設定，包含：`SYSTEM_COMPONENTS`、`APISERVER`、`CONTROLLER_MANAGER`、`SCHEDULER`、`WORKLOADS` <font color='red'>(必填)</font>
 * monitoring_config：叢集的監控配置
-	* enable_components (GKE 組件公開指標) 設定，包含：SYSTEM_COMPONENTS、APISERVER、CONTROLLER_MANAGER、SCHEDULER <font color='blue'>(選填)</font>
+	* enable_components (GKE 組件公開指標) 設定，包含：`SYSTEM_COMPONENTS`、`APISERVER`、`CONTROLLER_MANAGER`、`SCHEDULER` <font color='blue'>(選填)</font>
+* node_config：創建預設節點池參數
+	*  machine_type：Google Compute Engine 機器類型，預設為 `e2-medium` <font color='blue'>(選填)</font>
+	*  disk_size_gb：每個節點的 disk 大小，以 GB 為單位。允許最小為 10 GB，預設為 100 GB <font color='blue'>(選填)</font>
+	*  disk_type：連接到每個節點的 disk 類型，有 `pd-standard`、`pd-balanced` 或 `pd-ssd`，預設為 `pd-standard` <font color='blue'>(選填)</font>
+	*  image_type：創建新節點池後 NAP 使用的預設 image 類型。該值必須是 [`COS_CONTAINERD`、`COS`、`UBUNTU_CONTAINERD`、`UBUNTU`] 之一。`COS` 和 `UBUNTU` 已於 GKE 1.24 棄用 <font color='blue'>(選填)</font>
+	*  oauth_scopes：在預設服務帳戶下的所有節點虛擬機上可用的一組 Google API 範圍。 <font color='blue'>(選填)</font>
+	*  metadata：分配給叢集中實例的 key/value <font color='blue'>(選填)</font>
 
 <br>
 
