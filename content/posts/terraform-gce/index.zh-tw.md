@@ -39,7 +39,7 @@ toc:
 ### 選擇供應者以及對應的專案 
 
 
-```
+```tf
 provider "google" {
   project = "gcp-20210526-001"
 }
@@ -53,7 +53,7 @@ provider "google" {
 
 接下來的設定都會放在以下的 google_compute_instance resource 內，為了方便介紹，就不會標明 google_compute_instance，詳細完整程式碼請參考 GitLab [Github 程式碼連結](https://github.com/880831ian/terraform-gce)
 
-```
+```tf
 resource "google_compute_instance" "default" {
 }
 ```
@@ -62,7 +62,7 @@ resource "google_compute_instance" "default" {
 
 #### 基本設定
 
-```
+```tf
   name        = "test"
   description = "我是 test 機器"
   machine_type = "n2-standard-8"
@@ -87,7 +87,7 @@ resource "google_compute_instance" "default" {
 
 #### 啟動 disk 設定
 
-```
+```tf
   boot_disk {
     initialize_params {
       image = "debian-cloud/debian-10-buster-v20210512"
@@ -104,7 +104,7 @@ resource "google_compute_instance" "default" {
 
 #### 網路設定
 
-```
+```tf
   network_interface {
     network = "projects/rd-gateway/global/networks/rd-common"
     subnetwork = "projects/rd-gateway/regions/asia-east1/subnetworks/rd-common-asia-east1-pid-cicd"     
@@ -123,7 +123,7 @@ resource "google_compute_instance" "default" {
 
 #### 權限設定
 
-```
+```tf
   service_account {
     email  = "676962704505-compute@developer.gserviceaccount.com"
     scopes = ["storage-rw", "logging-write", "monitoring-write", "service-control", "service-management", "trace"]
