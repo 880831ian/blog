@@ -2,7 +2,7 @@
 weight: 4
 title: "使用 Terraform 建立 Google Kubernetes Engine"
 date: 2022-11-29T10:10:00+08:00
-lastmod: 2022-11-29T10:10:00+08:00
+lastmod: 2022-12-01T14:30:00+08:00
 draft: false
 author: "PinYi"
 authorLink: "https://pin-yi.me"
@@ -30,15 +30,13 @@ toc:
 
 程式碼會同步到 Github ，需要的也可以去 Clone 來使用歐！ [Github 程式碼連結](https://github.com/880831ian/terraform-gke)，小提醒：由於程式碼較長，我將他拆開來說明 💖
 
-由於等等程式碼較長，所以我在前面這邊先做說明，GKE 的結構是 叢集(cluster) > 節點池(node_pool) > 節點(node)，本次的介紹範例，會有一個叢集裡面有兩個節點池，每個節點池裡面的節點數量也不同，範例裡面會加上我比較常用到的一些設定，以及
+由於等等程式碼較長，所以我在前面這邊先做說明，GKE 的結構是 叢集(cluster) > 節點池(node_pool) > 節點(node)，本次的介紹範例，會有一個叢集裡面有一個節點池，節點池裡面有 6 個節點數量，範例裡面會加上我比較常用到的一些設定，以及一些文件裡面的用法，大家可以依照自己的需求來使用參數：
 
 <br>
 
 ### 限制使用的版本
 
-在上一篇 [使用 Terraform 建立 Google Compute Engine](https://blog.pin-yi.me/terraform-gce/)，我們知道 Terraform 其實就是對應的提供商，提供對應的 api 來讓我們可以用 terraform 去建置很多 Iac，但供應商提供的 api 會隨著版本而有所更動，可能換了一個版本，原本可以使用的 resource 參數就會有所不同，所以我們可以在一開始，先設定好這隻 tf 要使用的供應商及對應的版本，可以參考以下程式碼：
-
-<br>
+在上一篇 [使用 Terraform 建立 Google Compute Engine](https://blog.pin-yi.me/terraform-gce/)，我們知道 Terraform 其實就是對應的提供商，提供對應的 api 來讓我們可以用 terraform 去建置很多 IaC，但供應商提供的 api 會隨著版本而有所更動，可能換了一個版本，原本可以使用的 resource 參數就會有所不同，所以我們可以在一開始，先設定好這隻 tf 要使用的供應商及對應的版本，可以參考以下程式碼：
 
 ```tf
 terraform {
@@ -71,16 +69,8 @@ provider "google" {
 
 #### google_container_cluster
 
-接下來的設定都會放在以下的 google_container_cluster resource 內，為了方便介紹，就不會標明 google_container_cluster，詳細完整程式碼請參考 GitLab [Github 程式碼連結](https://github.com/880831ian/terraform-gke)
-
 ```tf
 resource "google_container_cluster" "cluster" {
-}
-```
-
-<br>
-
-```tf
   name     = "test"
   location = "asia-southeast1-b"
   min_master_version = "1.22.12-gke.300"
@@ -140,7 +130,8 @@ resource "google_container_cluster" "cluster" {
     metadata = {
       disable-legacy-endpoints = "true"
     }      
-  }  
+  }
+}
 ```
 * name：叢集的名稱，在這個專案及區域唯一名稱 <font color='red'>(必填)</font>
 * location：要將此叢集建立在哪一個區域 <font color='blue'>(選填)</font>
@@ -177,6 +168,52 @@ resource "google_container_cluster" "cluster" {
 
 <br>
 
+#### google_container_node_pool
+
+```tf
+resource "google_container_node_pool" "aaa" {
+  name       = "aaa"
+  project    = "project"
+  location   = google_container_cluster.cluster.location
+  cluster    = google_container_cluster.cluster.name
+  node_count = 6
+  node_locations = [
+    google_container_cluster.cluster.location
+  ]
+  node_config {
+	# 省略 ... 與上面的 google_container_cluster 相同
+  }
+  management {
+    auto_repair  = true
+    auto_upgrade = false
+  }
+  upgrade_settings {
+    max_surge       = 1
+    max_unavailable = 0
+  }
+}
+```
+* name：節點池名稱 <font color='blue'>(選填)</font>
+*  project：創建節點池的項目ID <font color='blue'>(選填)</font>
+*  location：叢集所在位置，可以使用資源名稱 (google_container_node_pool) +命名 (cluster) + 參數 (location) 來代表 <font color='blue'>(選填)</font>
+*  cluster：叢集名稱，可以使用資源名稱 (google_container_node_pool) +命名 (cluster) + 參數 (name) 來代表 <font color='blue'>(選填)</font>
+*  node_count：節點數量 <font color='blue'>(選填)</font>
+*  node_locations：節點區域 <font color='blue'>(選填)</font>
+* management：節點管理配置
+	* auto_repair：是否要自動修復 <font color='blue'>(選填)</font>
+	* auto_upgrade：是否要自動升級 <font color='blue'>(選填)</font>
+* upgrade_settings：指定節點升級設定及方式
+	* max_surge：升級期間可以添加到節點池的額外節點數 <font color='blue'>(選填)</font>
+	* max_unavailable：升級期間可以同時不可用的節點數 <font color='blue'>(選填)</font>
+
+<br>
+
+可以看到有很多設定都是選填的，所以不需要像我範例一樣，把所有的都打出來，可以參考官方文件，將自己想要的設定寫出來，並注意其他參數的預設值是多少，就可以打造屬於自己的 Terraform 建立 Google Kubernetes Engine IaC 程式囉～
+
+<br>
+
 ## 參考資料
 
 [registry.terraform.io/providers (google_container_cluster)](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/container_cluster)
+
+[registry.terraform.io/providers (google_container_node_pool)](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/container_node_pool)
