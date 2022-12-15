@@ -1,6 +1,6 @@
 ---
 weight: 4
-title: "Kibana 新增 index 索引時一直轉圈圈以及顯示 forbidden"
+title: "Kibana 新增 index 索引時一直轉圈圈以及顯示 HTTP 403 Forbidden"
 date: 2022-12-08T16:17:00+08:00
 lastmod: 2022-12-08T16:17:00+08:00
 draft: false
@@ -22,7 +22,7 @@ toc:
   auto: false
 ---
 
-前幾天在工作使用 Kibana 時，想要新增一個新的索引，發現選擇索引並按下新增的按鈕，會一直轉圈圈，等了一陣子，使用開發工具 F12 查看，跳出了 forbidden，到底是什麼原因導致的呢！？我們一起看下去吧，會從問題的出現到問題原因再到如何解決問題，來仔細介紹，希望大家不要像我一樣踩到雷 🤣
+前幾天在工作使用 Kibana 時，想要新增一個新的索引，發現選擇索引並按下新增的按鈕，會一直轉圈圈，等了一陣子，使用開發工具 F12 查看，跳出了 HTTP 403 Forbidden，到底是什麼原因導致的呢！？我們一起看下去吧，會從問題的出現到問題原因再到如何解決問題，來仔細介紹，希望大家不要像我一樣踩到雷 🤣
 
 <br>
 
@@ -44,21 +44,21 @@ toc:
 
 <br>
 
-接著想說打開開發者工具 F12 來看看，是卡在哪一個點，卻發現有幾個紅字寫著 forbidden
+接著想說打開開發者工具 F12 來看看，是卡在哪一個點，卻發現有幾個紅字寫著 HTTP 403 Forbidden
 
 <br>
 
-{{< image src="/images/kibana-create-index-forbidden/3.png"  width="800" caption="開發者工具網頁內容顯示 forbidden" src_s="/images/kibana-create-index-forbidden/3.png" src_l="/images/kibana-create-index-forbidden/3.png" >}}
+{{< image src="/images/kibana-create-index-forbidden/3.png"  width="800" caption="開發者工具網頁內容顯示 HTTP 403 Forbidden" src_s="/images/kibana-create-index-forbidden/3.png" src_l="/images/kibana-create-index-forbidden/3.png" >}}
 
 <br>
 
-想說為什麼會有 forbidden，之前也沒有看過類似的錯誤訊息，於是就開始在網路上亂晃，最後在同事的幫助下找到了一個跟我們情況很相似的文章 [Kibana 创建索引 POST 403 (forbidden) on create index](https://www.cnblogs.com/caoweixiong/p/10972120.html)
+想說為什麼會有 HTTP 403 Forbidden，之前也沒有看過類似的錯誤訊息，於是就開始在網路上亂晃，最後在同事的幫助下找到了一個跟我們情況很相似的文章 [Kibana 创建索引 POST 403 (forbidden) on create index](https://www.cnblogs.com/caoweixiong/p/10972120.html)
 
 <br>
 
 ## 問題原因
 
-文章的說明是索引變成只允許讀取的狀態，其原因是因為出現這個 forbidden 前，ElasticSearch 的空間滿了，導致 Kibana 會自動的將索引改成只允許讀取的狀態，我們來看一下剛剛的 Index 狀態是不是像他說的一樣變成只允許讀取的狀態呢 
+文章的說明是索引變成只允許讀取的狀態，其原因是因為出現這個 HTTP 403 Forbidden 前，ElasticSearch 的空間滿了，導致 Kibana 會自動的將索引改成只允許讀取的狀態，我們來看一下剛剛的 Index 狀態是不是像他說的一樣變成只允許讀取的狀態呢 
 
 <br>
 
