@@ -22,7 +22,7 @@ toc:
   auto: false
 ---
 
-先說結論  ... ~~EFK 真的好多雷 😆~~  我們今天又再度踩雷拉，這次又是炸的分身碎骨，花了 4 個多小時才找到原因，也有可能是小弟我跟 EFK 不是很熟 XD。就如標題所說，我在抽 Log 的時候發現有部分的 Log 送不到 Kibana，檢查 Fluentd-Server 發現 Server 的 Log 裡面有 `Fluent::Plugin::Elasticsearch Error 400 - Rejected by Elasticsearch` 的錯誤訊息，到底這個 Error 400 是什麼咧，就跟著我一起重溫找問題的苦難吧 XD
+先說結論  ... ~~EFK 真的好多雷 😆~~  我們今天又再度踩雷拉，這次又是炸的分身碎骨，花了 4 個多小時才找到原因，也有可能是小弟我跟 EFK 不是很熟 XD。就如標題所說，我在抽 Log 的時候發現有部分的 Log 送不到 Kibana，檢查 Fluentd-Server 的 Log 發現裡面有 `Fluent::Plugin::Elasticsearch Error 400 - Rejected by Elasticsearch` 的錯誤訊息，到底這個 Error 400 是什麼咧，就跟著我一起重溫找問題的苦難吧 XD
 
 <br>
 
@@ -50,7 +50,7 @@ toc:
 	"message":"我是馬賽克",
 	"code":11223344,
 	"data":{
-	"end_at":"2022-12-19 04:09:00"
+		"end_at":"2022-12-19 04:09:00"
 	},
 	"response_code":"326dgf241geh1596489",
 	"job_name":"叮叮噹噹聖誕節",
@@ -77,25 +77,27 @@ toc:
 
 <br>
 
-{{< image src="/images/fluentd-server-show-fluent-plugin-elasticsearch-error400/2.png"  width="1000" caption="fluentd-server image 內安裝 fluent-plugin-elasticsearch" src_s="/images/fluentd-server-show-fluent-plugin-elasticsearch-error400/2.png" src_l="/images/fluentd-server-show-fluent-plugin-elasticsearch-error400/2.png" >}}
+{{< image src="/images/fluentd-server-show-fluent-plugin-elasticsearch-error400/2.png"  width="1000" caption="fluentd-server 跳出錯誤 LOG" src_s="/images/fluentd-server-show-fluent-plugin-elasticsearch-error400/2.png" src_l="/images/fluentd-server-show-fluent-plugin-elasticsearch-error400/2.png" >}}
 
 <br>
 
-接著我到網路上搜尋，看看有沒有人有遇到跟我一樣的問題，發現在 [uken/fluent-plugin-elasticsearch](https://github.com/uken/fluent-plugin-elasticsearch/issues/467) 也有些人有遇到同樣的問題
+我到網路上搜尋，看看有沒有人有遇到跟我一樣的問題，發現在 [uken/fluent-plugin-elasticsearch](https://github.com/uken/fluent-plugin-elasticsearch/issues/467) 也有其他人有遇到同樣的問題
 
 <br>
 
 {{< image src="/images/fluentd-server-show-fluent-plugin-elasticsearch-error400/3.png"  width="1000" caption="uken/fluent-plugin-elasticsearch issus 詢問" src_s="/images/fluentd-server-show-fluent-plugin-elasticsearch-error400/3.png" src_l="/images/fluentd-server-show-fluent-plugin-elasticsearch-error400/3.png" >}}
 
-有人說可能是 elasticsearch 滿了，也有人說是 fluent-plugin-elasticsearch 版本有問題，或是將 elasticsearch 跟 kibana index 刪除就可以
+有人說可能是 Elasticsearch 的 disk 滿了，也有人說是裝在 Fluentd-Server 的套件 fluent-plugin-elasticsearch 版本有問題，或是將 Elasticsearch 跟 Kibana index 刪除就可以，我有砍掉 index 再重新倒入 Log，還是會有問題。
 
-一開始以為是 `log_false` 跟 `log_true` 的欄位不同，所以才會有這個問題發生（你看就知道我跟 EFK 不熟吧ＸＤ），所以有另外倒一些其他服務的 log 進去測試，發現是可以正常抽到，且 kibana 那邊會依照 es 提供的欄位自動新增，所以也不是欄位的問題，那最後的問題是什麼呢？
+一開始以為是 `log_false` 跟 `log_true` 的欄位不同，所以才會有這個問題發生（你看就知道我跟 EFK 不熟吧ＸＤ），所以有另外倒一些其他服務(欄位也不同)的 log 進去測試，發現是可以正常抽到，且 kibana 那邊會依照 es 提供的欄位自動新增，所以也不是欄位的問題，那最後的問題是什麼呢？
 
 <br>
 
 ## 如何解決問題
 
-明天待續 ... 
+最後在我們仔細檢查後發現，`log_false` 跟 `log_true` 的欄位其中一樣存的資料型態不太一樣，發現其中的 `data` 欄位在 `log_false` 的資料型態是 array，在 `log_true` 存的時候是字串，所以導致當其中一個 log 寫入後，另一個 log 就會因為同欄位的資料型態有所不同，而無法寫入 log，且在 Fluentd-Server 會出現標題的 Error 400 原因拉～
+
+最後重新調整欄位的資料型態，就順利解決此次問題 ✌️✌️✌️
 
 <br>
 
