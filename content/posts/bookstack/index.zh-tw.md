@@ -1,8 +1,8 @@
 ---
 weight: 4
 title: "Bookstack 開源知識庫筆記平台安裝 (K8s + docker)"
-date: 2023-03-30T13:58:00+08:00
-lastmod: 2023-03-30T13:58:00+08:00
+date: 2023-04-07T16:42:00+08:00
+lastmod: 2023-04-07T16:42:00+08:00
 draft: false
 author: "PinYi"
 authorLink: "https://pin-yi.me"
@@ -64,7 +64,7 @@ toc:
 
 <br>
 
-{{< image src="/images/bookstack/6.gif"  width="1000" caption="搜尋功能" src_s="/images/bookstack/6.gif" src_l="/images/bookstack/6.gif" >}}
+{{< image src="/images/bookstack/5.gif"  width="1000" caption="畫圖功能" src_s="/images/bookstack/5.gif" src_l="/images/bookstack/5.gif" >}}
 
 <br>
 
@@ -263,6 +263,10 @@ docker 的部分就更簡單了，一樣是把 **<<更換此處>>** 換成對應
 <br>
 
 架設好 Bookstack 就可以開始寫部門或是組織內的筆記拉～ 如果有開放外網連線，要記得修改預設的管理員帳號，以及用管理員帳號登入，到功能與安全的公開存取給取消，這樣就必須要登入才可以瀏覽筆記了！那就交給大家自己去玩這個好用的筆記工具囉～～😍
+
+<br>
+
+{{< image src="/images/bookstack/6.png"  width="850" caption="功能與安全設定" src_s="/images/bookstack/6.png" src_l="/images/bookstack/6.png" >}}
 
 <br>
 
