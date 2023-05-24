@@ -184,6 +184,8 @@ terraform {
 
 先來簡單說明一下 Terraform 程式碼格式，Terraform 的檔案副檔名是 `*.tf`，採用名為 HCL (HashiCorp Configuration Language) 的組態語言來描述基礎架構。
 
+(補充說明：只要是同一個目錄下有 .tf 檔案結尾的，Terraform 都會去執行，所以檔案名稱可以自己取名，但為了方便管理都會使用 main、provider、backend、output 的檔案來放置對應的內容)
+
 HCL 是一種宣告式的語言，讓你直接寫下期望的基礎架構，而不是寫下過程的每一個步驟。
 
 <br>
@@ -403,6 +405,14 @@ import 後面會加上 main.tf resource 名稱 docker_container，以及我們�
 <br>
 
 {{< image src="/images/terraform/14.png"  width="700" caption="terraform show 將 terraform.tfstate 轉成 tf" src_s="/images/terraform/14.png" src_l="/images/terraform/14.png" >}}
+
+<br>
+
+如果透過上述的方式來轉成 tf，會發現在重新 apply 時，會出現錯誤，這邊以 gce 的當範例，轉完的 tf 設定，有些是 tf 不支援的參數，只會顯示在 tfstate，所以還需要手動刪除。
+
+<br>
+
+{{< image src="/images/terraform/15.png"  width="700" caption="轉換後還需將不用的設定給移除" src_s="/images/terraform/15.png" src_l="/images/terraform/15.png" >}}
 
 <br>
 
