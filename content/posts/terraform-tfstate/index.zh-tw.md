@@ -32,7 +32,7 @@ toc:
 
 ## gitlab
 
-那我們要怎麼把 `.tfstate` 給存到 gitlab 呢？首先跟之前一樣，先新增 `provider.tf` 來放供應商來源以及版本，以及 `main.tf` 來放 gce 相關設定，最後還要多一個 `backend.tf` 來放我們要儲存的位置設定，如下：
+那我們要怎麼把 `.tfstate` 給存到 gitlab 呢？首先跟之前一樣，先新增 `provider.tf` 來放供應商來源以及版本，以及 `main.tf` 來放 gce 相關設定，最後還要多一個 `backend.tf` 來放我們要儲存的位置設定，如下：([同步到 GitHub 需要程式碼的可以前往查看](https://github.com/880831ian/terraform-tfstate))
 
  (這次範例會使用 gce，此項會需要 gitlab 先啟用 Infrastructure 功能以及建立自己的 gitlab token)
 
