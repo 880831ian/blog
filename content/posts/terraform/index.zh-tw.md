@@ -424,7 +424,6 @@ import 後面會加上 main.tf resource 名稱 docker_container，以及我們�
 
 [使用 Terraform 建立 Google Kubernetes Engine](https://blog.pin-yi.me/terraform-gke/)
 
-
 <br>
 
 ## 參考資料

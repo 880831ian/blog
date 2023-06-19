@@ -22,17 +22,17 @@ toc:
   auto: false
 ---
 
-此篇是接續上一篇 [什麼是 IaC ? Terraform 又是什麼？](https://blog.pin-yi.me/terraform/)的 Terraform 文章，我們在上一篇有提到 `terraform apply` 完後，會多一個檔案 `terraform.tfstate`，這個檔案是用來存放服務狀態的檔案，它包含基礎架構的狀態和資源的詳細信息。假設大家都在自己的本地去 apply 同一個服務，會導致每個人的 .tfstate 檔案內容不同，有可能去覆蓋掉其他人已經調整的內容，因此我們必須將此狀態檔案存放在一個地方，讓大家去使用同一份檔案。
+此篇是接續上一篇 [什麼是 IaC ? Terraform 又是什麼？](https://blog.pin-yi.me/terraform/)的 Terraform 文章，我們在上一篇有提到 `terraform apply` 完後，會多一個檔案 `*.tfstate`，這個檔案是用來存放服務狀態的檔案，它包含基礎架構的狀態和資源的詳細信息。假設大家都在自己的本地去 apply 同一個服務，會導致每個人的 tfstate 檔案內容不同，有可能去覆蓋掉其他人已經調整的內容，因此我們必須將此 tfstate 檔案存放在一個地方，讓大家都去使用同一份檔案來調整資源。
 
 <br>
 
-我們常用的儲存方式會將 `.tfstate` 存在 `gitlab` 或 `gcs` (gcp 架構為例)，以下會簡單說明要如何把 tfstate 存到後端以及各頁面的功能：
+我們常用的儲存方式會將 tfstate 存在 `gitlab` 或 `gcs` (gcp 架構為例)，以下會簡單說明要如何把 tfstate 存到後端以及各頁面的功能：
 
 <br>
 
 ## gitlab
 
-那我們要怎麼把 `.tfstate` 給存到 gitlab 呢？首先跟之前一樣，先新增 `provider.tf` 來放供應商來源以及版本，以及 `main.tf` 來放 gce 相關設定，最後還要多一個 `backend.tf` 來放我們要儲存的位置設定，如下：([同步到 GitHub 需要程式碼的可以前往查看](https://github.com/880831ian/terraform-tfstate))
+那我們要怎麼把 tfstate 存到 gitlab 呢？首先跟之前一樣，先新增 `provider.tf` 來放供應商的來源以及版本，以及 `main.tf` 來放 gce 相關設定，最後還要多一個 `backend.tf` 來放我們要儲存 tfstate 的位置設定，如下：([同步到 GitHub 需要程式碼的可以前往查看](https://github.com/880831ian/terraform-tfstate))
 
  (這次範例會使用 gce，此項會需要 gitlab 先啟用 Infrastructure 功能以及建立自己的 gitlab token)
 
@@ -87,9 +87,9 @@ resource "google_compute_instance" "instance" {
 
 * backend.tf << 新的
 
-專案 ID 要寫我們想要放 terraform state 的 gitlab project id，服務名稱是指顯示在 gitlab terraform state 的名稱
+專案 ID 要寫我們想要放 terraform state 的 GitLab Project ID，服務名稱是指顯示在 GitLab terraform state 的名稱
 
-gitlab 個人 token 是指[個人存取權杖](https://gitlab-pid.vir000.com/-/profile/personal_access_tokens)，大家再依照自己的來做設定
+gitlab 個人 token 是指個人存取權杖，大家再依照自己的來做設定
 
 ```
 terraform {
@@ -202,7 +202,7 @@ terraform {
 
 <br>
 
-上面的設定是指，我們將 backend 後端設定改成 gcs，並且選擇名為 pid-terraform-state 的 bucket (因為 bucket 名稱是全域不重複，所以不需要特別設定其 project_id，只要有權限正確都可以跨專案使用)，以及我們要將此 tfstate 存在 aaa 資料夾內。
+上面的設定是指，我們將 backend 後端設定改成 gcs，並且選擇名為 pid-terraform-state 的 bucket，此 bucket 需要先手動建立(因為 bucket 名稱是全域不重複，所以不需要特別設定其 project_id，只要有權限正確都可以跨專案使用)，以及我們要將此 tfstate 存在 aaa 資料夾內。
 
 <br>
 
@@ -216,7 +216,7 @@ terraform {
 
 ### Lock
 
-我們一樣來看一下 gcs 的 lock 會怎什麼樣子，gcs lock 會產生一個 default.tflock 檔案，由他去判斷現在是否是 Lock 狀態
+我們一樣來看一下 gcs 的 lock 會長什麼樣子，gcs lock 會產生一個 default.tflock 檔案，由他去判斷現在是否是 Lock 狀態
 
 <br>
 
