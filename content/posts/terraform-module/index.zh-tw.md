@@ -142,7 +142,7 @@ resource "google_compute_instance" "instance" {
 
 <br>
 
-首先我們要先定義我們的 module，我們先建立以下資料夾結構以及對應檔案：
+首先我們要先定義我們的 module，我們先建立以下資料夾結構以及對應檔案：([同步到 GitHub 需要程式碼的可以前往查看](https://github.com/880831ian/terraform-module))
 
 (再次提醒，會區分檔案名稱是因為方便調整跟維護，也可以把它全部寫在同一個 tf 檔案內歐)
 
