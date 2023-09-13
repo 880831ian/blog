@@ -84,7 +84,7 @@ Google Support 經過查詢後，回覆說：這個問題是因為 Pod 被強制
 
 3. Google 產品團隊建議，如果 Pod 處於 Running 狀態時，想要快速刪除 Pod 時，一開始就先使用 `kubectl delete pod --grace-period=number[秒數]` 來刪除，如果已經是 Terminating 狀態則無效。(SRE 同仁已測試過，與 Google Support 說明相同)
 
-4. 那如果已經處於 Terminating 狀態，要怎麽讓 Pod 被順利刪除，這部分 Google Support 後續會在測試並給出建議，目前的想法是：刪除 container 主進程、刪除 pod 主進程。
+4. 那如果已經處於 Terminating 狀態，要怎麽讓 Pod 被順利刪除，這部分 Google Support 後續會在測試並給出建議，目前測試是：進去卡住的 Pod Container，手動刪除主進程 (pkill) 就可以了。
 
 <br>
 
