@@ -26,11 +26,13 @@ toc:
 
 <br>
 
-{{< image src="/images/soketi-websocket-server-log-502-error-and-111-connection-refused/1.png"  width="950" caption="出錯的 LOG" src_s="/images/soketi-websocket-server-log-502-error-and-111-connection-refused/1.png" src_l="/images/soketi-websocket-server-log-502-error-and-111-connection-refused/1.png" >}}
+{{< image src="/images/soketi-log-502-error/1.png"  width="950" caption="出錯的 LOG" src_s="/images/soketi-log-502-error/1.png" src_l="/images/soketi-log-502-error/1.png" >}}
 
 <br>
 
 在開始找問題前，先簡單介紹一下 Soketi 是什麼東西好了，根據官網的說明，他是簡單、快速且有彈性的開源 WebSockets server，想要了解更多的可以到它[官網](https://docs.soketi.app/)去查看。
+
+另外會把程式碼相關放到 GitHub >> [點我前往](https://github.com/880831ian/soketi-log-502-error)
 
 <br>
 
@@ -42,7 +44,7 @@ toc:
 
 <br>
 
-{{< image src="/images/soketi-websocket-server-log-502-error-and-111-connection-refused/2.png"  width="700" caption="入口 nginx 設定" src_s="/images/soketi-websocket-server-log-502-error-and-111-connection-refused/2.png" src_l="/images/soketi-websocket-server-log-502-error-and-111-connection-refused/2.png" >}}
+{{< image src="/images/soketi-log-502-error/2.png"  width="700" caption="入口 nginx 設定" src_s="/images/soketi-log-502-error/2.png" src_l="/images/soketi-log-502-error/2.png" >}}
 
 <br>
 
@@ -158,7 +160,7 @@ server {
 
 <br>
 
-{{< image src="/images/soketi-websocket-server-log-502-error-and-111-connection-refused/3.png"  width="600" caption="Pod 終止的過程" src_s="/images/soketi-websocket-server-log-502-error-and-111-connection-refused/3.png" src_l="/images/soketi-websocket-server-log-502-error-and-111-connection-refused/3.png" >}}
+{{< image src="/images/soketi-log-502-error/3.png"  width="600" caption="Pod 終止的過程" src_s="/images/soketi-log-502-error/3.png" src_l="/images/soketi-log-502-error/3.png" >}}
 
 <br>
 
@@ -211,7 +213,7 @@ export default function () {
 
 <br>
 
-{{< image src="/images/soketi-websocket-server-log-502-error-and-111-connection-refused/4.png"  width="800" caption="k6 壓測過程" src_s="/images/soketi-websocket-server-log-502-error-and-111-connection-refused/4.png" src_l="/images/soketi-websocket-server-log-502-error-and-111-connection-refused/4.png" >}}
+{{< image src="/images/soketi-log-502-error/4.png"  width="800" caption="k6 壓測過程" src_s="/images/soketi-log-502-error/4.png" src_l="/images/soketi-log-502-error/4.png" >}}
 
 <br>
 
@@ -219,7 +221,7 @@ export default function () {
 
 <br>
 
-{{< image src="/images/soketi-websocket-server-log-502-error-and-111-connection-refused/5.png"  width="800" caption="k6 壓測結果" src_s="/images/soketi-websocket-server-log-502-error-and-111-connection-refused/5.png" src_l="/images/soketi-websocket-server-log-502-error-and-111-connection-refused/5.png" >}}
+{{< image src="/images/soketi-log-502-error/5.png"  width="800" caption="k6 壓測結果" src_s="/images/soketi-log-502-error/5.png" src_l="/images/soketi-log-502-error/5.png" >}}
 
 <br>
 
