@@ -50,6 +50,8 @@ toc:
 
 <br>
 
+- ws.conf
+
 ```
 server {
   server_name socket.XXX.com;
@@ -81,6 +83,8 @@ server {
 
 <br>
 
+- deployment.yaml
+
 ```yaml
     spec:
       terminationGracePeriodSeconds: 30
@@ -110,6 +114,8 @@ server {
 可以看到原來的設定只有 `livenessProbe` 而已，因此我們為了要避免流量進到正在關閉的 Pod 或是進到還沒有啟動好的 Pod，所以我們需要加上 `readinessProbe` 以及 `preStop`，讓 Pod 確定啟動完畢，或是等待 Service 的 endpoint list 中移除 Pod，才開始接收流量，這樣就可以避免出現 502 的錯誤。
 
 <br>
+
+- deployment.yaml
 
 ```yaml
     spec:
@@ -153,6 +159,67 @@ server {
 <br>
 
 {{< image src="/images/soketi-websocket-server-log-502-error-and-111-connection-refused/3.png"  width="600" caption="Pod 終止的過程" src_s="/images/soketi-websocket-server-log-502-error-and-111-connection-refused/3.png" src_l="/images/soketi-websocket-server-log-502-error-and-111-connection-refused/3.png" >}}
+
+<br>
+
+## 壓測
+
+最後調整完，我們來測試看看是否在 Pod 自動重啟 or 更新 Deployment 的時候(並且有大量連線時)還會噴 502 error 或是 `connect() failed (111: Connection refused)`，我們這邊使用 k6 來做 websocket 服務的壓測，有簡單寫一個壓測程式如下：
+
+<br>
+
+{{< admonition tip "k6 壓測" >}}
+k6 是一個開源的壓測工具，可以用來測試 API、WebSocket、gRPC 等服務，可以到它的[官網](https://k6.io/)查看更多資訊。
+
+MacOS 安裝方式：brew install k6
+{{< /admonition >}}
+
+<br>
+
+- websocket.js
+
+```
+import ws from "k6/ws";
+import { check } from "k6";
+
+export const options = {
+  vus: 1000,
+  duration: "30s",
+};
+
+export default function () {
+  const url =
+    "wss://socket.XXX.com/app/hex-ws?protocol=7&client=js&version=7.4.1&flash=false";
+
+  const res = ws.connect(url, function (socket) {
+    socket.on("open", () => console.log("connected"));
+    socket.on("message", (data) => console.log("Message received: ", data));
+    socket.on("close", () => console.log("disconnected"));
+  });
+
+  check(res, { "status is 101": (r) => r && r.status === 101 });
+}
+```
+
+<br>
+
+簡單說明一下上面程式在寫什麼，我們在 const 設定 vus 代表有 1000 個虛擬使用者，會在 duration 30s 內完成測試，下面的 default 就是測試連線 ws 以及 message 跟 close 等動作，最後需要回傳 101 (ws 交握)
+
+<br>
+
+執行 `k6 run websocket.js` 後，就會開始壓測，可以看到會開始執行剛剛在上面提到 default 的動作：
+
+<br>
+
+{{< image src="/images/soketi-websocket-server-log-502-error-and-111-connection-refused/4.png"  width="800" caption="k6 壓測過程" src_s="/images/soketi-websocket-server-log-502-error-and-111-connection-refused/4.png" src_l="/images/soketi-websocket-server-log-502-error-and-111-connection-refused/4.png" >}}
+
+<br>
+
+等到跑完，就會告訴你 1000 筆裡面有多少的 http 101，這邊顯示 status is 101，就代表都是 101，代表都有連線成功，沒有出現 502 error 或是 `connect() failed (111: Connection refused)` 的錯誤，這樣就代表我們的問題解決了。
+
+<br>
+
+{{< image src="/images/soketi-websocket-server-log-502-error-and-111-connection-refused/5.png"  width="800" caption="k6 壓測結果" src_s="/images/soketi-websocket-server-log-502-error-and-111-connection-refused/5.png" src_l="/images/soketi-websocket-server-log-502-error-and-111-connection-refused/5.png" >}}
 
 <br>
 
